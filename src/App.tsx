@@ -301,19 +301,25 @@ export default function App() {
     }
   };
 
-  // Update product price & stocks
-  const handleUpdateProductStock = async (sku: string, newStock: number, newPrice: number) => {
+  // Update full product data (stock, price, description, images, name, category)
+  const handleUpdateProduct = async (sku: string, updatedPayload: Partial<Product>) => {
     setProducts((prev) =>
-      prev.map((p) => (p.sku === sku ? { ...p, stock: newStock, basePrice: newPrice } : p))
+      prev.map((p) => (p.sku === sku ? { ...p, ...updatedPayload } : p))
     );
 
     if (!isOfflineMode) {
       try {
-        await fetch(`/api/products/${sku}`, {
+        const res = await fetch(`/api/products/${sku}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stock: newStock, basePrice: newPrice })
+          body: JSON.stringify(updatedPayload)
         });
+        if (res.ok) {
+          const updatedRow = await res.json();
+          setProducts((prev) =>
+            prev.map((p) => (p.sku === sku ? { ...p, ...updatedRow } : p))
+          );
+        }
       } catch (err) {
         console.error(err);
       }
@@ -725,7 +731,7 @@ export default function App() {
                   <InventoryManager
                     products={products}
                     onAddProduct={handleAddProduct}
-                    onUpdateProductStock={handleUpdateProductStock}
+                    onUpdateProduct={handleUpdateProduct}
                   />
                 )}
 
@@ -771,7 +777,7 @@ export default function App() {
                     products={products}
                     onAddUser={handleAddUser}
                     onUpdateUser={handleUpdateUser}
-                    onUpdateProductStock={handleUpdateProductStock}
+                    onUpdateProduct={handleUpdateProduct}
                   />
                 )}
               </div>

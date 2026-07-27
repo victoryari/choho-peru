@@ -7,23 +7,21 @@ import { ProtectedImage } from "./ProtectedImage";
 interface InventoryManagerProps {
   products: Product[];
   onAddProduct: (product: Product) => Promise<void>;
-  onUpdateProductStock: (sku: string, newStock: number, newPrice: number) => Promise<void>;
+  onUpdateProduct: (sku: string, updatedPayload: Partial<Product>) => Promise<void>;
 }
 
 export function InventoryManager({
   products,
   onAddProduct,
-  onUpdateProductStock
+  onUpdateProduct
 }: InventoryManagerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
-  const [editingSku, setEditingSku] = useState<string | null>(null);
-  const [editingStock, setEditingStock] = useState(0);
-  const [editingPrice, setEditingPrice] = useState(0);
   const [statusMsg, setStatusMsg] = useState("");
 
   // New Product Form State
@@ -37,7 +35,16 @@ export function InventoryManager({
   const [newImages, setNewImages] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Edit Product Form State
+  const [editSku, setEditSku] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("Transmisión");
+  const [editBasePrice, setEditBasePrice] = useState<number | "">(0);
+  const [editStock, setEditStock] = useState<number | "">(0);
+  const [editDescription, setEditDescription] = useState("");
+  const [editImages, setEditImages] = useState<string[]>([]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -45,7 +52,6 @@ export function InventoryManager({
     setCompressionInfo(`Procesando y optimizando ${files.length} imagen(es)...`);
     try {
       const compressedList: string[] = [];
-      let totalSavedPercent = 0;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -53,9 +59,13 @@ export function InventoryManager({
         compressedList.push(dataUrl);
       }
 
-      setNewImages((prev) => [...prev, ...compressedList]);
-      if (!newImg && compressedList.length > 0) {
-        setNewImg(compressedList[0]);
+      if (isEdit) {
+        setEditImages((prev) => [...prev, ...compressedList]);
+      } else {
+        setNewImages((prev) => [...prev, ...compressedList]);
+        if (!newImg && compressedList.length > 0) {
+          setNewImg(compressedList[0]);
+        }
       }
       setCompressionInfo(`¡${files.length} foto(s) agregada(s) y optimizadas a <80 KB cada una!`);
     } catch (err) {
@@ -66,16 +76,20 @@ export function InventoryManager({
     }
   };
 
-  const handleRemoveImage = (index: number) => {
-    setNewImages((prev) => {
-      const updated = prev.filter((_, idx) => idx !== index);
-      if (updated.length > 0) {
-        setNewImg(updated[0]);
-      } else {
-        setNewImg("");
-      }
-      return updated;
-    });
+  const handleRemoveImage = (index: number, isEdit = false) => {
+    if (isEdit) {
+      setEditImages((prev) => prev.filter((_, idx) => idx !== index));
+    } else {
+      setNewImages((prev) => {
+        const updated = prev.filter((_, idx) => idx !== index);
+        if (updated.length > 0) {
+          setNewImg(updated[0]);
+        } else {
+          setNewImg("");
+        }
+        return updated;
+      });
+    }
   };
 
   const handleCreateProduct = async (e: React.FormEvent) => {
@@ -130,19 +144,43 @@ export function InventoryManager({
   });
 
   const handleStartEdit = (product: Product) => {
-    setEditingSku(product.sku);
-    setEditingStock(product.stock);
-    setEditingPrice(product.basePrice);
+    setEditSku(product.sku);
+    setEditName(product.name);
+    setEditCategory(product.category);
+    setEditBasePrice(product.basePrice);
+    setEditStock(product.stock);
+    setEditDescription(product.description || "");
+    const existingImgs = product.images && product.images.length > 0 ? product.images : (product.img ? [product.img] : []);
+    setEditImages(existingImgs);
+    setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = async (sku: string) => {
+  const handleSaveProductEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editSku) return;
+
+    setIsSaving(true);
     try {
-      await onUpdateProductStock(sku, editingStock, editingPrice);
-      setEditingSku(null);
-      setStatusMsg(`Stock del producto ${sku} actualizado correctamente.`);
+      const primaryImg = editImages.length > 0 ? editImages[0] : undefined;
+      const updatedPayload: Partial<Product> = {
+        name: editName.trim(),
+        category: editCategory,
+        basePrice: Number(editBasePrice) || 0,
+        stock: Number(editStock) || 0,
+        description: editDescription.trim(),
+        img: primaryImg,
+        images: editImages
+      };
+
+      await onUpdateProduct(editSku, updatedPayload);
+      setIsEditModalOpen(false);
+      setStatusMsg(`¡Producto ${editSku} actualizado completamente!`);
       setTimeout(() => setStatusMsg(""), 3000);
     } catch (err) {
       console.error(err);
+      alert("Error al guardar los cambios del producto.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -222,9 +260,9 @@ export function InventoryManager({
 
         <div className="space-y-3">
           {filteredProducts.map((p) => {
-            const isEditing = editingSku === p.sku;
             const isOutOfStock = p.stock === 0;
             const isLowStock = p.stock > 0 && p.stock < 10;
+            const photoCount = p.images?.length || (p.img ? 1 : 0);
 
             return (
               <div
@@ -239,86 +277,51 @@ export function InventoryManager({
                     containerClassName="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 shrink-0 overflow-hidden"
                   />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold text-slate-100 truncate">{p.name}</span>
                       <span className="text-[9.5px] font-mono font-bold bg-slate-900 text-cyan-400 px-2 py-0.5 rounded border border-slate-700">
                         {p.sku}
                       </span>
+                      {photoCount > 0 && (
+                        <span className="text-[9px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                          📷 {photoCount} foto(s)
+                        </span>
+                      )}
                     </div>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">Categoría: {p.category}</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5 truncate">
+                      Categoría: {p.category} • {p.description ? p.description.slice(0, 60) + "..." : "Sin descripción adicional"}
+                    </span>
                   </div>
                 </div>
 
-                {/* Stock Controls */}
+                {/* Stock & Actions Controls */}
                 <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
-                  {isEditing ? (
-                    <div className="flex items-center gap-3">
-                      <div className="space-y-0.5 text-left">
-                        <label className="text-[9px] text-slate-400 uppercase font-mono block">Precio (S/)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={editingPrice}
-                          onChange={(e) => setEditingPrice(Number(e.target.value))}
-                          className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-400 font-mono font-bold"
-                        />
-                      </div>
-                      <div className="space-y-0.5 text-left">
-                        <label className="text-[9px] text-slate-400 uppercase font-mono block">Stock (Unid)</label>
-                        <input
-                          type="number"
-                          value={editingStock}
-                          onChange={(e) => setEditingStock(Number(e.target.value))}
-                          className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-mono font-bold"
-                        />
-                      </div>
-                      <div className="flex items-center gap-1 pt-3">
-                        <button
-                          onClick={() => handleSaveEdit(p.sku)}
-                          className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all cursor-pointer"
-                          title="Guardar Cambios"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setEditingSku(null)}
-                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all cursor-pointer"
-                          title="Cancelar"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-right">
-                        <span className="text-[9px] text-slate-400 block font-mono uppercase">PRECIO BASE</span>
-                        <span className="text-xs font-bold font-mono text-amber-400">
-                          S/ {p.basePrice.toFixed(2)}
-                        </span>
-                      </div>
+                  <div className="text-right">
+                    <span className="text-[9px] text-slate-400 block font-mono uppercase">PRECIO BASE</span>
+                    <span className="text-xs font-bold font-mono text-amber-400">
+                      S/ {p.basePrice.toFixed(2)}
+                    </span>
+                  </div>
 
-                      <div className="text-right min-w-[90px]">
-                        <span className="text-[9px] text-slate-400 block font-mono uppercase">ESTADO STOCK</span>
-                        {isOutOfStock ? (
-                          <span className="text-xs font-bold text-red-400 font-mono">SIN STOCK (0)</span>
-                        ) : isLowStock ? (
-                          <span className="text-xs font-bold text-amber-400 font-mono">BAJO ({p.stock})</span>
-                        ) : (
-                          <span className="text-xs font-bold text-emerald-400 font-mono">{p.stock} Unidades</span>
-                        )}
-                      </div>
+                  <div className="text-right min-w-[90px]">
+                    <span className="text-[9px] text-slate-400 block font-mono uppercase">ESTADO STOCK</span>
+                    {isOutOfStock ? (
+                      <span className="text-xs font-bold text-red-400 font-mono">SIN STOCK (0)</span>
+                    ) : isLowStock ? (
+                      <span className="text-xs font-bold text-amber-400 font-mono">BAJO ({p.stock})</span>
+                    ) : (
+                      <span className="text-xs font-bold text-emerald-400 font-mono">{p.stock} Unidades</span>
+                    )}
+                  </div>
 
-                      <button
-                        onClick={() => handleStartEdit(p)}
-                        className="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-300 transition-all cursor-pointer flex items-center gap-1 text-xs"
-                        title="Ajustar Precios o Stock"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
-                        <span className="hidden sm:inline">Editar</span>
-                      </button>
-                    </>
-                  )}
+                  <button
+                    onClick={() => handleStartEdit(p)}
+                    className="p-2 bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-800/60 rounded-xl text-cyan-300 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                    title="Editar producto completo (Nombre, categoría, descripción, fotos, precio, stock)"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Editar</span>
+                  </button>
                 </div>
               </div>
             );
@@ -524,6 +527,181 @@ export function InventoryManager({
                     </>
                   ) : (
                     <span>Guardar Producto</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edición Completa de Producto */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#1E293B] border border-slate-700/60 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4 text-left relative">
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer p-1 rounded-lg hover:bg-slate-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-700/50">
+              <Edit3 className="w-5 h-5 text-cyan-400" />
+              <h3 className="font-bold text-sm text-slate-100 font-display">
+                Editar Producto: <span className="text-cyan-400 font-mono">{editSku}</span>
+              </h3>
+            </div>
+
+            <form onSubmit={handleSaveProductEdit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Nombre del Producto *</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Categoría *</label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none"
+                >
+                  {categories.filter(c => c !== "Todos").map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 uppercase font-mono block">Precio Base (S/) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={editBasePrice}
+                    onChange={(e) => setEditBasePrice(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 uppercase font-mono block">Stock Disponible *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editStock}
+                    onChange={(e) => setEditStock(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Descripción Técnica y Notas Adicionales</label>
+                <textarea
+                  rows={3}
+                  placeholder="Especificaciones técnicas, compatibilidad con motores o motocicletas..."
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+
+              {/* Gallery and Image Upload in Edit Modal */}
+              <div className="space-y-2">
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Imágenes del Producto (Subir o Gestionar Fotos)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <label className="p-3 bg-slate-950/80 border border-dashed border-cyan-500/50 hover:border-cyan-400 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
+                    <Upload className="w-4 h-4 text-cyan-400 mb-1 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-200">Agregar Fotos (Celular/PC)</span>
+                    <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, true)}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <div className="flex flex-col justify-center space-y-1">
+                    <input
+                      type="url"
+                      placeholder="Pega URL adicional (https://...)"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const target = e.target as HTMLInputElement;
+                          if (target.value.trim()) {
+                            setEditImages((prev) => [...prev, target.value.trim()]);
+                            target.value = "";
+                          }
+                        }
+                      }}
+                      className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-[11px] text-slate-200 focus:outline-none"
+                    />
+                    <span className="text-[9px] text-slate-400">Presiona Enter para agregar URL</span>
+                  </div>
+                </div>
+
+                {/* Edit Gallery Thumbnails */}
+                {editImages.length > 0 && (
+                  <div className="pt-2">
+                    <div className="text-[10px] text-slate-400 font-mono mb-1.5 flex items-center justify-between">
+                      <span>Fotos en Galería ({editImages.length}):</span>
+                      <span className="text-cyan-400 font-bold">Foto #1 es Portada</span>
+                    </div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                      {editImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative w-14 h-14 rounded-lg bg-slate-950 border border-slate-800 shrink-0 overflow-hidden group">
+                          <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx, true)}
+                            className="absolute top-0.5 right-0.5 bg-red-600/90 text-white p-0.5 rounded-full opacity-80 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            title="Eliminar foto"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {idx === 0 && (
+                            <span className="absolute bottom-0 inset-x-0 bg-cyan-500 text-slate-950 text-[7.5px] font-black text-center uppercase">
+                              PORTADA
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-slate-950 text-xs font-extrabold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+                >
+                  {isSaving ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <span>Guardar Cambios</span>
                   )}
                 </button>
               </div>

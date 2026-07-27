@@ -119,19 +119,39 @@ app.put("/api/products/:sku", async (req, res) => {
   const { sku } = req.params;
   const p = req.body;
   try {
-    // Solo actualizaremos los campos que llegan (stock, basePrice, etc)
     const updates = [];
     const values = [];
-    if (p.stock !== undefined) { updates.push('stock = ?'); values.push(p.stock); }
-    if (p.basePrice !== undefined) { updates.push('basePrice = ?'); values.push(p.basePrice); }
     if (p.name !== undefined) { updates.push('name = ?'); values.push(p.name); }
+    if (p.category !== undefined) { updates.push('category = ?'); values.push(p.category); }
+    if (p.basePrice !== undefined) { updates.push('basePrice = ?'); values.push(p.basePrice); }
+    if (p.stock !== undefined) { updates.push('stock = ?'); values.push(p.stock); }
+    if (p.description !== undefined) { updates.push('description = ?'); values.push(p.description); }
+    if (p.img !== undefined) { updates.push('img = ?'); values.push(p.img); }
+    if (p.tags !== undefined) { updates.push('tags = ?'); values.push(JSON.stringify(p.tags)); }
+    if (p.images !== undefined) {
+      try {
+        updates.push('images = ?');
+        values.push(JSON.stringify(p.images));
+      } catch (err) {}
+    }
     if (updates.length === 0) return res.json({});
     
     values.push(sku);
     await pool.query(`UPDATE products SET ${updates.join(', ')} WHERE sku = ?`, values);
     
     const [rows]: any = await pool.query('SELECT * FROM products WHERE sku = ?', [sku]);
-    res.json(rows[0] || {});
+    const updatedRow = rows[0] || {};
+    let images = [];
+    if (updatedRow.images) {
+      images = typeof updatedRow.images === 'string' ? JSON.parse(updatedRow.images) : updatedRow.images;
+    } else if (updatedRow.img) {
+      images = [updatedRow.img];
+    }
+    res.json({
+      ...updatedRow,
+      basePrice: Number(updatedRow.basePrice),
+      images: Array.isArray(images) ? images : []
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al actualizar producto" });

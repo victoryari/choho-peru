@@ -7,7 +7,7 @@ interface AdminPanelProps {
   products: Product[];
   onAddUser: (user: Omit<User, "id">) => Promise<void>;
   onUpdateUser: (id: string, updated: Partial<User>) => Promise<void>;
-  onUpdateProductStock: (sku: string, newStock: number, newPrice: number) => Promise<void>;
+  onUpdateProduct: (sku: string, updatedPayload: Partial<Product>) => Promise<void>;
 }
 
 export function AdminPanel({
@@ -15,7 +15,7 @@ export function AdminPanel({
   products,
   onAddUser,
   onUpdateUser,
-  onUpdateProductStock
+  onUpdateProduct
 }: AdminPanelProps) {
   // Tabs within admin panel
   const [adminTab, setAdminTab] = useState<"users" | "products">("users");
@@ -76,7 +76,7 @@ export function AdminPanel({
     if (!selectedProductSku) return;
     setIsUpdatingProduct(true);
     try {
-      await onUpdateProductStock(selectedProductSku, editingStock, editingPrice);
+      await onUpdateProduct(selectedProductSku, { stock: editingStock, basePrice: editingPrice });
       setSelectedProductSku(null);
     } catch (err) {
       console.error(err);
