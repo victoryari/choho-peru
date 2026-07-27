@@ -1,0 +1,6 @@
+{
+  "name": "CHOHO PERU",
+  "description": "Sistema de gestión integral para asesores comerciales de CHOHO PERU. Incluye catálogo, presupuestos, facturación, sincronización de inventario en tiempo real, analíticas y panel de administración.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
