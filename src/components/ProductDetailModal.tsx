@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Check, ShoppingCart, Percent, Shield, Star, AlertCircle, MapPin } from "lucide-react";
 import { Product } from "../types";
+import { ProtectedImage } from "./ProtectedImage";
 
 interface ProductDetailModalProps {
   product: Product;
@@ -45,10 +46,9 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
         {/* Product Image Section */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-between bg-black/25 border-b md:border-b-0 md:border-r border-slate-700/50">
           <div className="relative aspect-video md:aspect-square flex items-center justify-center bg-slate-900/50 rounded-xl overflow-hidden p-4">
-            <img
-              src={product.img || "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=500"}
+            <ProtectedImage
+              src={product.img}
               alt={product.name}
-              referrerPolicy="no-referrer"
               className="max-h-full max-w-full object-contain transition-transform hover:scale-105 duration-300"
             />
             {product.tags && product.tags.map((tag, idx) => (

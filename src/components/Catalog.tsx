@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Search, Grid, List, Eye, ShoppingBag, SlidersHorizontal, AlertCircle, Sparkles } from "lucide-react";
 import { Product } from "../types";
+import { ProtectedImage } from "./ProtectedImage";
 
 interface CatalogProps {
   products: Product[];
@@ -107,10 +108,9 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
                 {/* Image panel */}
                 <div>
                   <div className="relative aspect-square bg-slate-950/80 rounded-xl flex items-center justify-center p-3 mb-4 overflow-hidden border border-slate-800">
-                    <img
-                      src={product.img || "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=300"}
+                    <ProtectedImage
+                      src={product.img}
                       alt={product.name}
-                      referrerPolicy="no-referrer"
                       className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                     />
 
@@ -202,14 +202,12 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
                 className="bg-[#1E293B] border border-slate-700/50 hover:border-slate-600 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all"
               >
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <div className="w-12 h-12 bg-[#0F172A] rounded-lg shrink-0 flex items-center justify-center p-1 border border-slate-850 overflow-hidden">
-                    <img
-                      src={product.img || "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=100"}
-                      alt={product.name}
-                      referrerPolicy="no-referrer"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
+                  <ProtectedImage
+                    src={product.img}
+                    alt={product.name}
+                    className="max-h-full max-w-full object-contain"
+                    containerClassName="w-12 h-12 bg-[#0F172A] rounded-lg shrink-0 overflow-hidden border border-slate-850"
+                  />
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

@@ -90,3 +90,29 @@ body {
 .badge-glow-emerald {
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
+
+/* ANTI-SCREENSHOT & ANTI-COPY SECURITY RULES */
+.no-select {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Hide images when user attempts browser print or screenshot print PDF */
+@media print {
+  img, .no-select, canvas {
+    display: none !important;
+  }
+  body::after {
+    content: "DOCUMENTO Y CATÁLOGO PROTEGIDO CONTRA IMPRESIÓN Y CAPTURA - CHOHO PERÚ";
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    text-align: center;
+    padding: 50px;
+  }
+}

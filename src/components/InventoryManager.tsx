@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Package, Plus, Search, Edit3, Check, X, AlertTriangle, Sparkles, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { Package, Plus, Search, Edit3, Check, X, AlertTriangle, Sparkles, SlidersHorizontal, RefreshCw, Upload, Image as ImageIcon, ShieldCheck } from "lucide-react";
 import { Product } from "../types";
+import { compressAndResizeImage } from "../utils/imageOptimizer";
+import { ProtectedImage } from "./ProtectedImage";
 
 interface InventoryManagerProps {
   products: Product[];
@@ -17,6 +19,8 @@ export function InventoryManager({
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
   const [editingSku, setEditingSku] = useState<string | null>(null);
   const [editingStock, setEditingStock] = useState(0);
   const [editingPrice, setEditingPrice] = useState(0);
@@ -31,6 +35,25 @@ export function InventoryManager({
   const [newDescription, setNewDescription] = useState("");
   const [newImg, setNewImg] = useState("");
   const [newTag, setNewTag] = useState("");
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressing(true);
+    setCompressionInfo("Optimizando y reduciendo espacio...");
+    try {
+      const originalSizeKb = (file.size / 1024).toFixed(1);
+      const { dataUrl, sizeKb } = await compressAndResizeImage(file, 800, 800, 0.75);
+      setNewImg(dataUrl);
+      setCompressionInfo(`¡Optimizada! De ${originalSizeKb} KB a ${sizeKb} KB (Ahorro del ${(100 - (sizeKb / Number(originalSizeKb)) * 100).toFixed(0)}%)`);
+    } catch (err) {
+      console.error("Error optimizando imagen:", err);
+      alert("No se pudo procesar la imagen seleccionada.");
+    } finally {
+      setIsCompressing(false);
+    }
+  };
 
   const categories = ["Todos", "Transmisión", "Cadenas", "Piñones", "Kits de Arrastre", "Frenos", "Motor", "Accesorios"];
 
@@ -183,14 +206,12 @@ export function InventoryManager({
                 className="p-4 bg-slate-950/40 border border-slate-800 hover:border-slate-700 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
-                    <img
-                      src={p.img || "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=100"}
-                      alt={p.name}
-                      referrerPolicy="no-referrer"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
+                  <ProtectedImage
+                    src={p.img}
+                    alt={p.name}
+                    className="max-h-full max-w-full object-contain"
+                    containerClassName="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 shrink-0 overflow-hidden"
+                  />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-slate-100 truncate">{p.name}</span>
@@ -378,15 +399,50 @@ export function InventoryManager({
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[11px] text-slate-400 uppercase font-mono block">URL de Imagen (Opcional)</label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={newImg}
-                  onChange={(e) => setNewImg(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none"
-                />
+              <div className="space-y-2">
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Imagen del Producto (Archivo o URL)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* File Upload with Auto-Compression */}
+                  <label className="p-3 bg-slate-950/80 border border-dashed border-amber-500/50 hover:border-amber-400 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
+                    <Upload className="w-4 h-4 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-200">Subir foto (Celular/PC)</span>
+                    <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {/* Direct URL alternative */}
+                  <div className="flex flex-col justify-center space-y-1">
+                    <input
+                      type="url"
+                      placeholder="O pega URL de imagen (https://...)"
+                      value={newImg.startsWith("data:") ? "" : newImg}
+                      onChange={(e) => {
+                        setNewImg(e.target.value);
+                        setCompressionInfo(null);
+                      }}
+                      className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-[11px] text-slate-200 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {isCompressing && (
+                  <div className="p-2 bg-amber-950/30 border border-amber-800/40 text-amber-400 rounded-lg text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Reduciendo y optimizando espacio de imagen...</span>
+                  </div>
+                )}
+
+                {compressionInfo && !isCompressing && (
+                  <div className="p-2 bg-emerald-950/30 border border-emerald-800/40 text-emerald-400 rounded-lg text-[10px] font-mono flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>{compressionInfo}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-700/50">
