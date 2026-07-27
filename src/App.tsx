@@ -29,8 +29,9 @@ import { RealTimeTelemetry } from "./components/RealTimeTelemetry";
 import { SyncCenter } from "./components/SyncCenter";
 import { AnalyticsDashboard } from "./components/AnalyticsDashboard";
 import { AdminPanel } from "./components/AdminPanel";
+import { InventoryManager } from "./components/InventoryManager";
 import { ChohoLogo } from "./components/ChohoLogo";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Boxes } from "lucide-react";
 
 export default function App() {
   // Theme state
@@ -71,7 +72,7 @@ export default function App() {
 
   // UI Navigation Toggles
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "catalog" | "cart" | "quotes" | "billing" | "telemetry" | "sync" | "admin"
+    "dashboard" | "catalog" | "inventory" | "cart" | "quotes" | "billing" | "telemetry" | "sync" | "admin"
   >("catalog");
 
   // Selection modals
@@ -279,6 +280,25 @@ export default function App() {
     const id = `T-0${telemetry.length + 1}`;
     const newVisit = { ...visitPayload, id };
     setTelemetry((prev) => [newVisit, ...prev]);
+  };
+
+  // Add new product
+  const handleAddProduct = async (productPayload: Product) => {
+    if (!isOfflineMode) {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productPayload)
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Error al registrar el producto");
+      }
+      const added = await res.json();
+      setProducts((prev) => [added, ...prev]);
+    } else {
+      setProducts((prev) => [productPayload, ...prev]);
+    }
   };
 
   // Update product price & stocks
@@ -518,6 +538,18 @@ export default function App() {
                   </button>
 
                   <button
+                    onClick={() => setActiveTab("inventory")}
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
+                      activeTab === "inventory"
+                        ? "bg-amber-500/15 border border-amber-500/30 text-amber-400 font-bold"
+                        : "text-slate-400 hover:text-slate-100"
+                    }`}
+                  >
+                    <Boxes className="w-4 h-4 text-amber-400" />
+                    <span>Control de Inventario</span>
+                  </button>
+
+                  <button
                     onClick={() => setActiveTab("cart")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                       activeTab === "cart"
@@ -640,6 +672,7 @@ export default function App() {
                   <span className="text-xs font-bold uppercase tracking-wider font-display" style={{ color: 'var(--text-main)' }}>
                     {activeTab === "dashboard" && "Panel Administrativo / Analíticas"}
                     {activeTab === "catalog" && "Catálogo de Repuestos y Transmisión"}
+                    {activeTab === "inventory" && "Control de Inventario y Registro de Productos"}
                     {activeTab === "cart" && "Generador de Presupuestos Comerciales"}
                     {activeTab === "quotes" && "Historial de Cotizaciones de Campo"}
                     {activeTab === "billing" && "Facturación Electrónica SUNAT"}
@@ -685,6 +718,14 @@ export default function App() {
                     products={products}
                     onSelectProduct={setSelectedProduct}
                     onQuickAdd={handleQuickAdd}
+                  />
+                )}
+
+                {activeTab === "inventory" && (
+                  <InventoryManager
+                    products={products}
+                    onAddProduct={handleAddProduct}
+                    onUpdateProductStock={handleUpdateProductStock}
                   />
                 )}
 

@@ -46,9 +46,9 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
     }
   ]);
 
-  // Filter only quotes that have been "Aceptada" and are not yet invoiced
+  // Quotes eligible for invoicing (Aceptada or Pendiente) that have not been issued an invoice yet
   const pendingInvoices = quotes.filter(
-    (q) => q.status === "Aceptada" && !issuedInvoices.some((inv) => inv.quoteId === q.id)
+    (q) => q.status !== "Rechazada" && !issuedInvoices.some((inv) => inv.quoteId === q.id)
   );
 
   const startInvoicing = (quote: Quote) => {
@@ -61,7 +61,7 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
     setTimeout(() => {
       setXmlSigningCode("Empaquetando trama XML SOAP para SUNAT...");
     }, 2000);
-    setTimeout(() => {
+    setTimeout(async () => {
       // Complete
       const newInvoice: IssuedInvoice = {
         id: `FFF1-000${1094 + issuedInvoices.length}`,
@@ -73,6 +73,10 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
         hash: Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
         cdrCode: `CDR-SUNAT-00${2497 + issuedInvoices.length}-ACEPTADO`
       };
+
+      // Ensure quote status is marked as Aceptada, triggering automatic stock deduction
+      await onUpdateQuoteStatus(quote.id, "Aceptada");
+
       setIssuedInvoices((prev) => [newInvoice, ...prev]);
       setActiveStep("done");
     }, 3200);
