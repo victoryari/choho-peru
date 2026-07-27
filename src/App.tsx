@@ -29,8 +29,28 @@ import { RealTimeTelemetry } from "./components/RealTimeTelemetry";
 import { SyncCenter } from "./components/SyncCenter";
 import { AnalyticsDashboard } from "./components/AnalyticsDashboard";
 import { AdminPanel } from "./components/AdminPanel";
+import { ChohoLogo } from "./components/ChohoLogo";
+import { Sun, Moon } from "lucide-react";
 
 export default function App() {
+  // Theme state
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("choho_theme") as "dark" | "light") || "dark";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("choho_theme", theme);
+    if (theme === "light") {
+      document.body.classList.add("light-theme");
+    } else {
+      document.body.classList.remove("light-theme");
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === "dark" ? "light" : "dark"));
+  };
+
   // Authentication states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -307,38 +327,48 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-gray-200 flex flex-col font-sans">
+    <div className="min-h-screen transition-colors duration-300 flex flex-col font-sans" style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}>
       <AnimatePresence mode="wait">
         {!isLoggedIn ? (
-          /* High-Fidelity Login Interface with beautiful Space/Tech accents */
+          /* High-Fidelity Login Interface */
           <motion.div
             key="login"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex items-center justify-center p-4 min-h-screen"
+            className="flex-1 flex items-center justify-center p-4 min-h-screen relative"
             style={{
               backgroundImage:
-                "radial-gradient(circle at top left, rgba(14, 165, 233, 0.08) 0%, transparent 40%), radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.03) 0%, transparent 50%)"
+                "radial-gradient(circle at top left, rgba(6, 182, 212, 0.12) 0%, transparent 40%), radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.08) 0%, transparent 50%)"
             }}
           >
-            <div className="w-full max-w-md bg-[#1E293B] border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
-              {/* Sleek brand banner */}
-              <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/30 text-sky-400 font-bold px-3 py-1 rounded-full text-xs font-display">
+            {/* Top theme toggle button on login screen */}
+            <div className="absolute top-6 right-6">
+              <button
+                onClick={toggleTheme}
+                className="p-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:bg-slate-800 text-amber-400 transition-all cursor-pointer shadow-lg flex items-center gap-2 text-xs font-semibold"
+                title="Cambiar Tema"
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+                <span className="text-slate-300 capitalize">{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+              </button>
+            </div>
+
+            <div className="w-full max-w-md glass-panel rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+              {/* Brand Header */}
+              <div className="flex flex-col items-center justify-center text-center space-y-3">
+                <ChohoLogo size="lg" />
+                <div className="inline-flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold px-3 py-1 rounded-full text-xs font-display">
                   <Sparkles className="w-3.5 h-3.5" />
-                  Módulo de Gestión Comercial
+                  Plataforma Comercial B2B
                 </div>
-                <h1 className="text-2xl font-bold font-display text-white tracking-tight pt-1">
-                  CHOHO <span className="text-sky-400 font-extrabold font-sans">PERU</span>
-                </h1>
-                <p className="text-xs text-gray-500">
-                  Ingresa con tus credenciales corporativas autorizadas
+                <p className="text-xs text-slate-400">
+                  Ingresa con tus credenciales corporativas de Choho Perú
                 </p>
               </div>
 
               {loginError && (
-                <div className="p-3 bg-sky-950/25 border border-sky-900/60 text-sky-400 rounded-xl text-xs flex items-center gap-2">
+                <div className="p-3 bg-red-950/30 border border-red-800/60 text-red-400 rounded-xl text-xs flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 shrink-0 animate-bounce" />
                   <span>{loginError}</span>
                 </div>
@@ -346,37 +376,35 @@ export default function App() {
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-1.5 text-left">
-                  <label className="text-[11px] text-gray-400 uppercase font-mono block">
-                    Correo de Red Corporativa
+                  <label className="text-[11px] text-slate-400 uppercase font-mono block">
+                    Correo Corporativo
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
                       type="email"
                       required
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       placeholder="rmendoza@choho.pe"
-                      className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-200 placeholder-gray-600 focus:outline-none"
+                      className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5 text-left">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[11px] text-gray-400 uppercase font-mono block">
-                      Clave de Acceso
-                    </label>
-                  </div>
+                  <label className="text-[11px] text-slate-400 uppercase font-mono block">
+                    Clave de Acceso
+                  </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
                       type="password"
                       required
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-200 placeholder-gray-600 focus:outline-none"
+                      className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -384,22 +412,22 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-lg"
+                  className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-amber-500/20"
                 >
                   {isLoggingIn ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Iniciando sesión segura...</span>
+                      <span>Verificando credenciales...</span>
                     </>
                   ) : (
-                    <span>Iniciar Sesión Segura</span>
+                    <span>Iniciar Sesión Comercial</span>
                   )}
                 </button>
               </form>
 
               {/* Demo accounts helper cards */}
               <div className="pt-4 border-t border-slate-700/50 space-y-2.5 text-left">
-                <div className="text-[10px] text-gray-500 uppercase font-mono tracking-wider">
+                <div className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">
                   Cuentas de prueba rápida (Clave: 123)
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[10px]">
@@ -408,20 +436,20 @@ export default function App() {
                       setLoginEmail("rmendoza@choho.pe");
                       setLoginPassword("123");
                     }}
-                    className="p-1.5 bg-[#0F172A] border border-slate-700/50 hover:border-slate-600 rounded-lg text-gray-400 text-left transition-all truncate cursor-pointer"
+                    className="p-2 bg-slate-950/60 border border-slate-700/60 hover:border-amber-500/60 rounded-xl text-slate-400 text-left transition-all truncate cursor-pointer"
                   >
-                    <div className="font-semibold text-gray-300">R. Mendoza</div>
-                    <div>Asesor Trujillo</div>
+                    <div className="font-semibold text-slate-200">R. Mendoza</div>
+                    <div className="text-[9px] text-amber-400">Asesor Comercial Trujillo</div>
                   </button>
                   <button
                     onClick={() => {
                       setLoginEmail("lcastro@choho.pe");
                       setLoginPassword("123");
                     }}
-                    className="p-1.5 bg-[#0F172A] border border-slate-700/50 hover:border-slate-600 rounded-lg text-gray-400 text-left transition-all truncate cursor-pointer"
+                    className="p-2 bg-slate-950/60 border border-slate-700/60 hover:border-cyan-500/60 rounded-xl text-slate-400 text-left transition-all truncate cursor-pointer"
                   >
-                    <div className="font-semibold text-gray-300">L. Castro</div>
-                    <div>Administrador General</div>
+                    <div className="font-semibold text-slate-200">L. Castro</div>
+                    <div className="text-[9px] text-cyan-400">Admin General Lima</div>
                   </button>
                 </div>
               </div>
@@ -436,18 +464,11 @@ export default function App() {
             className="flex-1 flex flex-col md:flex-row h-screen overflow-hidden"
           >
             {/* Sidebar Left Navigation */}
-            <aside className="w-full md:w-64 bg-[#1E293B] border-b md:border-b-0 md:border-r border-slate-700/50 flex flex-col justify-between p-4 shrink-0">
+            <aside className="w-full md:w-64 glass-panel border-b md:border-b-0 md:border-r border-slate-700/50 flex flex-col justify-between p-4 shrink-0">
               <div className="space-y-6">
                 {/* Brand Logo */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-sky-500 rounded-lg flex items-center justify-center font-bold font-sans text-white">
-                      CH
-                    </div>
-                    <span className="font-bold text-sm tracking-tight text-white font-display">
-                      CHOHO PERU
-                    </span>
-                  </div>
+                  <ChohoLogo size="sm" showTagline={false} />
 
                   {/* Mobile responsive indicator */}
                   <span
@@ -459,13 +480,13 @@ export default function App() {
                 </div>
 
                 {/* User Card info */}
-                <div className="p-3 bg-[#0F172A] border border-slate-700/50 rounded-xl space-y-1 text-left relative group">
-                  <div className="text-[9px] text-sky-400 font-bold font-mono uppercase">
+                <div className="p-3 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-1 text-left relative group">
+                  <div className="text-[9px] text-cyan-400 font-bold font-mono uppercase">
                     {currentUser?.role}
                   </div>
-                  <div className="text-xs font-bold text-gray-200 truncate">{currentUser?.name}</div>
-                  <div className="text-[10px] text-gray-500 truncate">{currentUser?.email}</div>
-                  <div className="text-[9px] text-gray-500 mt-1">Sede: {currentUser?.branch}</div>
+                  <div className="text-xs font-bold text-slate-200 truncate">{currentUser?.name}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{currentUser?.email}</div>
+                  <div className="text-[9px] text-slate-400 mt-1">Sede: {currentUser?.branch}</div>
                 </div>
 
                 {/* Navigation Links list */}
@@ -475,8 +496,8 @@ export default function App() {
                       onClick={() => setActiveTab("dashboard")}
                       className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                         activeTab === "dashboard"
-                          ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                          : "text-gray-400 hover:text-white"
+                          ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                          : "text-slate-400 hover:text-slate-100"
                       }`}
                     >
                       <LayoutDashboard className="w-4 h-4" />
@@ -488,20 +509,20 @@ export default function App() {
                     onClick={() => setActiveTab("catalog")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === "catalog"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Catálogo de Repuestos y Accesorios</span>
+                    <span>Catálogo y Productos</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab("cart")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                       activeTab === "cart"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -509,7 +530,7 @@ export default function App() {
                       <span>Crear Presupuesto</span>
                     </div>
                     {budgetItems.length > 0 && (
-                      <span className="bg-sky-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                      <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
                         {budgetItems.length}
                       </span>
                     )}
@@ -519,8 +540,8 @@ export default function App() {
                     onClick={() => setActiveTab("quotes")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === "quotes"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <FileText className="w-4 h-4" />
@@ -531,8 +552,8 @@ export default function App() {
                     onClick={() => setActiveTab("billing")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === "billing"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <Receipt className="w-4 h-4" />
@@ -543,8 +564,8 @@ export default function App() {
                     onClick={() => setActiveTab("telemetry")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === "telemetry"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <Compass className="w-4 h-4" />
@@ -555,8 +576,8 @@ export default function App() {
                     onClick={() => setActiveTab("sync")}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                       activeTab === "sync"
-                        ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                        : "text-gray-400 hover:text-white"
+                        ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                        : "text-slate-400 hover:text-slate-100"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -575,8 +596,8 @@ export default function App() {
                       onClick={() => setActiveTab("admin")}
                       className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer ${
                         activeTab === "admin"
-                          ? "bg-sky-500/10 border border-sky-500/20 text-sky-400"
-                          : "text-gray-400 hover:text-white"
+                          ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-400"
+                          : "text-slate-400 hover:text-slate-100"
                       }`}
                     >
                       <Users className="w-4 h-4" />
@@ -594,7 +615,7 @@ export default function App() {
                     onClick={async () => {
                       await handleSyncNow();
                     }}
-                    className="w-full bg-amber-600/15 border border-amber-600/30 text-amber-500 text-[11px] py-1.5 px-3 rounded-lg flex items-center justify-between cursor-pointer"
+                    className="w-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px] py-1.5 px-3 rounded-lg flex items-center justify-between cursor-pointer"
                   >
                     <span className="font-semibold">Subir cambios locales</span>
                     <FolderSync className="w-3.5 h-3.5 animate-spin" />
@@ -603,38 +624,51 @@ export default function App() {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-3 py-2 text-xs font-semibold text-gray-500 hover:text-sky-400 flex items-center gap-2 transition-all cursor-pointer"
+                  className="w-full px-3 py-2 text-xs font-semibold text-slate-400 hover:text-red-400 flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Salir de la Cuenta</span>
+                  <span>Cerrar Sesión</span>
                 </button>
               </div>
             </aside>
 
             {/* Main Application content frame */}
-            <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#0F172A]">
+            <main className="flex-1 flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-main)' }}>
               {/* Workspace Navigation Header */}
-              <header className="h-14 border-b border-slate-700/50 px-6 flex items-center justify-between shrink-0 bg-[#0F172A]/80 backdrop-blur">
+              <header className="h-14 border-b border-slate-700/50 px-6 flex items-center justify-between shrink-0 glass-panel">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-gray-200 uppercase tracking-wide font-display">
+                  <span className="text-xs font-bold uppercase tracking-wider font-display" style={{ color: 'var(--text-main)' }}>
                     {activeTab === "dashboard" && "Panel Administrativo / Analíticas"}
-                    {activeTab === "catalog" && "Catálogo de Repuestos y Accesorios"}
+                    {activeTab === "catalog" && "Catálogo de Repuestos y Transmisión"}
                     {activeTab === "cart" && "Generador de Presupuestos Comerciales"}
                     {activeTab === "quotes" && "Historial de Cotizaciones de Campo"}
                     {activeTab === "billing" && "Facturación Electrónica SUNAT"}
-                    {activeTab === "telemetry" && "Localización y Visitas de Campo"}
-                    {activeTab === "sync" && "Centro de Sincronización"}
+                    {activeTab === "telemetry" && "Geolocalización y Visitas de Campo"}
+                    {activeTab === "sync" && "Centro de Sincronización de Datos"}
                     {activeTab === "admin" && "Panel de Administración"}
                   </span>
 
                   {isOfflineMode && (
-                    <span className="px-2 py-0.5 rounded bg-amber-600/10 border border-amber-600/30 text-amber-500 text-[10px] font-bold uppercase font-mono">
-                      OFFLINE_MODE
+                    <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase font-mono">
+                      MODO_OFFLINE
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  {/* Theme Toggle Button in Header */}
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-xl border border-slate-700/60 bg-slate-900/40 hover:bg-slate-800 text-amber-400 transition-all cursor-pointer flex items-center gap-1.5 text-xs"
+                    title="Cambiar Tema (Oscuro / Claro)"
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="w-4 h-4 text-amber-400" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-indigo-500" />
+                    )}
+                  </button>
+
                   {/* Push simulation center */}
                   <NotificationCenter />
                 </div>

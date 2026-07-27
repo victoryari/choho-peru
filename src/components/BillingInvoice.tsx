@@ -82,68 +82,82 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
   const downloadInvoicePDF = (invoice: IssuedInvoice) => {
     const doc = new jsPDF();
     
-    // Aesthetic Styling
-    doc.setFillColor(13, 17, 26); // Dark primary color header
-    doc.rect(0, 0, 210, 45, "F");
+    // Header Banner Background
+    doc.setFillColor(15, 23, 42); // Slate-900 background
+    doc.rect(0, 0, 210, 48, "F");
+
+    // Choho Brand Emblem Accent Box
+    doc.setFillColor(245, 158, 11); // Amber accent
+    doc.rect(15, 10, 10, 28, "F");
 
     // Header Title
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(22);
-    doc.setTextColor(14, 165, 233); // Sky brand accent
-    doc.text("CHOHO PERU S.A.C.", 15, 20);
+    doc.setTextColor(245, 158, 11); // Amber
+    doc.text("CHOHO PERÚ", 30, 22);
 
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setTextColor(2, 132, 199); // Cyan subtext
+    doc.text("TRANSMISIÓN, CADENAS Y MOTOREPUESTOS B2B", 30, 28);
+
+    doc.setFontSize(9);
+    doc.setTextColor(203, 213, 225); // Slate text
     doc.setFont("Helvetica", "normal");
-    doc.text("RUC: 20551249852", 15, 28);
-    doc.text("Dirección: Av. Separadora Industrial 1420, Ate, Lima", 15, 34);
+    doc.text("RUC: 20551249852 | Dirección: Av. Separadora Industrial 1420, Ate, Lima", 30, 35);
+    doc.text("Teléfono: (01) 458-9200 | Email: ventas@choho.pe | Web: www.choho.pe", 30, 41);
 
-    // Right-aligned Invoice Panel
-    doc.setFillColor(240, 240, 240);
-    doc.rect(140, 10, 55, 28, "F");
+    // Right-aligned Invoice Panel Box
+    doc.setFillColor(241, 245, 249);
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(140, 10, 55, 30, "FD");
     doc.setFont("Helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    doc.text("FACTURA ELECTRÓNICA", 142, 18);
-    doc.setFontSize(14);
-    doc.setTextColor(14, 165, 233); // Sky accent
-    doc.text(invoice.id, 142, 28);
-
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.text("FACTURA ELECTRÓNICA", 143, 18);
+    doc.setFontSize(13);
+    doc.setTextColor(225, 29, 72); // Red accent
+    doc.text(invoice.id, 143, 27);
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text("R.I. SUNAT / OSE CHOHO", 143, 34);
 
     // Document details
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(15, 23, 42);
     doc.setFontSize(11);
     doc.setFont("Helvetica", "bold");
-    doc.text("DATOS DEL ADQUIRIENTE", 15, 58);
-    doc.line(15, 60, 195, 60);
+    doc.text("DATOS DEL CLIENTE / ADQUIRIENTE", 15, 60);
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(15, 62, 195, 62);
 
     doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Cliente / Razón Social: ${invoice.clientName}`, 15, 67);
-    doc.text(`RUC / DNI: ${invoice.clientDoc}`, 15, 73);
-    doc.text(`Fecha de Emisión: ${invoice.date}`, 15, 79);
-    doc.text(`Moneda: SOLES (PEN)`, 15, 85);
+    doc.setFontSize(9.5);
+    doc.text(`Razón Social: ${invoice.clientName}`, 15, 70);
+    doc.text(`RUC / DNI: ${invoice.clientDoc}`, 15, 76);
+    doc.text(`Fecha de Emisión: ${invoice.date}`, 15, 82);
+    doc.text(`Moneda: SOLES (PEN) | Forma de Pago: Crédito / Contado`, 15, 88);
 
     // Table Header
-    doc.setFillColor(244, 244, 245);
-    doc.rect(15, 95, 180, 8, "F");
+    doc.setFillColor(241, 245, 249);
+    doc.rect(15, 96, 180, 8, "F");
     doc.setFont("Helvetica", "bold");
-    doc.text("Descripción del Ítem", 18, 100);
-    doc.text("Total", 175, 100);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Descripción del Producto / Ítem", 18, 101);
+    doc.text("Total", 175, 101);
 
     // Items list
     const matchingQuote = quotes.find(q => q.id === invoice.quoteId);
-    let currentY = 110;
+    let currentY = 111;
     if (matchingQuote && matchingQuote.items) {
       matchingQuote.items.forEach((item) => {
         doc.setFont("Helvetica", "normal");
-        doc.text(`${item.name} (Qty: ${item.qty})`, 18, currentY);
+        doc.text(`${item.name} [SKU: ${item.sku}] (Cant: ${item.qty})`, 18, currentY);
         doc.text(`S/ ${(item.qty * item.price).toFixed(2)}`, 175, currentY);
         currentY += 8;
       });
     } else {
       doc.setFont("Helvetica", "normal");
-      doc.text("Servicios de repuestos de transmisión de motos premium", 18, currentY);
+      doc.text("Kits de arrastre y repuestos de transmisión de motos CHOHO", 18, currentY);
       doc.text(`S/ ${invoice.total.toFixed(2)}`, 175, currentY);
       currentY += 8;
     }
@@ -156,22 +170,25 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
     const igvVal = totalVal - subtotalVal;
 
     doc.setFont("Helvetica", "normal");
-    doc.text(`Subtotal: S/ ${subtotalVal.toFixed(2)}`, 145, currentY + 10);
-    doc.text(`I.G.V. (18%): S/ ${igvVal.toFixed(2)}`, 145, currentY + 16);
+    doc.setFontSize(9);
+    doc.text(`Op. Gravada: S/ ${subtotalVal.toFixed(2)}`, 140, currentY + 10);
+    doc.text(`I.G.V. (18%): S/ ${igvVal.toFixed(2)}`, 140, currentY + 16);
     doc.setFont("Helvetica", "bold");
-    doc.text(`Total General: S/ ${totalVal.toFixed(2)}`, 145, currentY + 24);
+    doc.setFontSize(11);
+    doc.setTextColor(225, 29, 72);
+    doc.text(`IMPORTE TOTAL: S/ ${totalVal.toFixed(2)}`, 140, currentY + 24);
 
-    // SUNAT / Security stamps
-    doc.setFillColor(250, 250, 250);
-    doc.rect(15, currentY + 35, 180, 25, "F");
+    // SUNAT / Security stamps box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, currentY + 34, 180, 26, "FD");
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Representación impresa de la Factura Electrónica.", 18, currentY + 41);
-    doc.text(`Código Hash de Seguridad: ${invoice.hash}`, 18, currentY + 47);
-    doc.text(`Estado SUNAT: ${invoice.cdrCode}`, 18, currentY + 53);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Esta es una representación impresa de la Factura Electrónica emitida a través del OSE SUNAT.", 18, currentY + 40);
+    doc.text(`Firma Digital (Hash SHA-256): ${invoice.hash}`, 18, currentY + 46);
+    doc.text(`Respuesta CDR SUNAT: ${invoice.cdrCode}`, 18, currentY + 52);
 
-    doc.save(`factura_${invoice.id}.pdf`);
+    doc.save(`factura_choho_${invoice.id}.pdf`);
   };
 
   return (

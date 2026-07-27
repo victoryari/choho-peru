@@ -178,12 +178,32 @@ app.post("/api/quotes", async (req, res) => {
 app.put("/api/quotes/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
+  const connection = await pool.getConnection();
   try {
-    await pool.query('UPDATE quotes SET status = ? WHERE id = ?', [status, id]);
+    await connection.beginTransaction();
+
+    // Check previous status
+    const [existing]: any = await connection.query('SELECT status FROM quotes WHERE id = ?', [id]);
+    const prevStatus = existing[0]?.status;
+
+    await connection.query('UPDATE quotes SET status = ? WHERE id = ?', [status, id]);
+
+    // If changing to Aceptada, automatically deduct stock
+    if (status === 'Aceptada' && prevStatus !== 'Aceptada') {
+      const [items]: any = await connection.query('SELECT sku, qty FROM quote_items WHERE quote_id = ?', [id]);
+      for (const item of items) {
+        await connection.query('UPDATE products SET stock = GREATEST(0, stock - ?) WHERE sku = ?', [item.qty, item.sku]);
+      }
+    }
+
+    await connection.commit();
     res.json({ id, status });
   } catch (error) {
+    await connection.rollback();
     console.error(error);
     res.status(500).json({ error: "Error al actualizar cotización" });
+  } finally {
+    connection.release();
   }
 });
 
@@ -324,17 +344,34 @@ app.post("/api/sync", async (req, res) => {
 // SUNAT / RENIEC Simulation mock service
 app.get("/api/sunat/:ruc", (req, res) => {
   const { ruc } = req.params;
+  const cleanRuc = ruc ? ruc.trim() : "";
+  
+  if (!/^\d{11}$/.test(cleanRuc)) {
+    return res.status(400).json({ error: "El RUC debe ser un número de 11 dígitos" });
+  }
+
+  const validPrefixes = ["10", "15", "17", "20"];
+  if (!validPrefixes.some(p => cleanRuc.startsWith(p))) {
+    return res.status(400).json({ error: "El RUC debe comenzar con 10, 15, 17 o 20" });
+  }
+
   const sampleBusinessNames: { [key: string]: string } = {
     "20608542193": "Moto Repuestos Lima S.A.C.",
     "20124567891": "Distribuidora Norte E.I.R.L.",
     "20448123956": "Repuestos Minería del Sur S.A.",
     "20556123490": "Logística Transandina EIRL",
     "20993812543": "AgroIndustrias El Olivar S.A.C.",
-    "10458920123": "Juan Carlos Paredes"
+    "10458920123": "Juan Carlos Paredes (Persona Natural RUC)"
   };
 
-  const businessName = sampleBusinessNames[ruc] || `Automotriz San Cristóbal S.A.C.`;
-  res.json({ ruc, businessName, address: "Av. Industrial 452, Cercado de Lima", condition: "ACTIVO", state: "HABIDO" });
+  const businessName = sampleBusinessNames[cleanRuc] || `Importaciones y Repuestos ${cleanRuc.substring(6)} S.A.C.`;
+  res.json({ 
+    ruc: cleanRuc, 
+    businessName, 
+    address: "Av. Industrial 452, Cercado de Lima", 
+    condition: "ACTIVO", 
+    state: "HABIDO" 
+  });
 });
 
 // Start the server
