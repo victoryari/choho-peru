@@ -32,10 +32,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
     }, 1200);
   };
 
-  // Branch stock allocation mock
   const isOutOfStock = product.stock === 0;
-  const stockTrujillo = Math.max(0, Math.floor(product.stock * 0.4));
-  const stockLima = Math.max(0, product.stock - stockTrujillo);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -122,34 +119,16 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               {product.description || "Componente de alta gama para transmisión de motocicletas. Cumple con los más altos estándares de calidad internacional ISO 9001. Estructura de aleación reforzada que disminuye la fricción y el desgaste de catalinas."}
             </p>
 
-            {/* Inventory Branch Details */}
+            {/* Inventory Single Warehouse Details */}
             <div className="mt-5 space-y-2">
               <div className="text-xs font-semibold text-gray-300 font-display">Disponibilidad en Almacén</div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-2.5 bg-slate-900/60 rounded-lg border border-slate-850 flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[11px] text-gray-400">
-                    <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Sede Lima</span>
-                  </div>
-                  <span className="text-xs font-bold font-mono text-gray-200">
-                    {isOutOfStock ? "0" : stockLima} und
-                  </span>
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-gray-300">
+                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span className="font-semibold">Almacén Central CHOHO Perú</span>
                 </div>
-                <div className="p-2.5 bg-slate-900/60 rounded-lg border border-slate-850 flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[11px] text-gray-400">
-                    <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Sede Trujillo</span>
-                  </div>
-                  <span className="text-xs font-bold font-mono text-gray-200">
-                    {isOutOfStock ? "0" : stockTrujillo} und
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-gray-400">Stock Consolidado Total:</span>
-                <span className={`text-xs font-bold font-mono ${product.stock > 10 ? 'text-emerald-500' : product.stock > 0 ? 'text-amber-500' : 'text-sky-400'}`}>
-                  {product.stock === 0 ? "Agotado temporalmente" : `${product.stock} Unidades`}
+                <span className={`text-xs font-extrabold font-mono ${product.stock > 10 ? 'text-emerald-400' : product.stock > 0 ? 'text-amber-400' : 'text-red-400'}`}>
+                  {product.stock === 0 ? "Agotado (0 Unid)" : `${product.stock} Unidades`}
                 </span>
               </div>
             </div>
