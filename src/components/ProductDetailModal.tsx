@@ -14,6 +14,13 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
   const [discountPercent, setDiscountPercent] = useState(0);
   const [successMsg, setSuccessMsg] = useState(false);
 
+  // Gallery image setup
+  const galleryImages = (product.images && product.images.length > 0) 
+    ? product.images 
+    : (product.img ? [product.img] : []);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const activeImageSrc = galleryImages[activeImageIndex] || product.img;
   const discountedPrice = Math.max(0, product.basePrice * (1 - discountPercent / 100));
 
   const handleAdd = () => {
@@ -45,20 +52,41 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
 
         {/* Product Image Section */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-between bg-black/25 border-b md:border-b-0 md:border-r border-slate-700/50">
-          <div className="relative aspect-video md:aspect-square flex items-center justify-center bg-slate-900/50 rounded-xl overflow-hidden p-4">
-            <ProtectedImage
-              src={product.img}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain transition-transform hover:scale-105 duration-300"
-            />
-            {product.tags && product.tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="absolute top-3 left-3 bg-sky-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-              >
-                {tag}
-              </span>
-            ))}
+          <div>
+            <div className="relative aspect-video md:aspect-square flex items-center justify-center bg-slate-900/50 rounded-xl overflow-hidden p-4">
+              <ProtectedImage
+                src={activeImageSrc}
+                alt={product.name}
+                className="max-h-full max-w-full object-contain transition-transform hover:scale-105 duration-300"
+              />
+              {product.tags && product.tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="absolute top-3 left-3 bg-sky-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* Gallery Thumbnails Carousel */}
+            {galleryImages.length > 1 && (
+              <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+                {galleryImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`w-14 h-14 rounded-lg bg-slate-900 border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
+                      activeImageIndex === idx
+                        ? "border-amber-400 ring-2 ring-amber-400/40 shadow-lg scale-105"
+                        : "border-slate-800 opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={imgUrl} alt={`Vista ${idx + 1}`} className="w-full h-full object-contain" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 space-y-3">

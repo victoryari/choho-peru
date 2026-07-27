@@ -34,24 +34,88 @@ export function InventoryManager({
   const [newStock, setNewStock] = useState<number | "">(0);
   const [newDescription, setNewDescription] = useState("");
   const [newImg, setNewImg] = useState("");
+  const [newImages, setNewImages] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setIsCompressing(true);
-    setCompressionInfo("Optimizando y reduciendo espacio...");
+    setCompressionInfo(`Procesando y optimizando ${files.length} imagen(es)...`);
     try {
-      const originalSizeKb = (file.size / 1024).toFixed(1);
-      const { dataUrl, sizeKb } = await compressAndResizeImage(file, 800, 800, 0.75);
-      setNewImg(dataUrl);
-      setCompressionInfo(`¡Optimizada! De ${originalSizeKb} KB a ${sizeKb} KB (Ahorro del ${(100 - (sizeKb / Number(originalSizeKb)) * 100).toFixed(0)}%)`);
+      const compressedList: string[] = [];
+      let totalSavedPercent = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { dataUrl, sizeKb } = await compressAndResizeImage(file, 800, 800, 0.75);
+        compressedList.push(dataUrl);
+      }
+
+      setNewImages((prev) => [...prev, ...compressedList]);
+      if (!newImg && compressedList.length > 0) {
+        setNewImg(compressedList[0]);
+      }
+      setCompressionInfo(`¡${files.length} foto(s) agregada(s) y optimizadas a <80 KB cada una!`);
     } catch (err) {
-      console.error("Error optimizando imagen:", err);
-      alert("No se pudo procesar la imagen seleccionada.");
+      console.error("Error optimizando imágenes:", err);
+      alert("No se pudo procesar la selección de imágenes.");
     } finally {
       setIsCompressing(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setNewImages((prev) => {
+      const updated = prev.filter((_, idx) => idx !== index);
+      if (updated.length > 0) {
+        setNewImg(updated[0]);
+      } else {
+        setNewImg("");
+      }
+      return updated;
+    });
+  };
+
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSku.trim() || !newName.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const allImages = newImages.length > 0 ? newImages : (newImg ? [newImg] : []);
+      const productPayload: Product = {
+        sku: newSku.trim().toUpperCase(),
+        name: newName.trim(),
+        category: newCategory,
+        basePrice: Number(newBasePrice) || 0,
+        stock: Number(newStock) || 0,
+        description: newDescription.trim() || "Componente oficial CHOHO de alta fricción.",
+        tags: newTag ? [newTag] : ["CHOHO"],
+        img: allImages.length > 0 ? allImages[0] : undefined,
+        images: allImages
+      };
+
+      await onAddProduct(productPayload);
+      
+      // Reset form
+      setNewSku("");
+      setNewName("");
+      setNewBasePrice(0);
+      setNewStock(0);
+      setNewDescription("");
+      setNewImg("");
+      setNewImages([]);
+      setNewTag("");
+      setIsModalOpen(false);
+      
+      setStatusMsg(`¡Producto ${productPayload.sku} registrado exitosamente con ${allImages.length} foto(s)!`);
+      setTimeout(() => setStatusMsg(""), 3000);
+    } catch (err: any) {
+      alert(err.message || "Error al registrar el producto. Verifica que el SKU no exista.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -79,44 +143,6 @@ export function InventoryManager({
       setTimeout(() => setStatusMsg(""), 3000);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const handleCreateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSku.trim() || !newName.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const productPayload: Product = {
-        sku: newSku.trim().toUpperCase(),
-        name: newName.trim(),
-        category: newCategory,
-        basePrice: Number(newBasePrice) || 0,
-        stock: Number(newStock) || 0,
-        description: newDescription.trim() || "Componente oficial CHOHO de alta fricción.",
-        tags: newTag ? [newTag] : ["CHOHO"],
-        img: newImg.trim() || undefined
-      };
-
-      await onAddProduct(productPayload);
-      
-      // Reset form
-      setNewSku("");
-      setNewName("");
-      setNewBasePrice(0);
-      setNewStock(0);
-      setNewDescription("");
-      setNewImg("");
-      setNewTag("");
-      setIsModalOpen(false);
-      
-      setStatusMsg(`¡Producto ${productPayload.sku} registrado exitosamente!`);
-      setTimeout(() => setStatusMsg(""), 3000);
-    } catch (err: any) {
-      alert(err.message || "Error al registrar el producto. Verifica que el SKU no exista.");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -400,15 +426,16 @@ export function InventoryManager({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] text-slate-400 uppercase font-mono block">Imagen del Producto (Archivo o URL)</label>
+                <label className="text-[11px] text-slate-400 uppercase font-mono block">Fotos del Producto (Subir múltiples fotos optimizadas)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {/* File Upload with Auto-Compression */}
                   <label className="p-3 bg-slate-950/80 border border-dashed border-amber-500/50 hover:border-amber-400 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
                     <Upload className="w-4 h-4 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-bold text-slate-200">Subir foto (Celular/PC)</span>
-                    <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB</span>
+                    <span className="text-[11px] font-bold text-slate-200">Subir fotos (Multi-Archivo)</span>
+                    <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB c/u</span>
                     <input
                       type="file"
+                      multiple
                       accept="image/*"
                       onChange={handleFileUpload}
                       className="hidden"
@@ -422,18 +449,50 @@ export function InventoryManager({
                       placeholder="O pega URL de imagen (https://...)"
                       value={newImg.startsWith("data:") ? "" : newImg}
                       onChange={(e) => {
-                        setNewImg(e.target.value);
-                        setCompressionInfo(null);
+                        if (e.target.value) {
+                          setNewImg(e.target.value);
+                          setNewImages((prev) => [...prev, e.target.value]);
+                        }
                       }}
                       className="w-full bg-slate-950/60 border border-slate-700/60 focus:border-cyan-500 rounded-xl px-3 py-2 text-[11px] text-slate-200 focus:outline-none"
                     />
                   </div>
                 </div>
 
+                {/* Uploaded Gallery Thumbnails Grid */}
+                {newImages.length > 0 && (
+                  <div className="pt-2">
+                    <div className="text-[10px] text-slate-400 font-mono mb-1.5 flex items-center justify-between">
+                      <span>Galería cargada ({newImages.length} foto/s):</span>
+                      <span className="text-amber-400 font-bold">Foto #1 es Portada</span>
+                    </div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                      {newImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative w-14 h-14 rounded-lg bg-slate-950 border border-slate-800 shrink-0 overflow-hidden group">
+                          <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="absolute top-0.5 right-0.5 bg-red-600/90 text-white p-0.5 rounded-full opacity-80 group-hover:opacity-100 transition-opacity"
+                            title="Eliminar foto"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {idx === 0 && (
+                            <span className="absolute bottom-0 inset-x-0 bg-amber-500 text-slate-950 text-[7.5px] font-black text-center uppercase">
+                              PORTADA
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isCompressing && (
                   <div className="p-2 bg-amber-950/30 border border-amber-800/40 text-amber-400 rounded-lg text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
                     <RefreshCw className="w-3 h-3 animate-spin" />
-                    <span>Reduciendo y optimizando espacio de imagen...</span>
+                    <span>Reduciendo y optimizando espacio de imágenes...</span>
                   </div>
                 )}
 

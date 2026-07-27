@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Grid, List, Eye, ShoppingBag, SlidersHorizontal, AlertCircle, Sparkles } from "lucide-react";
+import { Search, Grid, List, Eye, ShoppingBag, SlidersHorizontal, AlertCircle, Sparkles, Camera } from "lucide-react";
 import { Product } from "../types";
 import { ProtectedImage } from "./ProtectedImage";
 
@@ -99,6 +99,8 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
           {filteredProducts.map((product) => {
             const outOfStock = product.stock === 0;
             const lowStock = product.stock > 0 && product.stock < 10;
+            const photoCount = product.images?.length || (product.img ? 1 : 0);
+
             return (
               <div
                 key={product.sku}
@@ -136,6 +138,13 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
                         </span>
                       )}
                     </div>
+
+                    {photoCount > 1 && (
+                      <span className="absolute top-2.5 right-2.5 bg-slate-900/90 text-cyan-400 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-cyan-500/30 flex items-center gap-1">
+                        <Camera className="w-3 h-3" />
+                        {photoCount} fotos
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-1 text-left">

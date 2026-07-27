@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS products (
   stock INT NOT NULL,
   description TEXT,
   tags JSON,
-  img VARCHAR(255)
+  img TEXT,
+  images JSON
 );
 
 CREATE TABLE IF NOT EXISTS quotes (

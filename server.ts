@@ -66,10 +66,19 @@ app.post("/api/auth/login", async (req, res) => {
 app.get("/api/products", async (req, res) => {
   try {
     const [rows]: any = await pool.query('SELECT * FROM products');
-    const parsedRows = rows.map((p: any) => ({
-      ...p,
-      basePrice: Number(p.basePrice)
-    }));
+    const parsedRows = rows.map((p: any) => {
+      let images = [];
+      if (p.images) {
+        images = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
+      } else if (p.img) {
+        images = [p.img];
+      }
+      return {
+        ...p,
+        basePrice: Number(p.basePrice),
+        images: Array.isArray(images) ? images : []
+      };
+    });
     res.json(parsedRows);
   } catch (error) {
     console.error(error);
@@ -84,11 +93,22 @@ app.post("/api/products", async (req, res) => {
     if (existing.length > 0) {
       return res.status(400).json({ error: "Ya existe un producto con este SKU" });
     }
-    await pool.query(
-      'INSERT INTO products (sku, name, category, basePrice, stock, description, tags, img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [p.sku, p.name, p.category, p.basePrice, p.stock, p.description, JSON.stringify(p.tags || []), p.img || null]
-    );
-    res.json(p);
+    const imagesList = p.images && p.images.length > 0 ? p.images : (p.img ? [p.img] : []);
+    const primaryImg = p.img || (imagesList.length > 0 ? imagesList[0] : null);
+
+    try {
+      await pool.query(
+        'INSERT INTO products (sku, name, category, basePrice, stock, description, tags, img, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [p.sku, p.name, p.category, p.basePrice, p.stock, p.description, JSON.stringify(p.tags || []), primaryImg, JSON.stringify(imagesList)]
+      );
+    } catch (colErr) {
+      // Fallback if images column doesn't exist yet
+      await pool.query(
+        'INSERT INTO products (sku, name, category, basePrice, stock, description, tags, img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [p.sku, p.name, p.category, p.basePrice, p.stock, p.description, JSON.stringify(p.tags || []), primaryImg]
+      );
+    }
+    res.json({ ...p, img: primaryImg, images: imagesList });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al guardar el producto" });

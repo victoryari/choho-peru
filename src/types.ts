@@ -17,6 +17,7 @@ export interface Product {
   description: string;
   tags: string[];
   img?: string;
+  images?: string[];
 }
 
 export interface QuoteItem {
