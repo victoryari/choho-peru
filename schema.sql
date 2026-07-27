@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS products (
   category VARCHAR(100) NOT NULL,
   basePrice DECIMAL(10,2) NOT NULL,
   stock INT NOT NULL,
-  description TEXT,
+  description LONGTEXT,
   tags JSON,
-  img TEXT,
+  img LONGTEXT,
   images JSON
 );
 
