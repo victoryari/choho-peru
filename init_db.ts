@@ -6,10 +6,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function initDB() {
+  const isRemoteDb = Boolean(process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1');
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'choho_peru',
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+    ssl: (process.env.DB_SSL === 'true' || isRemoteDb) ? { rejectUnauthorized: false } : undefined,
     multipleStatements: true
   });
 
