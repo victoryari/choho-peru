@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Users, UserPlus, Settings, Power, Edit3, ShieldAlert, Check, Plus, Package, ShieldCheck, X } from "lucide-react";
+import { Users, UserPlus, Settings, Power, Edit3, ShieldAlert, Check, Plus, Package, ShieldCheck, X, Building2, GitBranch } from "lucide-react";
 import { User, Product, RolePermission } from "../types";
 
 interface AdminPanelProps {
@@ -37,6 +37,9 @@ const DEFAULT_ROLES: RolePermission[] = [
   }
 ];
 
+const DEFAULT_DEPARTMENTS = ["Ventas", "Facturación", "Almacén", "Gerencia", "Marketing", "Operaciones", "Soporte Técnico"];
+const DEFAULT_BRANCHES = ["Sede Trujillo", "Sede Lima", "Sede Lima Centro", "Sede Arequipa", "Sede Chiclayo"];
+
 export function AdminPanel({
   users,
   products,
@@ -45,10 +48,17 @@ export function AdminPanel({
   onUpdateProduct
 }: AdminPanelProps) {
   // Tabs within admin panel
-  const [adminTab, setAdminTab] = useState<"users" | "roles" | "products">("users");
+  const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products">("users");
 
-  // Roles state list
+  // Dynamic lists
   const [rolesList, setRolesList] = useState<RolePermission[]>(DEFAULT_ROLES);
+  const [departmentsList, setDepartmentsList] = useState<string[]>(DEFAULT_DEPARTMENTS);
+  const [branchesList, setBranchesList] = useState<string[]>(DEFAULT_BRANCHES);
+
+  // New Department & Branch State
+  const [newDepartmentName, setNewDepartmentName] = useState("");
+  const [newBranchName, setNewBranchName] = useState("");
+  const [structureMsg, setStructureMsg] = useState("");
 
   // Add User State
   const [newUserName, setNewUserName] = useState("");
@@ -166,6 +176,32 @@ export function AdminPanel({
     setTimeout(() => setRoleMsg(""), 2000);
   };
 
+  const handleAddDepartment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDepartmentName.trim()) return;
+    if (departmentsList.includes(newDepartmentName.trim())) {
+      setStructureMsg("El departamento ya existe.");
+      return;
+    }
+    setDepartmentsList((prev) => [...prev, newDepartmentName.trim()]);
+    setNewDepartmentName("");
+    setStructureMsg("¡Departamento creado correctamente!");
+    setTimeout(() => setStructureMsg(""), 2000);
+  };
+
+  const handleAddBranch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBranchName.trim()) return;
+    if (branchesList.includes(newBranchName.trim())) {
+      setStructureMsg("La sede ya existe.");
+      return;
+    }
+    setBranchesList((prev) => [...prev, newBranchName.trim()]);
+    setNewBranchName("");
+    setStructureMsg("¡Sede registrada correctamente!");
+    setTimeout(() => setStructureMsg(""), 2000);
+  };
+
   const handleSelectProduct = (product: Product) => {
     setSelectedProductSku(product.sku);
     setEditingStock(product.stock);
@@ -188,47 +224,57 @@ export function AdminPanel({
   return (
     <div className="space-y-6">
       {/* Title Panel */}
-      <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h3 className="font-bold text-sm text-gray-200 font-display flex items-center gap-2">
             <Settings className="w-5 h-5 text-sky-400" />
             Panel de Administración Web Administrativo
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Gestión centralizada de personal comercial, asignación de roles, permisos del sistema y catálogo.
+            Gestión de colaboradores, asignación de roles, departamentos, sedes y catálogo comercial.
           </p>
         </div>
 
         {/* Tab selection buttons */}
-        <div className="flex bg-[#0F172A] border border-slate-700/50 p-1 rounded-xl w-full sm:w-auto shrink-0">
+        <div className="flex flex-wrap bg-[#0F172A] border border-slate-700/50 p-1 rounded-xl w-full lg:w-auto shrink-0 gap-1">
           <button
             onClick={() => setAdminTab("users")}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               adminTab === "users" ? "bg-sky-500 text-white" : "text-gray-400 hover:text-white"
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Usuarios de Red</span>
+            <Users className="w-3.5 h-3.5" />
+            <span>Usuarios</span>
           </button>
 
           <button
             onClick={() => setAdminTab("roles")}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               adminTab === "roles" ? "bg-sky-500 text-white" : "text-gray-400 hover:text-white"
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Roles y Permisos</span>
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Roles</span>
+          </button>
+
+          <button
+            onClick={() => setAdminTab("structure")}
+            className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              adminTab === "structure" ? "bg-sky-500 text-white" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Sedes & Deptos</span>
           </button>
 
           <button
             onClick={() => setAdminTab("products")}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               adminTab === "products" ? "bg-sky-500 text-white" : "text-gray-400 hover:text-white"
             }`}
           >
-            <Package className="w-4 h-4" />
-            <span>Precios e Inventarios</span>
+            <Package className="w-3.5 h-3.5" />
+            <span>Precios</span>
           </button>
         </div>
       </div>
@@ -263,7 +309,7 @@ export function AdminPanel({
                       Email: {u.email} • Rol: <span className="text-sky-400 font-bold">{u.role}</span>
                     </div>
                     <div className="text-[10px] text-gray-500 mt-0.5">
-                      Sede: {u.branch} • Departamento: {u.department}
+                      Sede: {u.branch} • Departamento: <span className="text-emerald-400 font-medium">{u.department}</span>
                     </div>
                   </div>
 
@@ -303,7 +349,7 @@ export function AdminPanel({
               Registrar Nuevo Colaborador
             </h4>
 
-            <form onSubmit={handleCreateUser} className="space-y-4">
+            <form onSubmit={handleCreateUser} className="space-y-4 text-left">
               <div className="space-y-1">
                 <label className="text-[11px] text-gray-400 uppercase font-mono block">Nombre Completo</label>
                 <input
@@ -349,24 +395,21 @@ export function AdminPanel({
                     onChange={(e) => setNewUserBranch(e.target.value)}
                     className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
                   >
-                    <option value="Sede Trujillo">Sede Trujillo</option>
-                    <option value="Sede Lima">Sede Lima</option>
-                    <option value="Sede Lima Centro">Sede Lima Centro</option>
-                    <option value="Sede Arequipa">Sede Arequipa</option>
+                    {branchesList.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] text-gray-400 uppercase font-mono block">Depto</label>
+                  <label className="text-[11px] text-gray-400 uppercase font-mono block">Departamento</label>
                   <select
                     value={newUserDept}
                     onChange={(e) => setNewUserDept(e.target.value)}
-                    className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
+                    className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl px-3 py-2 text-xs text-emerald-400 font-medium focus:outline-none"
                   >
-                    <option value="Ventas">Ventas</option>
-                    <option value="Facturación">Facturación</option>
-                    <option value="Almacén">Almacén</option>
-                    <option value="Gerencia">Gerencia</option>
-                    <option value="Marketing">Marketing</option>
+                    {departmentsList.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -420,7 +463,6 @@ export function AdminPanel({
                     {role.description}
                   </p>
 
-                  {/* Permisos Granulares Pill List */}
                   <div className="pt-2 border-t border-slate-800 flex flex-wrap gap-1.5">
                     <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-md border ${role.permissions.catalog ? 'bg-cyan-950/60 text-cyan-400 border-cyan-800/60' : 'bg-slate-900 text-gray-600 border-slate-800'}`}>
                       🛍️ Catálogo: {role.permissions.catalog ? 'Sí' : 'No'}
@@ -555,7 +597,96 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* TAB 3: PRODUCTS & INVENTORY PRICING */}
+      {/* TAB 3: DEPARTMENTS & BRANCHES STRUCTURE */}
+      {adminTab === "structure" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+          {/* Departments Management Panel */}
+          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
+              <h4 className="font-bold text-xs text-gray-200 font-display flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-emerald-400" />
+                Gestión de Departamentos ({departmentsList.length})
+              </h4>
+            </div>
+
+            <form onSubmit={handleAddDepartment} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nombre de nuevo departamento (ej. Logística)"
+                value={newDepartmentName}
+                onChange={(e) => setNewDepartmentName(e.target.value)}
+                className="flex-1 bg-[#0F172A] border border-slate-700/50 focus:border-emerald-500 rounded-xl px-4 py-2 text-xs text-gray-200 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Crear</span>
+              </button>
+            </form>
+
+            {structureMsg && (
+              <div className="p-2 bg-emerald-950/30 border border-emerald-800 text-emerald-400 rounded-lg text-xs text-center font-bold">
+                {structureMsg}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+              {departmentsList.map((dept) => (
+                <div
+                  key={dept}
+                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between"
+                >
+                  <span className="text-xs font-semibold text-gray-200">{dept}</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Branches (Sedes) Management Panel */}
+          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
+              <h4 className="font-bold text-xs text-gray-200 font-display flex items-center gap-2">
+                <GitBranch className="w-4 h-4 text-sky-400" />
+                Gestión de Sedes y Almacenes ({branchesList.length})
+              </h4>
+            </div>
+
+            <form onSubmit={handleAddBranch} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nombre de nueva sede (ej. Sede Huancayo)"
+                value={newBranchName}
+                onChange={(e) => setNewBranchName(e.target.value)}
+                className="flex-1 bg-[#0F172A] border border-slate-700/50 focus:border-sky-500 rounded-xl px-4 py-2 text-xs text-gray-200 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Crear</span>
+              </button>
+            </form>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+              {branchesList.map((branch) => (
+                <div
+                  key={branch}
+                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between"
+                >
+                  <span className="text-xs font-semibold text-gray-200">{branch}</span>
+                  <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: PRODUCTS & INVENTORY PRICING */}
       {adminTab === "products" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products Stock management list */}
@@ -720,10 +851,9 @@ export function AdminPanel({
                     onChange={(e) => setEditUserBranch(e.target.value)}
                     className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
                   >
-                    <option value="Sede Trujillo">Sede Trujillo</option>
-                    <option value="Sede Lima">Sede Lima</option>
-                    <option value="Sede Lima Centro">Sede Lima Centro</option>
-                    <option value="Sede Arequipa">Sede Arequipa</option>
+                    {branchesList.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -741,17 +871,15 @@ export function AdminPanel({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-gray-400 uppercase font-mono block">Departamento</label>
+                <label className="text-[11px] text-gray-400 uppercase font-mono block font-bold text-emerald-400">Departamento</label>
                 <select
                   value={editUserDept}
                   onChange={(e) => setEditUserDept(e.target.value)}
-                  className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
+                  className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-3 py-2 text-xs text-emerald-400 font-bold focus:outline-none"
                 >
-                  <option value="Ventas">Ventas</option>
-                  <option value="Facturación">Facturación</option>
-                  <option value="Almacén">Almacén</option>
-                  <option value="Gerencia">Gerencia</option>
-                  <option value="Marketing">Marketing</option>
+                  {departmentsList.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
                 </select>
               </div>
 
