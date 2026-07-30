@@ -8,6 +8,20 @@ export interface User {
   department: string;
 }
 
+export interface RolePermission {
+  id: string;
+  name: string;
+  description: string;
+  permissions: {
+    catalog: boolean;
+    quotes: boolean;
+    billing: boolean;
+    inventory: boolean;
+    telemetry: boolean;
+    admin: boolean;
+  };
+}
+
 export interface Product {
   sku: string;
   name: string;
