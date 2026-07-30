@@ -130,13 +130,24 @@ app.get("/api/products", async (req, res) => {
     const parsedRows = rows.map((p: any) => {
       let images = [];
       if (p.images) {
-        images = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
+        try {
+          images = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
+        } catch (e) { images = []; }
       } else if (p.img) {
         images = [p.img];
       }
+
+      let tags = [];
+      if (p.tags) {
+        try {
+          tags = typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags;
+        } catch (e) { tags = []; }
+      }
+
       return {
         ...p,
         basePrice: Number(p.basePrice),
+        tags: Array.isArray(tags) ? tags : [],
         images: Array.isArray(images) ? images : []
       };
     });

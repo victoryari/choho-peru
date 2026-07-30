@@ -15,9 +15,33 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
   const [successMsg, setSuccessMsg] = useState(false);
 
   // Gallery image setup
-  const galleryImages = (product.images && product.images.length > 0) 
-    ? product.images 
-    : (product.img ? [product.img] : []);
+  let galleryImages: string[] = [];
+  try {
+    if (Array.isArray(product.images)) {
+      galleryImages = product.images;
+    } else if (typeof product.images === "string") {
+      galleryImages = JSON.parse(product.images);
+    }
+  } catch (e) {
+    galleryImages = [];
+  }
+  if (!Array.isArray(galleryImages) || galleryImages.length === 0) {
+    galleryImages = product.img ? [product.img] : [];
+  }
+
+  // Tags setup
+  let tagsList: string[] = [];
+  try {
+    if (Array.isArray(product.tags)) {
+      tagsList = product.tags;
+    } else if (typeof product.tags === "string") {
+      tagsList = JSON.parse(product.tags);
+    }
+  } catch (e) {
+    tagsList = [];
+  }
+  if (!Array.isArray(tagsList)) tagsList = [];
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const activeImageSrc = galleryImages[activeImageIndex] || product.img;
@@ -57,7 +81,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                 alt={product.name}
                 className="max-h-full max-w-full object-contain transition-transform hover:scale-105 duration-300"
               />
-              {product.tags && product.tags.map((tag, idx) => (
+              {tagsList.map((tag, idx) => (
                 <span
                   key={idx}
                   className="absolute top-3 left-3 bg-sky-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow"
