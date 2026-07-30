@@ -53,9 +53,18 @@ export default function App() {
     setTheme(prev => (prev === "dark" ? "light" : "dark"));
   };
 
-  // Authentication states
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // Authentication states with localStorage persistence
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const savedUser = localStorage.getItem("choho_user");
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return Boolean(localStorage.getItem("choho_user") && localStorage.getItem("choho_token"));
+  });
   const [loginEmail, setLoginEmail] = useState("rmendoza@choho.pe");
   const [loginPassword, setLoginPassword] = useState("123");
   const [loginError, setLoginError] = useState("");
@@ -125,6 +134,7 @@ export default function App() {
 
       const data = await res.json();
       localStorage.setItem("choho_token", data.token);
+      localStorage.setItem("choho_user", JSON.stringify(data.user));
       setCurrentUser(data.user);
       setIsLoggedIn(true);
 
@@ -143,6 +153,7 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("choho_token");
+    localStorage.removeItem("choho_user");
     setCurrentUser(null);
     setIsLoggedIn(false);
     setBudgetItems([]);
