@@ -16,7 +16,9 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   FolderSync,
-  Package
+  Package,
+  Menu,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Product, Quote, QuoteItem, Telemetry } from "./types";
@@ -84,6 +86,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "catalog" | "inventory" | "cart" | "quotes" | "billing" | "telemetry" | "sync" | "admin"
   >("catalog");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Selection modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -501,8 +504,8 @@ export default function App() {
             animate={{ opacity: 1 }}
             className="flex-1 flex flex-col md:flex-row h-screen overflow-hidden"
           >
-            {/* Sidebar Left Navigation */}
-            <aside className="w-full md:w-64 glass-panel border-b md:border-b-0 md:border-r border-slate-700/50 flex flex-col justify-between p-4 shrink-0">
+            {/* Sidebar Left Navigation (Desktop Only) */}
+            <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-slate-700/50 justify-between p-4 shrink-0">
               <div className="space-y-6">
                 {/* Brand Logo */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
@@ -685,9 +688,22 @@ export default function App() {
             {/* Main Application content frame */}
             <main className="flex-1 flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-main)' }}>
               {/* Workspace Navigation Header */}
-              <header className="h-14 border-b border-slate-700/50 px-6 flex items-center justify-between shrink-0 glass-panel">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold uppercase tracking-wider font-display" style={{ color: 'var(--text-main)' }}>
+              <header className="h-14 border-b border-slate-700/50 px-4 md:px-6 flex items-center justify-between shrink-0 glass-panel">
+                <div className="flex items-center gap-2.5">
+                  {/* Mobile Brand Logo & Menu Trigger */}
+                  <div className="flex items-center gap-2 md:hidden">
+                    <button
+                      onClick={() => setIsMobileMenuOpen(true)}
+                      className="p-1.5 rounded-lg border border-slate-700/60 bg-slate-900/60 text-slate-200 hover:text-cyan-400 cursor-pointer"
+                      title="Abrir Menú"
+                    >
+                      <Menu className="w-5 h-5" />
+                    </button>
+                    <ChohoLogo size="sm" showTagline={false} />
+                  </div>
+
+                  {/* Page Title (Desktop) */}
+                  <span className="hidden md:inline-block text-xs font-bold uppercase tracking-wider font-display" style={{ color: 'var(--text-main)' }}>
                     {activeTab === "dashboard" && "Panel Administrativo / Analíticas"}
                     {activeTab === "catalog" && "Catálogo de Repuestos y Transmisión"}
                     {activeTab === "inventory" && "Control de Inventario y Registro de Productos"}
@@ -706,7 +722,7 @@ export default function App() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   {/* Theme Toggle Button in Header */}
                   <button
                     onClick={toggleTheme}
@@ -883,6 +899,166 @@ export default function App() {
           </button>
         </div>
       )}
+
+      {/* Mobile Slide-Over Menu Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md md:hidden flex justify-start"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-4/5 max-w-xs h-full bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="space-y-5">
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <ChohoLogo size="sm" showTagline={false} />
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* User Info Card */}
+                <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl space-y-1 text-left">
+                  <div className="text-[9px] text-cyan-400 font-bold font-mono uppercase">
+                    {currentUser?.role}
+                  </div>
+                  <div className="text-xs font-bold text-slate-200 truncate">{currentUser?.name}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{currentUser?.email}</div>
+                  <div className="text-[9px] text-slate-400 mt-1">Sede: {currentUser?.branch}</div>
+                </div>
+
+                {/* Mobile Drawer Links */}
+                <nav className="space-y-1 text-left">
+                  {(currentUser?.role === "Admin General" || currentUser?.role === "Jefe de Finanzas") && (
+                    <button
+                      onClick={() => { setActiveTab("dashboard"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "dashboard" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-cyan-400" />
+                      <span>Cuadro de Mando</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "catalog" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <ShoppingBag className="w-4 h-4 text-cyan-400" />
+                    <span>Catálogo y Productos</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("inventory"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "inventory" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <Package className="w-4 h-4 text-cyan-400" />
+                    <span>Control de Inventario</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("cart"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                      activeTab === "cart" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <span>Crear Presupuesto</span>
+                    </div>
+                    {budgetItems.length > 0 && (
+                      <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                        {budgetItems.length}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("quotes"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "quotes" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <FileText className="w-4 h-4 text-cyan-400" />
+                    <span>Mis Cotizaciones</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("billing"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "billing" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <Receipt className="w-4 h-4 text-cyan-400" />
+                    <span>Facturación SUNAT</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("telemetry"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "telemetry" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <Compass className="w-4 h-4 text-cyan-400" />
+                    <span>Visitas de Campo</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab("sync"); setIsMobileMenuOpen(false); }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      activeTab === "sync" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                    }`}
+                  >
+                    <Cloud className="w-4 h-4 text-cyan-400" />
+                    <span>Sincronización</span>
+                  </button>
+
+                  {currentUser?.role === "Admin General" && (
+                    <button
+                      onClick={() => { setActiveTab("admin"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "admin" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Users className="w-4 h-4 text-cyan-400" />
+                      <span>Administrar Sistema</span>
+                    </button>
+                  )}
+                </nav>
+              </div>
+
+              {/* Logout button */}
+              <div className="pt-4 border-t border-slate-800">
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
+                  className="w-full px-3 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-xl flex items-center gap-3 transition-all cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
