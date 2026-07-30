@@ -6,13 +6,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function initDB() {
-  const isRemoteDb = Boolean(process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1');
+  const dbHost = process.env.DB_HOST || process.env.HOST || 'localhost';
+  const dbUser = process.env.DB_USER || process.env.USERNAME || 'root';
+  const dbPassword = process.env.DB_PASSWORD || process.env.PASSWORD || '';
+  const dbName = process.env.DB_NAME || process.env.DATABASE || 'choho_peru';
+  const dbPort = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : (process.env.PORT === '4000' ? 4000 : 3306);
+
+  const isRemoteDb = Boolean(dbHost && dbHost !== 'localhost' && dbHost !== '127.0.0.1');
   const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'choho_peru',
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+    host: dbHost,
+    user: dbUser,
+    password: dbPassword,
+    database: dbName,
+    port: dbPort,
     ssl: (process.env.DB_SSL === 'true' || isRemoteDb) ? { rejectUnauthorized: false } : undefined,
     multipleStatements: true
   });
