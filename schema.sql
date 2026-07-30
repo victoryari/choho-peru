@@ -59,6 +59,33 @@ CREATE TABLE IF NOT EXISTS telemetry (
   FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS branches (
+  id VARCHAR(50) PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE'
+);
+
+CREATE TABLE IF NOT EXISTS departments (
+  id VARCHAR(50) PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE'
+);
+
+-- Insert default branches
+INSERT IGNORE INTO branches (id, name, status) VALUES
+('BR-1', 'Sede Trujillo', 'ACTIVE'),
+('BR-2', 'Sede Lima', 'ACTIVE'),
+('BR-3', 'Sede Lima Centro', 'ACTIVE'),
+('BR-4', 'Sede Arequipa', 'ACTIVE');
+
+-- Insert default departments
+INSERT IGNORE INTO departments (id, name, status) VALUES
+('DEP-1', 'Ventas', 'ACTIVE'),
+('DEP-2', 'Facturación', 'ACTIVE'),
+('DEP-3', 'Almacén', 'ACTIVE'),
+('DEP-4', 'Gerencia', 'ACTIVE'),
+('DEP-5', 'Marketing', 'ACTIVE');
+
 -- Insert demo products
 INSERT IGNORE INTO products (sku, name, category, basePrice, stock, description, tags, img) VALUES
 ('CAT-SPROCKET-001', 'Catalina 45T Acero Templado', 'Transmisión', 125.50, 45, 'Catalina de alta resistencia para uso extremo', '["enduro", "cross"]', NULL),

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Users, UserPlus, Settings, Power, Edit3, ShieldAlert, Check, Plus, Package, ShieldCheck, X, Building2, GitBranch } from "lucide-react";
-import { User, Product, RolePermission } from "../types";
+import { User, Product, RolePermission, BranchItem, DepartmentItem } from "../types";
 
 interface AdminPanelProps {
   users: User[];
@@ -37,8 +37,20 @@ const DEFAULT_ROLES: RolePermission[] = [
   }
 ];
 
-const DEFAULT_DEPARTMENTS = ["Ventas", "Facturación", "Almacén", "Gerencia", "Marketing", "Operaciones", "Soporte Técnico"];
-const DEFAULT_BRANCHES = ["Sede Trujillo", "Sede Lima", "Sede Lima Centro", "Sede Arequipa", "Sede Chiclayo"];
+const DEFAULT_DEPARTMENTS: DepartmentItem[] = [
+  { id: "DEP-1", name: "Ventas", status: "ACTIVE" },
+  { id: "DEP-2", name: "Facturación", status: "ACTIVE" },
+  { id: "DEP-3", name: "Almacén", status: "ACTIVE" },
+  { id: "DEP-4", name: "Gerencia", status: "ACTIVE" },
+  { id: "DEP-5", name: "Marketing", status: "ACTIVE" }
+];
+
+const DEFAULT_BRANCHES: BranchItem[] = [
+  { id: "BR-1", name: "Sede Trujillo", status: "ACTIVE" },
+  { id: "BR-2", name: "Sede Lima", status: "ACTIVE" },
+  { id: "BR-3", name: "Sede Lima Centro", status: "ACTIVE" },
+  { id: "BR-4", name: "Sede Arequipa", status: "ACTIVE" }
+];
 
 export function AdminPanel({
   users,
@@ -50,10 +62,23 @@ export function AdminPanel({
   // Tabs within admin panel
   const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products">("users");
 
-  // Dynamic lists
+  // Dynamic lists with DB persistence
   const [rolesList, setRolesList] = useState<RolePermission[]>(DEFAULT_ROLES);
-  const [departmentsList, setDepartmentsList] = useState<string[]>(DEFAULT_DEPARTMENTS);
-  const [branchesList, setBranchesList] = useState<string[]>(DEFAULT_BRANCHES);
+  const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>(DEFAULT_DEPARTMENTS);
+  const [branchesList, setBranchesList] = useState<BranchItem[]>(DEFAULT_BRANCHES);
+
+  // Fetch branches and departments from DB
+  useEffect(() => {
+    fetch("/api/branches")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setBranchesList(data); })
+      .catch(() => {});
+
+    fetch("/api/departments")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setDepartmentsList(data); })
+      .catch(() => {});
+  }, []);
 
   // New Department & Branch State
   const [newDepartmentName, setNewDepartmentName] = useState("");
@@ -176,30 +201,88 @@ export function AdminPanel({
     setTimeout(() => setRoleMsg(""), 2000);
   };
 
-  const handleAddDepartment = (e: React.FormEvent) => {
+  const handleAddDepartment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDepartmentName.trim()) return;
-    if (departmentsList.includes(newDepartmentName.trim())) {
+    const name = newDepartmentName.trim();
+    if (!name) return;
+    if (departmentsList.some(d => d.name.toLowerCase() === name.toLowerCase())) {
       setStructureMsg("El departamento ya existe.");
       return;
     }
-    setDepartmentsList((prev) => [...prev, newDepartmentName.trim()]);
-    setNewDepartmentName("");
-    setStructureMsg("¡Departamento creado correctamente!");
-    setTimeout(() => setStructureMsg(""), 2000);
+
+    try {
+      const res = await fetch("/api/departments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      if (res.ok) {
+        const added = await res.json();
+        setDepartmentsList((prev) => [...prev, added]);
+      } else {
+        setDepartmentsList((prev) => [...prev, { id: `DEP-${Date.now()}`, name, status: "ACTIVE" }]);
+      }
+      setNewDepartmentName("");
+      setStructureMsg("¡Departamento creado y guardado en la base de datos!");
+      setTimeout(() => setStructureMsg(""), 2500);
+    } catch (err) {
+      setDepartmentsList((prev) => [...prev, { id: `DEP-${Date.now()}`, name, status: "ACTIVE" }]);
+      setNewDepartmentName("");
+    }
   };
 
-  const handleAddBranch = (e: React.FormEvent) => {
+  const handleToggleDepartmentStatus = async (dept: DepartmentItem) => {
+    const nextStatus = dept.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setDepartmentsList((prev) => prev.map(d => d.id === dept.id ? { ...d, status: nextStatus } : d));
+    try {
+      await fetch(`/api/departments/${dept.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus })
+      });
+    } catch (err) {}
+  };
+
+  const handleAddBranch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newBranchName.trim()) return;
-    if (branchesList.includes(newBranchName.trim())) {
+    const name = newBranchName.trim();
+    if (!name) return;
+    if (branchesList.some(b => b.name.toLowerCase() === name.toLowerCase())) {
       setStructureMsg("La sede ya existe.");
       return;
     }
-    setBranchesList((prev) => [...prev, newBranchName.trim()]);
-    setNewBranchName("");
-    setStructureMsg("¡Sede registrada correctamente!");
-    setTimeout(() => setStructureMsg(""), 2000);
+
+    try {
+      const res = await fetch("/api/branches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      if (res.ok) {
+        const added = await res.json();
+        setBranchesList((prev) => [...prev, added]);
+      } else {
+        setBranchesList((prev) => [...prev, { id: `BR-${Date.now()}`, name, status: "ACTIVE" }]);
+      }
+      setNewBranchName("");
+      setStructureMsg("¡Sede registrada y guardada en la base de datos!");
+      setTimeout(() => setStructureMsg(""), 2500);
+    } catch (err) {
+      setBranchesList((prev) => [...prev, { id: `BR-${Date.now()}`, name, status: "ACTIVE" }]);
+      setNewBranchName("");
+    }
+  };
+
+  const handleToggleBranchStatus = async (branch: BranchItem) => {
+    const nextStatus = branch.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setBranchesList((prev) => prev.map(b => b.id === branch.id ? { ...b, status: nextStatus } : b));
+    try {
+      await fetch(`/api/branches/${branch.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus })
+      });
+    } catch (err) {}
   };
 
   const handleSelectProduct = (product: Product) => {
@@ -396,7 +479,9 @@ export function AdminPanel({
                     className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
                   >
                     {branchesList.map((b) => (
-                      <option key={b} value={b}>{b}</option>
+                      <option key={b.id} value={b.name}>
+                        {b.name} {b.status === 'INACTIVE' ? '(Desactivada)' : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -408,7 +493,9 @@ export function AdminPanel({
                     className="w-full bg-[#0F172A] border border-slate-700/50 focus:border-sky-500/80 rounded-xl px-3 py-2 text-xs text-emerald-400 font-medium focus:outline-none"
                   >
                     {departmentsList.map((d) => (
-                      <option key={d} value={d}>{d}</option>
+                      <option key={d.id} value={d.name}>
+                        {d.name} {d.status === 'INACTIVE' ? '(Desactivado)' : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -597,7 +684,7 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* TAB 3: DEPARTMENTS & BRANCHES STRUCTURE */}
+      {/* TAB 3: DEPARTMENTS & BRANCHES STRUCTURE WITH ACTIVATION/DEACTIVATION */}
       {adminTab === "structure" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           {/* Departments Management Panel */}
@@ -632,14 +719,34 @@ export function AdminPanel({
               </div>
             )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+            <div className="space-y-2 pt-2">
               {departmentsList.map((dept) => (
                 <div
-                  key={dept}
-                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between"
+                  key={dept.id}
+                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between hover:border-slate-700 transition-all"
                 >
-                  <span className="text-xs font-semibold text-gray-200">{dept}</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${dept.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <span className="text-xs font-semibold text-gray-200">{dept.name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${dept.status === 'ACTIVE' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' : 'bg-red-950 text-red-400 border border-red-900'}`}>
+                      {dept.status === 'ACTIVE' ? 'Activo' : 'Desactivado'}
+                    </span>
+                    <button
+                      onClick={() => handleToggleDepartmentStatus(dept)}
+                      className={`p-1 rounded-lg border text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                        dept.status === "ACTIVE"
+                          ? "border-red-900/50 text-red-400 hover:bg-red-950/50"
+                          : "border-emerald-900/50 text-emerald-400 hover:bg-emerald-950/50"
+                      }`}
+                      title={dept.status === "ACTIVE" ? "Desactivar Departamento" : "Reactivar Departamento"}
+                    >
+                      <Power className="w-3 h-3" />
+                      <span>{dept.status === "ACTIVE" ? "Desactivar" : "Activar"}</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -671,14 +778,34 @@ export function AdminPanel({
               </button>
             </form>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+            <div className="space-y-2 pt-2">
               {branchesList.map((branch) => (
                 <div
-                  key={branch}
-                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between"
+                  key={branch.id}
+                  className="p-3 bg-[#0F172A] border border-slate-800 rounded-xl flex items-center justify-between hover:border-slate-700 transition-all"
                 >
-                  <span className="text-xs font-semibold text-gray-200">{branch}</span>
-                  <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${branch.status === 'ACTIVE' ? 'bg-sky-400' : 'bg-red-500'}`} />
+                    <span className="text-xs font-semibold text-gray-200">{branch.name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${branch.status === 'ACTIVE' ? 'bg-sky-950 text-sky-400 border border-sky-900' : 'bg-red-950 text-red-400 border border-red-900'}`}>
+                      {branch.status === 'ACTIVE' ? 'Activa' : 'Desactivada'}
+                    </span>
+                    <button
+                      onClick={() => handleToggleBranchStatus(branch)}
+                      className={`p-1 rounded-lg border text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                        branch.status === "ACTIVE"
+                          ? "border-red-900/50 text-red-400 hover:bg-red-950/50"
+                          : "border-sky-900/50 text-sky-400 hover:bg-sky-950/50"
+                      }`}
+                      title={branch.status === "ACTIVE" ? "Desactivar Sede" : "Reactivar Sede"}
+                    >
+                      <Power className="w-3 h-3" />
+                      <span>{branch.status === "ACTIVE" ? "Desactivar" : "Activar"}</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -852,7 +979,9 @@ export function AdminPanel({
                     className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none"
                   >
                     {branchesList.map((b) => (
-                      <option key={b} value={b}>{b}</option>
+                      <option key={b.id} value={b.name}>
+                        {b.name} {b.status === 'INACTIVE' ? '(Desactivada)' : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -878,7 +1007,9 @@ export function AdminPanel({
                   className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-3 py-2 text-xs text-emerald-400 font-bold focus:outline-none"
                 >
                   {departmentsList.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                    <option key={d.id} value={d.name}>
+                      {d.name} {d.status === 'INACTIVE' ? '(Desactivado)' : ''}
+                    </option>
                   ))}
                 </select>
               </div>

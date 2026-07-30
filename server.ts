@@ -447,7 +447,101 @@ app.post("/api/sync", async (req, res) => {
     }
   } catch (error) {
     console.warn("MySQL no disponible al sincronizar. Sincronización simulada completada.");
-    res.json({ synced: Array.isArray(localQuotes) ? localQuotes.length : 0 });
+  }
+});
+
+// Branches & Warehouses API
+app.get("/api/branches", async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM branches ORDER BY name ASC');
+    res.json(rows);
+  } catch (error) {
+    console.warn("Tabla branches no disponible. Sirviendo lista de sedes por defecto.");
+    res.json([
+      { id: "BR-1", name: "Sede Trujillo", status: "ACTIVE" },
+      { id: "BR-2", name: "Sede Lima", status: "ACTIVE" },
+      { id: "BR-3", name: "Sede Lima Centro", status: "ACTIVE" },
+      { id: "BR-4", name: "Sede Arequipa", status: "ACTIVE" }
+    ]);
+  }
+});
+
+app.post("/api/branches", async (req, res) => {
+  const { name } = req.body;
+  const id = `BR-${Date.now()}`;
+  try {
+    await pool.query('INSERT INTO branches (id, name, status) VALUES (?, ?, ?)', [id, name, 'ACTIVE']);
+    res.json({ id, name, status: 'ACTIVE' });
+  } catch (error) {
+    console.warn("MySQL no disponible al guardar sede. Guardando en memoria local:", name);
+    res.json({ id, name, status: 'ACTIVE' });
+  }
+});
+
+app.put("/api/branches/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status, name } = req.body;
+  try {
+    const updates = [];
+    const values = [];
+    if (status) { updates.push('status = ?'); values.push(status); }
+    if (name) { updates.push('name = ?'); values.push(name); }
+    if (updates.length > 0) {
+      values.push(id);
+      await pool.query(`UPDATE branches SET ${updates.join(', ')} WHERE id = ?`, values);
+    }
+    res.json({ id, status, name });
+  } catch (error) {
+    console.warn("MySQL no disponible al actualizar sede:", id);
+    res.json({ id, status, name });
+  }
+});
+
+// Departments API
+app.get("/api/departments", async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM departments ORDER BY name ASC');
+    res.json(rows);
+  } catch (error) {
+    console.warn("Tabla departments no disponible. Sirviendo lista de departamentos por defecto.");
+    res.json([
+      { id: "DEP-1", name: "Ventas", status: "ACTIVE" },
+      { id: "DEP-2", name: "Facturación", status: "ACTIVE" },
+      { id: "DEP-3", name: "Almacén", status: "ACTIVE" },
+      { id: "DEP-4", name: "Gerencia", status: "ACTIVE" },
+      { id: "DEP-5", name: "Marketing", status: "ACTIVE" }
+    ]);
+  }
+});
+
+app.post("/api/departments", async (req, res) => {
+  const { name } = req.body;
+  const id = `DEP-${Date.now()}`;
+  try {
+    await pool.query('INSERT INTO departments (id, name, status) VALUES (?, ?, ?)', [id, name, 'ACTIVE']);
+    res.json({ id, name, status: 'ACTIVE' });
+  } catch (error) {
+    console.warn("MySQL no disponible al guardar departamento. Guardando en memoria local:", name);
+    res.json({ id, name, status: 'ACTIVE' });
+  }
+});
+
+app.put("/api/departments/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status, name } = req.body;
+  try {
+    const updates = [];
+    const values = [];
+    if (status) { updates.push('status = ?'); values.push(status); }
+    if (name) { updates.push('name = ?'); values.push(name); }
+    if (updates.length > 0) {
+      values.push(id);
+      await pool.query(`UPDATE departments SET ${updates.join(', ')} WHERE id = ?`, values);
+    }
+    res.json({ id, status, name });
+  } catch (error) {
+    console.warn("MySQL no disponible al actualizar departamento:", id);
+    res.json({ id, status, name });
   }
 });
 

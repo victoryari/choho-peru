@@ -22,6 +22,18 @@ export interface RolePermission {
   };
 }
 
+export interface BranchItem {
+  id: string;
+  name: string;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+export interface DepartmentItem {
+  id: string;
+  name: string;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
 export interface Product {
   sku: string;
   name: string;
