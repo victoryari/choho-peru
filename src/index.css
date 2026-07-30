@@ -116,3 +116,29 @@ body {
     padding: 50px;
   }
 }
+
+/* Mobile App Bottom Navigation Utilities */
+.mobile-bottom-dock {
+  background: var(--bg-header);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-tab-active {
+  color: var(--accent-primary);
+}
+
+.mobile-tab-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 2px 8px var(--accent-primary);
+}

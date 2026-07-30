@@ -15,7 +15,8 @@ import {
   Mail,
   ShieldAlert,
   SlidersHorizontal,
-  FolderSync
+  FolderSync,
+  Package
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Product, Quote, QuoteItem, Telemetry } from "./types";
@@ -713,8 +714,8 @@ export default function App() {
                 </div>
               </header>
 
-              {/* Tab views with scrollbar wrapper */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+              {/* Tab views with scrollbar wrapper & mobile bottom dock padding */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-28 md:pb-6">
                 {activeTab === "dashboard" && (
                   <AnalyticsDashboard products={products} quotes={quotes} />
                 )}
@@ -793,6 +794,83 @@ export default function App() {
           onClose={() => setSelectedProduct(null)}
           onAddToBudget={handleAddToBudget}
         />
+      )}
+
+      {/* Mobile App Bottom Navigation Dock (Native App Style) */}
+      {currentUser && (
+        <div className="mobile-bottom-dock md:hidden fixed bottom-0 inset-x-0 z-40 px-2 py-1.5 flex items-center justify-around border-t border-slate-800/80">
+          <button
+            onClick={() => setActiveTab("catalog")}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+              activeTab === "catalog" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-sans font-medium">Catálogo</span>
+            {activeTab === "catalog" && (
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("cart")}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+              activeTab === "cart" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <div className="relative">
+              <FileText className="w-5 h-5" />
+              {budgetItems.length > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
+                  {budgetItems.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] mt-0.5 font-sans font-medium">Cotizar</span>
+            {activeTab === "cart" && (
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("billing")}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+              activeTab === "billing" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Receipt className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-sans font-medium">Facturas</span>
+            {activeTab === "billing" && (
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+              activeTab === "inventory" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Package className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-sans font-medium">Inventario</span>
+            {activeTab === "inventory" && (
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("telemetry")}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+              activeTab === "telemetry" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <MapPin className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-sans font-medium">Visitas</span>
+            {activeTab === "telemetry" && (
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+            )}
+          </button>
+        </div>
       )}
     </div>
   );
