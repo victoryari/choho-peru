@@ -170,7 +170,7 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
                   <div className="text-left">
                     <span className="text-[9px] text-slate-400 block font-mono uppercase">PRECIO BASE</span>
                     <span className="text-sm font-extrabold font-mono text-amber-400">
-                      S/ {product.basePrice.toFixed(2)}
+                      S/ {Number(product.basePrice || 0).toFixed(2)}
                     </span>
                   </div>
 
@@ -231,7 +231,7 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
                   <div className="text-left sm:text-right">
                     <span className="text-[9px] text-gray-500 block">BASE (U.N.)</span>
                     <span className="text-xs font-mono font-bold text-sky-400">
-                      S/ {product.basePrice.toFixed(2)}
+                      S/ {Number(product.basePrice || 0).toFixed(2)}
                     </span>
                   </div>
 

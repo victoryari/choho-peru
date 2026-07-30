@@ -21,7 +21,8 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const activeImageSrc = galleryImages[activeImageIndex] || product.img;
-  const discountedPrice = Math.max(0, product.basePrice * (1 - discountPercent / 100));
+  const basePriceNum = typeof product.basePrice === 'number' ? product.basePrice : Number(product.basePrice || 0);
+  const discountedPrice = Math.max(0, basePriceNum * (1 - discountPercent / 100));
 
   const handleAdd = () => {
     onAddToBudget(product, qty, Number(discountedPrice.toFixed(2)));
@@ -140,13 +141,13 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               <div>
                 <span className="text-[10px] text-gray-400 uppercase font-mono tracking-wider block">Precio Base Unitario</span>
                 <span className="text-lg font-bold font-mono text-gray-400 line-through">
-                  S/ {product.basePrice.toFixed(2)}
+                  S/ {basePriceNum.toFixed(2)}
                 </span>
               </div>
 
               <div className="text-right">
                 <span className="text-[10px] text-sky-400 font-bold font-mono block">
-                  {discountPercent > 0 ? `AHORRAS S/ ${(product.basePrice * discountPercent / 100).toFixed(2)} (${discountPercent}%)` : "Precio Regular"}
+                  {discountPercent > 0 ? `AHORRAS S/ ${(basePriceNum * discountPercent / 100).toFixed(2)} (${discountPercent}%)` : "Precio Regular"}
                 </span>
                 <span className="text-2xl font-bold font-mono text-sky-400">
                   S/ {discountedPrice.toFixed(2)}
