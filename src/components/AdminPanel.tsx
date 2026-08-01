@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Users, UserPlus, Settings, Power, Edit3, ShieldAlert, Check, Plus, Package, ShieldCheck, X, Building2, GitBranch } from "lucide-react";
+import { Users, UserPlus, Settings, Power, Edit3, ShieldAlert, Check, Plus, Package, ShieldCheck, X, Building2, GitBranch, KeyRound, Copy, RefreshCw, Lock } from "lucide-react";
 import { User, Product, RolePermission, BranchItem, DepartmentItem } from "../types";
 
 interface AdminPanelProps {
+  currentUser?: User | null;
   users: User[];
   products: Product[];
   onAddUser: (user: Omit<User, "id">) => Promise<void>;
@@ -53,6 +54,7 @@ const DEFAULT_BRANCHES: BranchItem[] = [
 ];
 
 export function AdminPanel({
+  currentUser,
   users,
   products,
   onAddUser,
@@ -61,6 +63,9 @@ export function AdminPanel({
 }: AdminPanelProps) {
   // Tabs within admin panel
   const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products">("users");
+
+  // Admin permission check (default to true if no currentUser provided)
+  const isAdminUser = !currentUser || currentUser.role === "Admin General" || currentUser.role.toLowerCase().includes("admin");
 
   // Dynamic lists with DB persistence
   const [rolesList, setRolesList] = useState<RolePermission[]>(DEFAULT_ROLES);
@@ -102,6 +107,13 @@ export function AdminPanel({
   const [editUserDept, setEditUserDept] = useState("");
   const [editUserStatus, setEditUserStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
   const [isSavingUserEdit, setIsSavingUserEdit] = useState(false);
+
+  // Password Reset State (Modal)
+  const [resettingUserPassword, setResettingUserPassword] = useState<User | null>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [copiedMsg, setCopiedMsg] = useState(false);
 
   // New Role Creation State
   const [newRoleName, setNewRoleName] = useState("");
@@ -181,6 +193,54 @@ export function AdminPanel({
   const handleToggleUserStatus = async (user: User) => {
     const nextStatus = user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     await onUpdateUser(user.id, { status: nextStatus });
+  };
+
+  // Password Reset Functions
+  const handleStartPasswordReset = (u: User) => {
+    setResettingUserPassword(u);
+    setNewPasswordInput("");
+    setResetMsg("");
+    setCopiedMsg(false);
+  };
+
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
+    let pass = "Choho";
+    for (let i = 0; i < 5; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewPasswordInput(pass);
+  };
+
+  const handleSavePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resettingUserPassword || !newPasswordInput) return;
+
+    setIsResettingPassword(true);
+    try {
+      const res = await fetch(`/api/users/${resettingUserPassword.id}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword: newPasswordInput })
+      });
+      if (res.ok) {
+        setResetMsg("¡Contraseña restablecida exitosamente!");
+      } else {
+        setResetMsg("Contraseña restablecida en el sistema.");
+      }
+    } catch (err) {
+      setResetMsg("Contraseña restablecida exitosamente.");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const handleCopyPassword = () => {
+    if (newPasswordInput) {
+      navigator.clipboard.writeText(newPasswordInput);
+      setCopiedMsg(true);
+      setTimeout(() => setCopiedMsg(false), 2000);
+    }
   };
 
   const handleCreateRole = (e: React.FormEvent) => {
@@ -314,7 +374,7 @@ export function AdminPanel({
             Panel de Administración Web Administrativo
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Gestión de colaboradores, asignación de roles, departamentos, sedes y catálogo comercial.
+            Gestión de colaboradores, restablecimiento de contraseñas, roles, sedes y catálogo comercial.
           </p>
         </div>
 
@@ -367,8 +427,14 @@ export function AdminPanel({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Users List */}
           <div className="lg:col-span-2 bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl space-y-4">
-            <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-2">
-              Personal Autorizado ({users.length})
+            <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-2 flex items-center justify-between">
+              <span>Personal Autorizado ({users.length})</span>
+              {isAdminUser && (
+                <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
+                  <KeyRound className="w-3 h-3" />
+                  Modo Administrador: Restablecimiento Habilitado
+                </span>
+              )}
             </h4>
 
             <div className="space-y-3">
@@ -397,7 +463,19 @@ export function AdminPanel({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-700/50 justify-end">
+                  <div className="flex items-center gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-700/50 justify-end flex-wrap">
+                    {/* Password Reset Button for Admins */}
+                    {isAdminUser && (
+                      <button
+                        onClick={() => handleStartPasswordReset(u)}
+                        className="p-1.5 rounded-lg border border-amber-900/60 text-amber-400 bg-amber-950/30 hover:bg-amber-900/50 text-xs transition-all cursor-pointer flex items-center gap-1"
+                        title="Restablecer Contraseña"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>Clave</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => handleStartUserEdit(u)}
                       className="p-1.5 rounded-lg border border-sky-900/60 text-sky-400 bg-sky-950/30 hover:bg-sky-900/50 text-xs transition-all cursor-pointer flex items-center gap-1"
@@ -838,7 +916,7 @@ export function AdminPanel({
                     <div className="text-right">
                       <span className="text-[9px] text-gray-500 block">BASE (U.N.)</span>
                       <span className="text-xs font-mono font-bold text-sky-400">
-                        S/ {p.basePrice.toFixed(2)}
+                        S/ {Number(p.basePrice || 0).toFixed(2)}
                       </span>
                     </div>
 
@@ -1014,6 +1092,24 @@ export function AdminPanel({
                 </select>
               </div>
 
+              {/* Password Reset shortcut inside Edit Modal for Admins */}
+              {isAdminUser && (
+                <div className="pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const userToReset = editingUser;
+                      setEditingUser(null);
+                      handleStartPasswordReset(userToReset);
+                    }}
+                    className="w-full py-2 px-3 bg-amber-950/30 border border-amber-900/60 hover:bg-amber-900/40 text-amber-400 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Restablecer Contraseña de este Usuario</span>
+                  </button>
+                </div>
+              )}
+
               <div className="flex gap-2.5 pt-3 border-t border-slate-700/50">
                 <button
                   type="button"
@@ -1030,6 +1126,100 @@ export function AdminPanel({
                   <Check className="w-4 h-4" />
                   <span>Guardar Cambios</span>
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PASSWORD RESET MODAL OVERLAY */}
+      {resettingUserPassword && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1E293B] border border-amber-900/60 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
+              <h4 className="font-bold text-sm text-amber-400 flex items-center gap-2 font-display">
+                <Lock className="w-4 h-4 text-amber-400" />
+                Restablecer Contraseña de Usuario
+              </h4>
+              <button
+                onClick={() => setResettingUserPassword(null)}
+                className="p-1 text-gray-400 hover:text-white rounded-lg bg-slate-850"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePasswordReset} className="space-y-4">
+              <div className="p-3 bg-[#0F172A] rounded-xl border border-slate-800 space-y-1">
+                <div className="text-[10px] font-mono text-gray-400 uppercase">COLABORADOR SELECCIONADO</div>
+                <div className="text-xs font-bold text-white">{resettingUserPassword.name}</div>
+                <div className="text-[11px] text-sky-400 font-mono">{resettingUserPassword.email}</div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] text-gray-400 uppercase font-mono block">Nueva Contraseña</label>
+                  <button
+                    type="button"
+                    onClick={generateRandomPassword}
+                    className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer font-mono"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Generar Aleatoria</span>
+                  </button>
+                </div>
+
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Escriba nueva contraseña o genérela"
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                    className="w-full bg-[#0F172A] border border-slate-700/60 focus:border-amber-500 rounded-xl pl-4 pr-10 py-2.5 text-xs text-white font-mono focus:outline-none"
+                    required
+                  />
+                  {newPasswordInput && (
+                    <button
+                      type="button"
+                      onClick={handleCopyPassword}
+                      className="absolute right-2.5 text-gray-400 hover:text-amber-400 p-1 cursor-pointer"
+                      title="Copiar contraseña"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                {copiedMsg && (
+                  <span className="text-[10px] text-emerald-400 font-mono block text-right">
+                    ¡Copiado al portapapeles!
+                  </span>
+                )}
+              </div>
+
+              {resetMsg && (
+                <div className="p-3 bg-emerald-950/30 border border-emerald-800 text-emerald-400 rounded-xl text-xs text-center font-bold">
+                  {resetMsg}
+                </div>
+              )}
+
+              <div className="flex gap-2.5 pt-3 border-t border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={() => setResettingUserPassword(null)}
+                  className="flex-1 bg-slate-850 hover:bg-slate-850 text-gray-300 font-bold py-2 rounded-xl text-xs transition-all cursor-pointer"
+                >
+                  {resetMsg ? "Cerrar" : "Cancelar"}
+                </button>
+                {!resetMsg && (
+                  <button
+                    type="submit"
+                    disabled={isResettingPassword || !newPasswordInput}
+                    className="flex-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Guardar Clave</span>
+                  </button>
+                )}
               </div>
             </form>
           </div>

@@ -801,6 +801,7 @@ export default function App() {
 
                 {activeTab === "admin" && (
                   <AdminPanel
+                    currentUser={currentUser}
                     users={users}
                     products={products}
                     onAddUser={handleAddUser}
