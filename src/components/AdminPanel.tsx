@@ -128,6 +128,19 @@ export function AdminPanel({
   });
   const [roleMsg, setRoleMsg] = useState("");
 
+  // Role Edit State (Modal)
+  const [editingRole, setEditingRole] = useState<RolePermission | null>(null);
+  const [editRoleName, setEditRoleName] = useState("");
+  const [editRoleDesc, setEditRoleDesc] = useState("");
+  const [editRolePerms, setEditRolePerms] = useState({
+    catalog: true,
+    quotes: true,
+    billing: false,
+    inventory: false,
+    telemetry: false,
+    admin: false
+  });
+
   // Product Edit State
   const [selectedProductSku, setSelectedProductSku] = useState<string | null>(null);
   const [editingStock, setEditingStock] = useState(0);
@@ -261,6 +274,40 @@ export function AdminPanel({
     setTimeout(() => setRoleMsg(""), 2000);
   };
 
+  // Role Edit Functions
+  const handleStartRoleEdit = (role: RolePermission) => {
+    setEditingRole(role);
+    setEditRoleName(role.name);
+    setEditRoleDesc(role.description);
+    setEditRolePerms({ ...role.permissions });
+  };
+
+  const handleSaveRoleEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRole || !editRoleName.trim()) return;
+
+    const oldName = editingRole.name;
+    const updatedRole: RolePermission = {
+      ...editingRole,
+      name: editRoleName.trim(),
+      description: editRoleDesc,
+      permissions: { ...editRolePerms }
+    };
+
+    setRolesList((prev) => prev.map((r) => (r.id === editingRole.id ? updatedRole : r)));
+
+    // Cascade role name update to assigned users if changed
+    if (oldName !== editRoleName.trim()) {
+      users.forEach((u) => {
+        if (u.role === oldName) {
+          onUpdateUser(u.id, { role: editRoleName.trim() });
+        }
+      });
+    }
+
+    setEditingRole(null);
+  };
+
   const handleAddDepartment = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = newDepartmentName.trim();
@@ -374,7 +421,7 @@ export function AdminPanel({
             Panel de Administración Web Administrativo
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Gestión de colaboradores, restablecimiento de contraseñas, roles, sedes y catálogo comercial.
+            Gestión de colaboradores, edición de roles, permisos de sistema, sedes y catálogo comercial.
           </p>
         </div>
 
@@ -598,7 +645,7 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* TAB 2: ROLES & PERMISSIONS */}
+      {/* TAB 2: ROLES & PERMISSIONS WITH ROLE EDITING */}
       {adminTab === "roles" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Roles List */}
@@ -619,9 +666,20 @@ export function AdminPanel({
                       <ShieldCheck className="w-4 h-4 text-sky-400" />
                       <span className="text-sm font-bold text-white">{role.name}</span>
                     </div>
-                    <span className="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">
-                      {role.id}
-                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleStartRoleEdit(role)}
+                        className="px-2.5 py-1 bg-sky-950/40 border border-sky-900/60 hover:bg-sky-900/60 text-sky-400 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                        title="Editar Rol y Permisos"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Editar</span>
+                      </button>
+                      <span className="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">
+                        {role.id}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-gray-400 leading-relaxed">
@@ -997,6 +1055,131 @@ export function AdminPanel({
                 <span>Seleccione el botón de edición de un producto de la lista para actualizar de forma inmediata stock o base de precio.</span>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ROLE EDIT MODAL OVERLAY */}
+      {editingRole && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1E293B] border border-slate-700/80 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
+              <h4 className="font-bold text-sm text-gray-200 flex items-center gap-2 font-display">
+                <ShieldCheck className="w-4 h-4 text-sky-400" />
+                Editar Rol y Niveles de Permiso
+              </h4>
+              <button
+                onClick={() => setEditingRole(null)}
+                className="p-1 text-gray-400 hover:text-white rounded-lg bg-slate-850"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveRoleEdit} className="space-y-4">
+              <div className="p-2.5 bg-[#0F172A] rounded-xl border border-slate-800">
+                <div className="text-[9px] font-mono text-sky-400 font-bold uppercase">ID DEL ROL</div>
+                <div className="text-xs font-bold text-gray-200 font-mono">{editingRole.id}</div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-gray-400 uppercase font-mono block">Nombre del Rol</label>
+                <input
+                  type="text"
+                  value={editRoleName}
+                  onChange={(e) => setEditRoleName(e.target.value)}
+                  className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-4 py-2 text-xs text-gray-200 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-gray-400 uppercase font-mono block">Descripción</label>
+                <textarea
+                  rows={2}
+                  value={editRoleDesc}
+                  onChange={(e) => setEditRoleDesc(e.target.value)}
+                  className="w-full bg-[#0F172A] border border-slate-700/50 rounded-xl px-4 py-2 text-xs text-gray-200 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] text-gray-400 uppercase font-mono block font-bold text-sky-400">Permisos Granulares por Módulo</label>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.catalog}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, catalog: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>🛍️ Catálogo</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.quotes}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, quotes: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>📝 Cotizaciones</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.billing}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, billing: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>🧾 Facturación</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.inventory}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, inventory: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>📦 Inventario</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.telemetry}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, telemetry: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>📍 Visitas</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-[#0F172A] rounded-lg border border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.admin}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, admin: e.target.checked })}
+                      className="rounded accent-sky-500"
+                    />
+                    <span>⚙️ Administración</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5 pt-3 border-t border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={() => setEditingRole(null)}
+                  className="flex-1 bg-slate-850 hover:bg-slate-850 text-gray-300 font-bold py-2 rounded-xl text-xs transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Guardar Cambios</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
