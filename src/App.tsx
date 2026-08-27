@@ -39,15 +39,18 @@ import { Sun, Moon, Boxes } from "lucide-react";
 export default function App() {
   // Theme state
   const [theme, setTheme] = useState<"dark" | "light">(() => {
-    return (localStorage.getItem("choho_theme") as "dark" | "light") || "dark";
+    return (localStorage.getItem("choho_theme") as "dark" | "light") || "light";
   });
 
   useEffect(() => {
     localStorage.setItem("choho_theme", theme);
-    if (theme === "light") {
-      document.body.classList.add("light-theme");
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark", "dark-theme");
+      document.body.classList.add("dark", "dark-theme");
     } else {
-      document.body.classList.remove("light-theme");
+      root.classList.remove("dark", "dark-theme");
+      document.body.classList.remove("dark", "dark-theme");
     }
   }, [theme]);
 

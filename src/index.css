@@ -19,7 +19,9 @@
   --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
 }
 
-.dark-theme {
+.dark,
+.dark-theme,
+:root.dark {
   --bg-main: #0B0F19;
   --bg-card: #111827;
   --bg-card-hover: #1E293B;
