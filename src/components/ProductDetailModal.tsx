@@ -60,22 +60,22 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
   const isOutOfStock = product.stock === 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       <div 
         id="product-detail-modal-container"
-        className="relative bg-[#1E293B] border border-slate-700/50 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row"
+        className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 border border-slate-700/50 text-gray-400 hover:text-white hover:bg-sky-500/80 transition-all cursor-pointer"
+          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Product Image Section */}
-        <div className="w-full md:w-1/2 p-6 flex flex-col justify-between bg-black/25 border-b md:border-b-0 md:border-r border-slate-700/50">
+        <div className="w-full md:w-1/2 p-6 flex flex-col justify-between bg-slate-50 dark:bg-slate-950/40 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800">
           <div>
-            <div className="relative aspect-video md:aspect-square flex items-center justify-center bg-slate-900/50 rounded-xl overflow-hidden p-4">
+            <div className="relative aspect-video md:aspect-square flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden p-4">
               <ProtectedImage
                 src={activeImageSrc}
                 alt={product.name}
@@ -84,7 +84,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               {tagsList.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="absolute top-3 left-3 bg-sky-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow"
+                  className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs"
                 >
                   {tag}
                 </span>
@@ -98,10 +98,10 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`w-14 h-14 rounded-lg bg-slate-900 border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
+                    className={`w-14 h-14 rounded-xl bg-white dark:bg-slate-900 border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
                       activeImageIndex === idx
-                        ? "border-amber-400 ring-2 ring-amber-400/40 shadow-lg scale-105"
-                        : "border-slate-800 opacity-60 hover:opacity-100"
+                        ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md scale-105"
+                        : "border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100"
                     }`}
                   >
                     <img src={imgUrl} alt={`Vista ${idx + 1}`} className="w-full h-full object-contain" />
@@ -111,16 +111,16 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
             )}
           </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-3 text-left">
             <div className="flex items-center gap-1.5 text-xs text-amber-500">
               <Star className="w-4 h-4 fill-amber-500" />
               <Star className="w-4 h-4 fill-amber-500" />
               <Star className="w-4 h-4 fill-amber-500" />
               <Star className="w-4 h-4 fill-amber-500" />
               <Star className="w-4 h-4 fill-amber-500" />
-              <span className="text-gray-400 ml-1">(4.9 • 86 opiniones)</span>
+              <span className="text-slate-400 ml-1 font-medium">(4.9 • 86 opiniones)</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-400 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/60">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
               <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Garantía oficial CHOHO Premium de 15,000 kilómetros.</span>
             </div>
@@ -128,52 +128,52 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
         </div>
 
         {/* Info Section */}
-        <div className="w-full md:w-1/2 p-6 flex flex-col justify-between">
+        <div className="w-full md:w-1/2 p-6 flex flex-col justify-between text-left">
           <div>
-            <div className="text-[11px] font-mono tracking-wider text-sky-400 uppercase font-bold">
+            <div className="text-[11px] font-mono tracking-wider text-blue-600 dark:text-blue-400 uppercase font-bold">
               SKU: {product.sku}
             </div>
-            <h2 className="text-xl font-bold font-display text-white mt-1 leading-snug">
+            <h2 className="text-xl font-extrabold font-display text-slate-900 dark:text-white mt-1 leading-snug">
               {product.name}
             </h2>
-            <div className="inline-block mt-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-slate-800 text-slate-300">
+            <div className="inline-block mt-1.5 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
               Categoría: {product.category}
             </div>
 
-            <p className="text-xs text-gray-400 mt-4 leading-relaxed bg-slate-900/40 p-3 rounded-lg border border-slate-800/40">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-4 leading-relaxed bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
               {product.description || "Componente de alta gama para transmisión de motocicletas. Cumple con los más altos estándares de calidad internacional ISO 9001. Estructura de aleación reforzada que disminuye la fricción y el desgaste de catalinas."}
             </p>
 
             {/* Inventory Single Warehouse Details */}
             <div className="mt-5 space-y-2">
-              <div className="text-xs font-semibold text-gray-300 font-display">Disponibilidad en Almacén</div>
-              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-gray-300">
-                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div className="text-xs font-bold text-slate-900 dark:text-white font-display">Disponibilidad en Almacén</div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="font-semibold">Almacén Central CHOHO Perú</span>
                 </div>
-                <span className={`text-xs font-extrabold font-mono ${product.stock > 10 ? 'text-emerald-400' : product.stock > 0 ? 'text-amber-400' : 'text-red-400'}`}>
+                <span className={`text-xs font-extrabold font-mono ${product.stock > 10 ? 'text-emerald-600' : product.stock > 0 ? 'text-amber-500' : 'text-red-500'}`}>
                   {product.stock === 0 ? "Agotado (0 Unid)" : `${product.stock} Unidades`}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-5 border-t border-slate-700/50 space-y-4">
+          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-4">
             {/* Price dynamic modifier */}
-            <div className="flex items-end justify-between bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+            <div className="flex items-end justify-between bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
               <div>
-                <span className="text-[10px] text-gray-400 uppercase font-mono tracking-wider block">Precio Base Unitario</span>
-                <span className="text-lg font-bold font-mono text-gray-400 line-through">
+                <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider block font-medium">Precio Base Unitario</span>
+                <span className="text-lg font-bold font-mono text-slate-400 line-through">
                   S/ {basePriceNum.toFixed(2)}
                 </span>
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] text-sky-400 font-bold font-mono block">
+                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold font-mono block">
                   {discountPercent > 0 ? `AHORRAS S/ ${(basePriceNum * discountPercent / 100).toFixed(2)} (${discountPercent}%)` : "Precio Regular"}
                 </span>
-                <span className="text-2xl font-bold font-mono text-sky-400">
+                <span className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">
                   S/ {discountedPrice.toFixed(2)}
                 </span>
               </div>
@@ -184,12 +184,12 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               <div className="space-y-3">
                 {/* Advisor custom discount slider */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     <span className="flex items-center gap-1">
-                      <Percent className="w-3.5 h-3.5 text-sky-400" />
+                      <Percent className="w-3.5 h-3.5 text-blue-600" />
                       <span>Descuento de Asesor autorizado:</span>
                     </span>
-                    <span className="font-bold text-sky-400">{discountPercent}%</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400">{discountPercent}%</span>
                   </div>
                   <input
                     type="range"
@@ -198,18 +198,18 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                     step="1"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                    className="w-full accent-sky-500 bg-slate-850 rounded-lg appearance-none h-1.5 cursor-pointer"
+                    className="w-full accent-blue-600 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none h-1.5 cursor-pointer"
                   />
-                  <span className="text-[9px] text-gray-500 italic block text-right">
+                  <span className="text-[9px] text-slate-400 italic block text-right">
                     *Margen máximo permitido para cotizaciones de campo es 15%
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3 mt-2">
-                  <div className="flex items-center border border-slate-700/50 bg-[#0F172A] rounded-lg">
+                  <div className="flex items-center border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl">
                     <button
                       onClick={() => setQty(q => Math.max(1, q - 1))}
-                      className="px-3 py-1.5 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-bold transition-colors cursor-pointer"
                     >
                       -
                     </button>
@@ -219,11 +219,11 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                       max={product.stock}
                       value={qty}
                       onChange={(e) => setQty(Math.min(product.stock, Math.max(1, Number(e.target.value))))}
-                      className="w-12 text-center bg-transparent border-0 font-bold font-mono text-xs text-white focus:ring-0 focus:outline-none"
+                      className="w-12 text-center bg-transparent border-0 font-bold font-mono text-xs text-slate-900 dark:text-white focus:ring-0 focus:outline-none"
                     />
                     <button
                       onClick={() => setQty(q => Math.min(product.stock, q + 1))}
-                      className="px-3 py-1.5 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-bold transition-colors cursor-pointer"
                     >
                       +
                     </button>
@@ -231,7 +231,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
 
                   <button
                     onClick={handleAdd}
-                    className="flex-1 bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-150 shadow-lg cursor-pointer"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all duration-150 shadow-md shadow-blue-500/20 cursor-pointer"
                   >
                     {successMsg ? (
                       <>
@@ -248,7 +248,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-sky-400 bg-sky-950/25 p-3 rounded-lg border border-sky-900/50">
+              <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3.5 rounded-2xl border border-red-200 dark:border-red-800/60">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>No podemos añadir productos agotados al presupuesto de forma inmediata. Solicite un pedido de importación especial en almacén central.</span>
               </div>

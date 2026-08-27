@@ -179,82 +179,181 @@ export function AnalyticsDashboard({ products, quotes }: AnalyticsDashboardProps
 
   return (
     <div className="space-y-6">
-      {/* Upper info cards */}
+      {/* Top 4 KPI Metric Cards (DealDeck Style) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Sales */}
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-4.5 shadow-xl relative overflow-hidden flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-gray-500 uppercase font-mono tracking-wider block">Ventas Facturadas (Recaudado)</span>
-            <span className="text-xl font-bold font-mono text-emerald-400">
-              S/ {totalInvoicedSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
-            </span>
-            <span className="text-[9px] text-emerald-500/80 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />
-              +14.2% respecto a mes anterior
+        {/* Card 1: Hero Total Sales (Gradient Electric Blue Card) */}
+        <div className="bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 text-white border border-blue-500/20 rounded-2xl p-5 shadow-lg shadow-blue-500/20 relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+              <DollarSign className="w-5 h-5" />
+            </div>
+            <span className="bg-emerald-400/20 border border-emerald-300/30 text-emerald-200 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              +2.08%
             </span>
           </div>
-          <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
-            <DollarSign className="w-5 h-5" />
+          <div className="space-y-1 text-left">
+            <span className="text-[11px] text-blue-100 font-semibold uppercase tracking-wider block">
+              Ventas Facturadas
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-extrabold font-mono text-white">
+                S/ {totalInvoicedSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[10px] text-blue-200 font-medium">vs mes anterior</span>
+            </div>
           </div>
         </div>
 
-        {/* Card 2: Sales Pipeline */}
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-4.5 shadow-xl relative overflow-hidden flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-gray-500 uppercase font-mono tracking-wider block">Cartera en Cotización</span>
-            <span className="text-xl font-bold font-mono text-amber-500">
-              S/ {pendingSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+        {/* Card 2: Cartera en Cotización (Total Orders) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="w-9 h-9 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              +12.4%
             </span>
-            <span className="text-[9px] text-gray-500">Pendiente de aprobación</span>
           </div>
-          <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl">
-            <BarChart3 className="w-5 h-5" />
+          <div className="space-y-1 text-left">
+            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+              Cartera en Cotización
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+                S/ {pendingSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">Pendientes</span>
+            </div>
           </div>
         </div>
 
-        {/* Card 3: Invoiced tickets */}
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-4.5 shadow-xl relative overflow-hidden flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-gray-500 uppercase font-mono tracking-wider block">Facturas Emitidas</span>
-            <span className="text-xl font-bold font-mono text-gray-200">
-              {acceptedQuotesCount} Comprobantes
+        {/* Card 3: Facturas Emitidas (Visitors) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="w-9 h-9 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl flex items-center justify-center">
+              <Award className="w-5 h-5" />
+            </div>
+            <span className="bg-red-50 dark:bg-red-950/40 text-red-500 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+              -2.08%
             </span>
-            <span className="text-[9px] text-emerald-500">96.8% de tasa de éxito</span>
           </div>
-          <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl">
-            <Award className="w-5 h-5" />
+          <div className="space-y-1 text-left">
+            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+              Comprobantes Emitidos
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+                {acceptedQuotesCount}
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">Facturas aprobadas</span>
+            </div>
           </div>
         </div>
 
-        {/* Card 4: average ticket */}
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-4.5 shadow-xl relative overflow-hidden flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-gray-500 uppercase font-mono tracking-wider block">Ticket Medio de Compra</span>
-            <span className="text-xl font-bold font-mono text-gray-200">
-              S/ {averageTicket.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+        {/* Card 4: Ticket Medio (Total Sold Products) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="w-9 h-9 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+              <Users className="w-5 h-5" />
+            </div>
+            <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              +12.1%
             </span>
-            <span className="text-[9px] text-gray-500">Por asesor de ventas</span>
           </div>
-          <div className="p-2.5 bg-slate-800 text-gray-400 rounded-xl">
-            <Users className="w-5 h-5" />
+          <div className="space-y-1 text-left">
+            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+              Ticket Medio de Venta
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+                S/ {averageTicket.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">Por cliente</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Charts area */}
+      {/* Main Content Grid (DealDeck Layout) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: categories and top SKUs */}
+        {/* Left Column (2 Cols): Customer Habbits Bar Chart & Top SKUs */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Top Selling Products */}
-          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-4 flex items-center gap-2">
-              <Award className="w-4 h-4 text-amber-500" />
-              Productos Más Vendidos (Top SKUs)
-            </h4>
+          {/* Dual Bar Chart (Customer Habbits - DealDeck Style) */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-left">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white font-display">
+                  Comportamiento de Ventas & Productos
+                </h3>
+                <p className="text-xs text-slate-400">Rendimiento mensual comparativo de repuestos facturados</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                  <span>Ventas (Soles)</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                  <span>Unidades</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bar Chart Graphics */}
+            <div className="relative pt-6 pb-2">
+              {/* Tooltip Overlay Mock */}
+              <div className="absolute top-2 left-[48%] -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-xl px-3 py-1.5 text-[11px] font-semibold flex items-center gap-2 z-10">
+                <span className="w-2 h-2 rounded-full bg-blue-400" />
+                <span>S/ 43,787 Productos</span>
+              </div>
+
+              <div className="h-52 flex items-end justify-between px-2 pt-6 border-b border-slate-100 dark:border-slate-800">
+                {[
+                  { name: "Ene", val1: 45, val2: 70 },
+                  { name: "Feb", val1: 65, val2: 85 },
+                  { name: "Mar", val1: 40, val2: 60 },
+                  { name: "Abr", val1: 90, val2: 75 },
+                  { name: "May", val1: 55, val2: 80 },
+                  { name: "Jun", val1: 35, val2: 65 },
+                  { name: "Jul", val1: 75, val2: 50 }
+                ].map((m, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2 flex-1 group">
+                    <div className="flex items-end gap-1.5 h-40">
+                      <div
+                        className="w-3.5 sm:w-4 rounded-t-lg bg-blue-600 group-hover:bg-blue-700 transition-all duration-300 shadow-xs"
+                        style={{ height: `${m.val1}%` }}
+                      />
+                      <div
+                        className="w-3.5 sm:w-4 rounded-t-lg bg-slate-200 dark:bg-slate-700 group-hover:bg-slate-300 transition-all duration-300"
+                        style={{ height: `${m.val2}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-500 font-sans">
+                      {m.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Selling Products List */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs text-left space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
+                <Award className="w-4 h-4 text-blue-600" />
+                Productos Más Vendidos (Top SKUs CHOHO)
+              </h4>
+              <span className="text-[11px] text-slate-400 font-medium">Actualizado en tiempo real</span>
+            </div>
 
             <div className="space-y-4">
               {bestSellers.length === 0 ? (
-                <div className="py-8 text-center text-gray-500 text-xs">
+                <div className="py-8 text-center text-slate-400 text-xs">
                   No se registran transacciones facturadas este periodo.
                 </div>
               ) : (
@@ -262,28 +361,28 @@ export function AnalyticsDashboard({ products, quotes }: AnalyticsDashboardProps
                   const maxTotal = Math.max(...bestSellers.map((b) => b.total), 1);
                   const percentage = (item.total / maxTotal) * 100;
                   return (
-                    <div key={item.sku} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-gray-300">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="w-6 h-6 bg-slate-900 border border-slate-800 text-[10px] text-sky-400 rounded-full flex items-center justify-center font-bold font-mono">
+                    <div key={item.sku} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-200">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-6 h-6 bg-blue-50 dark:bg-blue-950 text-blue-600 font-bold rounded-lg flex items-center justify-center text-[10px]">
                             0{idx + 1}
                           </span>
-                          <span className="font-mono text-sky-400 font-semibold">{item.sku}</span>
-                          <span className="text-gray-400 truncate">{item.name}</span>
+                          <span className="font-mono text-blue-600 font-bold">{item.sku}</span>
+                          <span className="text-slate-600 dark:text-slate-400 truncate font-medium">{item.name}</span>
                         </div>
-                        <span className="font-mono font-bold text-gray-200">
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
                           S/ {item.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <div className="w-full bg-[#0F172A] h-2 rounded-full overflow-hidden border border-slate-800">
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-sky-500 h-full rounded-full transition-all duration-500"
+                          className="bg-blue-600 h-full rounded-full transition-all duration-500 shadow-xs"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-[9px] text-gray-500 font-mono">
+                      <div className="flex justify-between text-[10px] text-slate-400 font-medium">
                         <span>{item.qty} Unidades despachadas</span>
-                        <span>{percentage.toFixed(0)}% del tope de ventas</span>
+                        <span>{percentage.toFixed(0)}% del total</span>
                       </div>
                     </div>
                   );
@@ -291,103 +390,151 @@ export function AnalyticsDashboard({ products, quotes }: AnalyticsDashboardProps
               )}
             </div>
           </div>
+        </div>
 
-          {/* Monthly Sales trend visual bar graph using high quality SVGs */}
-          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-700/50 mb-4">
-              <h4 className="font-bold text-xs text-gray-300 font-display flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-sky-400" />
-                Histórico Mensual de Ventas (Soles)
-              </h4>
-              <span className="text-[10px] bg-sky-950/40 border border-sky-900/40 text-sky-400 px-2 py-0.5 rounded font-mono font-bold">
-                AÑO 2024
+        {/* Right Column (1 Col): Product Statistic Ring & Customer Growth */}
+        <div className="space-y-6 text-left">
+          {/* Concentric Ring Radial Chart (Product Statistic - DealDeck Style) */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display">
+                  Estadísticas de Productos
+                </h4>
+                <p className="text-[11px] text-slate-400">Distribución de volumen por categoría</p>
+              </div>
+              <span className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-xl font-semibold">
+                Hoy
               </span>
             </div>
 
-            <div className="relative h-44 flex items-end justify-between px-3 pt-4 border-b border-slate-700/50">
-              {/* Bars representing mock months */}
-              {[
-                { name: "Ene", val: 12000, color: "bg-slate-800" },
-                { name: "Feb", val: 15400, color: "bg-slate-800" },
-                { name: "Mar", val: 24500, color: "bg-slate-800" },
-                { name: "Abr", val: 18900, color: "bg-slate-800" },
-                { name: "May", val: 32000, color: "bg-slate-800" },
-                { name: "Jun", val: 28500, color: "bg-slate-800" },
-                { name: "Jul", val: totalInvoicedSales || 35000, color: "bg-sky-500" }
-              ].map((month, idx) => {
-                const maxVal = 40000;
-                const pct = (month.val / maxVal) * 100;
-                return (
-                  <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end group">
-                    <div className="text-[9px] text-gray-400 font-mono hidden group-hover:block absolute top-0 bg-slate-900 border border-slate-800 px-1 py-0.2 rounded shadow">
-                      S/ {month.val.toLocaleString()}
-                    </div>
-                    <div
-                      className={`w-4 sm:w-6 rounded-t transition-all duration-500 group-hover:bg-sky-400 ${month.color}`}
-                      style={{ height: `${pct}%` }}
-                    />
-                    <span className="text-[10px] text-gray-500 font-semibold font-mono mt-2 block">
-                      {month.name}
-                    </span>
-                  </div>
-                );
-              })}
+            {/* SVG Concentric Gauge */}
+            <div className="relative flex items-center justify-center py-4">
+              <svg className="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
+                {/* Outer Ring - Royal Blue */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="#E2E8F0"
+                  strokeWidth="8"
+                  className="dark:stroke-slate-800"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="#3B52F6"
+                  strokeWidth="8"
+                  strokeDasharray="314"
+                  strokeDashoffset="75"
+                  strokeLinecap="round"
+                />
+                {/* Middle Ring - Coral Red */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="38"
+                  fill="none"
+                  stroke="#E2E8F0"
+                  strokeWidth="8"
+                  className="dark:stroke-slate-800"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="38"
+                  fill="none"
+                  stroke="#EF4444"
+                  strokeWidth="8"
+                  strokeDasharray="238"
+                  strokeDashoffset="90"
+                  strokeLinecap="round"
+                />
+                {/* Inner Ring - Neutral Slate */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="26"
+                  fill="none"
+                  stroke="#CBD5E1"
+                  strokeWidth="8"
+                  strokeDasharray="163"
+                  strokeDashoffset="60"
+                  strokeLinecap="round"
+                  className="dark:stroke-slate-700"
+                />
+              </svg>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-mono">
+                  9,829
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Ventas Totales</span>
+                <span className="mt-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                  +5.34%
+                </span>
+              </div>
+            </div>
+
+            {/* Category Breakdown list */}
+            <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                  <span>Cadenas de Transmisión</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">2,487</span>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded-full">+1.8%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  <span>Kits de Arrastre</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">1,828</span>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded-full">+2.3%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                  <span>Piñones & Catalina</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">1,463</span>
+                  <span className="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.2 rounded-full">-1.04%</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right column: Export PDF action panel & Category distribution */}
-        <div className="space-y-6">
-          {/* Export Report card */}
-          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col justify-between h-fit space-y-5">
-            <div className="space-y-2">
-              <h4 className="font-bold text-xs text-gray-200 font-display flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-sky-400" />
-                Informe Comercial Mensual
+          {/* Export Report Card & Customer Growth */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="space-y-1">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-600" />
+                Informe Consolidado PDF
               </h4>
-              <p className="text-[11px] text-gray-400 leading-relaxed">
-                Descarga de manera instantánea el reporte analítico consolidado en formato PDF. Contiene estadísticas de ventas por categoría, desglose tributario IGV, y rendimiento global de asesores.
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Genera el documento analítico completo con firma de auditoría comercial.
               </p>
             </div>
 
             <button
               onClick={handleExportPDFReport}
-              className="w-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-500/20"
             >
               <Download className="w-4 h-4" />
               <span>Exportar Reporte Mensual PDF</span>
             </button>
-          </div>
-
-          {/* Category Distribution chart */}
-          <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-4 flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-sky-400" />
-              Distribución de Ventas por Categoría
-            </h4>
-
-            <div className="space-y-3">
-              {Object.keys(categorySales).map((cat) => {
-                const val = categorySales[cat];
-                const pct = totalInvoicedSales > 0 ? (val / totalInvoicedSales) * 100 : 0;
-                return (
-                  <div key={cat} className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-gray-400 font-semibold">{cat}</span>
-                      <span className="font-mono text-gray-300 font-bold">
-                        S/ {val.toFixed(2)} ({pct.toFixed(0)}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-[#0F172A] h-1 rounded-full border border-slate-800">
-                      <div
-                        className="bg-sky-500 h-full rounded-full"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
