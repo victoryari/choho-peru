@@ -383,8 +383,11 @@ app.put("/api/users/:id", async (req, res) => {
     const values = [];
     
     if (u.name) { updates.push('name = ?'); values.push(u.name); }
+    if (u.email) { updates.push('email = ?'); values.push(u.email); }
     if (u.role) { updates.push('role = ?'); values.push(u.role); }
     if (u.status) { updates.push('status = ?'); values.push(u.status); }
+    if (u.branch) { updates.push('branch = ?'); values.push(u.branch); }
+    if (u.department) { updates.push('department = ?'); values.push(u.department); }
     
     if (updates.length > 0) {
       values.push(id);

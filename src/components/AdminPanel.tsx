@@ -102,6 +102,7 @@ export function AdminPanel({
   // User Edit State (Modal)
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUserName, setEditUserName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserRole, setEditUserRole] = useState("");
   const [editUserBranch, setEditUserBranch] = useState("");
   const [editUserDept, setEditUserDept] = useState("");
@@ -176,6 +177,7 @@ export function AdminPanel({
   const handleStartUserEdit = (u: User) => {
     setEditingUser(u);
     setEditUserName(u.name);
+    setEditUserEmail(u.email);
     setEditUserRole(u.role);
     setEditUserBranch(u.branch);
     setEditUserDept(u.department);
@@ -190,6 +192,7 @@ export function AdminPanel({
     try {
       await onUpdateUser(editingUser.id, {
         name: editUserName,
+        email: editUserEmail,
         role: editUserRole,
         branch: editUserBranch,
         department: editUserDept,
@@ -1203,7 +1206,7 @@ export function AdminPanel({
             <form onSubmit={handleSaveUserEdit} className="space-y-4">
               <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="text-[9px] font-mono text-blue-600 dark:text-blue-400 font-bold uppercase">ID COLABORADOR</div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">{editingUser.id} — {editingUser.email}</div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">{editingUser.id}</div>
               </div>
 
               <div className="space-y-1">
@@ -1212,6 +1215,17 @@ export function AdminPanel({
                   type="text"
                   value={editUserName}
                   onChange={(e) => setEditUserName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Correo Corporativo</label>
+                <input
+                  type="email"
+                  value={editUserEmail}
+                  onChange={(e) => setEditUserEmail(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
