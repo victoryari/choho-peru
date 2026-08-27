@@ -196,14 +196,14 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-left">
       {/* Electronic Billing Title Panel */}
-      <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-        <h3 className="font-bold text-sm text-gray-200 font-display flex items-center gap-2">
-          <Receipt className="w-5 h-5 text-sky-400" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+        <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
+          <Receipt className="w-5 h-5 text-blue-600" />
           Módulo de Facturación Electrónica SUNAT
         </h3>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs text-slate-400 mt-1">
           Emite comprobantes oficiales directamente a la superintendencia. Los presupuestos en estado "Aceptada" califican para su facturación inmediata.
         </p>
       </div>
@@ -212,14 +212,14 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Pending Invoices section */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-              <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-500" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
                 Presupuestos Pendientes de Facturación ({pendingInvoices.length})
               </h4>
 
               {pendingInvoices.length === 0 ? (
-                <div className="py-10 text-center text-gray-500 text-xs">
+                <div className="py-10 text-center text-slate-400 text-xs">
                   No hay cotizaciones aprobadas pendientes de facturar.
                 </div>
               ) : (
@@ -227,32 +227,32 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
                   {pendingInvoices.map((quote) => (
                     <div
                       key={quote.id}
-                      className="p-4 bg-[#0F172A]/40 border border-slate-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700/50 transition-all"
+                      className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-500/40 transition-all"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold font-mono text-sky-400">{quote.id}</span>
-                          <span className="text-[10px] bg-emerald-950 text-emerald-400 font-bold px-1.5 py-0.2 rounded border border-emerald-900">
+                          <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">{quote.id}</span>
+                          <span className="text-[10px] bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
                             Aceptada
                           </span>
                         </div>
-                        <h5 className="text-xs font-bold text-gray-200 mt-1">{quote.clientName}</h5>
-                        <p className="text-[10px] text-gray-400 mt-0.5 font-mono">
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-1">{quote.clientName}</h5>
+                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
                           RUC: {quote.clientDoc} • Asesor: {quote.advisor}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800">
+                      <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800">
                         <div className="text-right">
-                          <span className="text-[9px] text-gray-500 block">TOTAL</span>
-                          <span className="text-sm font-bold font-mono text-gray-200">
+                          <span className="text-[9px] text-slate-400 block font-medium">TOTAL</span>
+                          <span className="text-sm font-extrabold font-mono text-slate-900 dark:text-slate-100">
                             S/ {quote.total.toFixed(2)}
                           </span>
                         </div>
 
                         <button
                           onClick={() => startInvoicing(quote)}
-                          className="bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer shadow"
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20"
                         >
                           <Send className="w-3.5 h-3.5" />
                           <span>Emitir Factura</span>
@@ -267,8 +267,8 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
 
           {/* Issued Invoices Log sidebar */}
           <div className="space-y-4">
-            <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-5 shadow-xl">
-              <h4 className="font-bold text-xs text-gray-300 font-display pb-3 border-b border-slate-700/50 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 Historial Comprobantes Emitidos
               </h4>
@@ -277,24 +277,24 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
                 {issuedInvoices.map((inv) => (
                   <div
                     key={inv.id}
-                    className="p-3 bg-[#0F172A]/60 border border-slate-800 rounded-xl space-y-2 hover:border-slate-700/50 transition-all text-left"
+                    className="p-3.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-2 hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-200">{inv.id}</span>
-                      <span className="text-[9px] text-gray-500">{inv.date}</span>
+                      <span className="text-xs font-extrabold font-mono text-slate-900 dark:text-slate-100">{inv.id}</span>
+                      <span className="text-[9px] text-slate-400 font-mono">{inv.date}</span>
                     </div>
 
-                    <div className="text-[11px] text-gray-400 font-semibold truncate">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold truncate">
                       {inv.clientName}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800">
-                      <span className="font-mono text-sky-400 font-bold">
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span className="font-mono text-blue-600 dark:text-blue-400 font-extrabold">
                         S/ {inv.total.toFixed(2)}
                       </span>
                       <button
                         onClick={() => downloadInvoicePDF(inv)}
-                        className="text-gray-400 hover:text-sky-400 transition-colors p-1 cursor-pointer"
+                        className="text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer"
                         title="Exportar Factura a PDF"
                       >
                         <Printer className="w-4 h-4" />
@@ -310,52 +310,52 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
 
       {/* Signing / Communication Loader */}
       {activeStep === "signing" && selectedQuote && (
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-8 shadow-xl text-center flex flex-col items-center justify-center space-y-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-2xl text-center flex flex-col items-center justify-center space-y-6">
           <div className="relative">
-            <RefreshCw className="w-12 h-12 text-sky-400 animate-spin" />
+            <RefreshCw className="w-12 h-12 text-blue-600 animate-spin" />
             <ShieldCheck className="w-5 h-5 text-emerald-500 absolute bottom-0 right-0 animate-bounce" />
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-bold text-gray-200 font-display">Firmando Comprobante Electrónico</h4>
-            <p className="text-xs text-gray-400 max-w-md mx-auto">
+            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white font-display">Firmando Comprobante Electrónico</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
               Se está generando la firma criptográfica para el XML y estableciendo conexión encriptada de canal TLS 1.3 con SUNAT.
             </p>
           </div>
 
-          <div className="bg-[#0F172A] border border-slate-800 p-3 rounded-lg w-full max-w-md font-mono text-[10px] text-emerald-500/80 text-left">
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl w-full max-w-md font-mono text-[10px] text-emerald-600 dark:text-emerald-400 text-left">
             <div>&gt; {xmlSigningCode}</div>
-            <div className="text-gray-600 mt-1">IP Ingress: 0.0.0.0:3000 • SSL_ACTIVE</div>
+            <div className="text-slate-400 mt-1">IP Ingress: 0.0.0.0:3005 • SSL_ACTIVE</div>
           </div>
         </div>
       )}
 
       {/* Done Screen */}
       {activeStep === "done" && selectedQuote && (
-        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-8 shadow-xl text-center flex flex-col items-center justify-center space-y-6">
-          <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center text-emerald-500">
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-2xl text-center flex flex-col items-center justify-center space-y-6">
+          <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <ShieldCheck className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-bold text-emerald-400 font-display">¡Factura Electrónica Emitida Correctamente!</h4>
-            <p className="text-xs text-gray-400 max-w-md mx-auto">
+            <h4 className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 font-display">¡Factura Electrónica Emitida Correctamente!</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
               El comprobante fue transmitido con éxito. SUNAT ha retornado la constancia de recepción (CDR) en estado 'ACEPTADO'.
             </p>
           </div>
 
-          <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-xl w-full max-w-md text-left space-y-2 text-xs">
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl w-full max-w-md text-left space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-gray-500">Nro Comprobante:</span>
-              <span className="font-bold text-gray-200">FFF1-000{1093 + issuedInvoices.length}</span>
+              <span className="text-slate-400 font-medium">Nro Comprobante:</span>
+              <span className="font-bold text-slate-900 dark:text-white">FFF1-000{1093 + issuedInvoices.length}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-500">Cliente:</span>
-              <span className="font-semibold text-gray-200 truncate max-w-[200px]">{selectedQuote.clientName}</span>
+              <span className="text-slate-400 font-medium">Cliente:</span>
+              <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px]">{selectedQuote.clientName}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-500">Código Hash SUNAT:</span>
-              <span className="font-mono text-[10px] text-emerald-500 truncate max-w-[200px]">
+              <span className="text-slate-400 font-medium">Código Hash SUNAT:</span>
+              <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 truncate max-w-[200px]">
                 {issuedInvoices[0]?.hash || "b4df279ae2812bc"}
               </span>
             </div>
@@ -364,7 +364,7 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
           <div className="flex items-center gap-3">
             <button
               onClick={() => setActiveStep("list")}
-              className="bg-slate-800 hover:bg-slate-700 text-gray-300 font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer"
+              className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-4 rounded-xl text-xs transition-all cursor-pointer"
             >
               Cerrar y Regresar
             </button>
@@ -372,7 +372,7 @@ export function BillingInvoice({ quotes, onUpdateQuoteStatus }: BillingInvoicePr
               onClick={() => {
                 if (issuedInvoices[0]) downloadInvoicePDF(issuedInvoices[0]);
               }}
-              className="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer shadow"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Descargar Factura PDF</span>

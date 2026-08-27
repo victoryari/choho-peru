@@ -99,14 +99,14 @@ export function NotificationCenter() {
           setIsOpen(!isOpen);
           setHasNew(false);
         }}
-        className="relative p-2 text-gray-400 hover:text-sky-400 rounded-lg hover:bg-slate-800/50 transition-all cursor-pointer"
+        className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
       >
         <Bell className="w-5 h-5" />
         {hasNew && notifications.length > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-sky-500 rounded-full animate-ping" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full animate-ping" />
         )}
         {notifications.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-sky-500 text-white text-[10px] font-bold px-1.5 rounded-full">
+          <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-extrabold px-1.5 rounded-full shadow-xs">
             {notifications.length}
           </span>
         )}
@@ -118,25 +118,25 @@ export function NotificationCenter() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-3 w-80 sm:w-96 bg-[#1E293B] border border-slate-700/50 rounded-xl shadow-2xl p-4 overflow-hidden"
+            className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-4 overflow-hidden text-left"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50 mb-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-sky-400" />
-                <span className="font-semibold text-sm text-gray-200 font-display">Notificaciones de Red</span>
+                <Bell className="w-4 h-4 text-blue-600" />
+                <span className="font-extrabold text-sm text-slate-900 dark:text-white font-display">Notificaciones de Red</span>
               </div>
               <div className="flex items-center gap-3">
                 {notifications.length > 0 && (
                   <button
                     onClick={clearAll}
-                    className="text-xs text-gray-400 hover:text-sky-400 transition-colors cursor-pointer"
+                    className="text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Limpiar todo
                   </button>
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-500 hover:text-gray-300 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -145,33 +145,33 @@ export function NotificationCenter() {
 
             <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
               {notifications.length === 0 ? (
-                <div className="py-8 text-center text-gray-500 text-xs">
+                <div className="py-8 text-center text-slate-400 text-xs">
                   No tienes notificaciones pendientes.
                 </div>
               ) : (
                 notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className="flex gap-3 p-2.5 rounded-lg bg-[#0F172A]/40 border border-slate-800 hover:border-slate-700/50 transition-all text-left"
+                    className="flex gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 hover:border-blue-500/40 transition-all text-left"
                   >
                     <div className="mt-0.5 shrink-0">
                       {notif.type === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-sky-400" />}
+                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-blue-600" />}
                       {notif.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-sky-400" />}
+                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-blue-600" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-semibold text-gray-200 truncate">{notif.title}</p>
-                        <span className="text-[9px] text-gray-400 shrink-0">{notif.time}</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{notif.title}</p>
+                        <span className="text-[9px] text-slate-400 shrink-0 font-medium">{notif.time}</span>
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
                         {notif.message}
                       </p>
                     </div>
                     <button
                       onClick={() => removeOne(notif.id)}
-                      className="text-gray-600 hover:text-gray-400 shrink-0 self-start cursor-pointer"
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 shrink-0 self-start cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -180,8 +180,8 @@ export function NotificationCenter() {
               )}
             </div>
 
-            <div className="mt-3 pt-2.5 border-t border-slate-800 text-center">
-              <span className="text-[10px] text-gray-500 italic">
+            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-center">
+              <span className="text-[10px] text-slate-400 italic">
                 Sincronización multi-dispositivo y push activados en background
               </span>
             </div>
