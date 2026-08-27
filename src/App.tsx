@@ -480,8 +480,8 @@ export default function App() {
             className="flex-1 flex flex-col md:flex-row h-screen overflow-hidden"
           >
             {/* Sidebar Left Navigation (Desktop Only) */}
-            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 justify-between p-4 shrink-0 shadow-xs">
-              <div className="space-y-5 overflow-y-auto pr-1">
+            <aside className="hidden md:flex flex-col w-64 h-full bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 p-4 shrink-0 shadow-xs">
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
                 {/* Brand Logo */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                   <ChohoLogo size="sm" showTagline={false} />
@@ -496,17 +496,17 @@ export default function App() {
                 </div>
 
                 {/* User Card info */}
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-1 text-left relative group">
+                <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-0.5 text-left relative group">
                   <div className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wide">
                     {currentUser?.role}
                   </div>
                   <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{currentUser?.name}</div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{currentUser?.email}</div>
-                  <div className="text-[10px] text-slate-400 mt-1">Sede: <span className="font-semibold text-slate-700 dark:text-slate-300">{currentUser?.branch}</span></div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Sede: <span className="font-semibold text-slate-700 dark:text-slate-300">{currentUser?.branch}</span></div>
                 </div>
 
                 {/* Navigation Category: MENU */}
-                <div className="space-y-2 text-left">
+                <div className="space-y-1.5 text-left">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">
                     Menú Principal
                   </div>
@@ -514,7 +514,7 @@ export default function App() {
                     {(currentUser?.role === "Admin General" || currentUser?.role === "Jefe de Finanzas") && (
                       <button
                         onClick={() => setActiveTab("dashboard")}
-                        className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                           activeTab === "dashboard"
                             ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -527,7 +527,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab("catalog")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                         activeTab === "catalog"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -540,14 +540,14 @@ export default function App() {
                 </div>
 
                 {/* Navigation Category: COMMERCIAL */}
-                <div className="space-y-2 text-left pt-2">
+                <div className="space-y-1.5 text-left pt-1">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">
                     Módulos Comerciales
                   </div>
                   <nav className="space-y-1">
                     <button
                       onClick={() => setActiveTab("inventory")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                         activeTab === "inventory"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -559,7 +559,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab("cart")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                         activeTab === "cart"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -580,7 +580,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab("quotes")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                         activeTab === "quotes"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -592,7 +592,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab("billing")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                         activeTab === "billing"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -604,7 +604,7 @@ export default function App() {
 
                     <button
                       onClick={() => setActiveTab("telemetry")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                         activeTab === "telemetry"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -617,14 +617,14 @@ export default function App() {
                 </div>
 
                 {/* Navigation Category: SYSTEM */}
-                <div className="space-y-2 text-left pt-2">
+                <div className="space-y-1.5 text-left pt-1">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">
                     Sistema & Ajustes
                   </div>
                   <nav className="space-y-1">
                     <button
                       onClick={() => setActiveTab("sync")}
-                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                         activeTab === "sync"
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -644,7 +644,7 @@ export default function App() {
                     {currentUser?.role === "Admin General" && (
                       <button
                         onClick={() => setActiveTab("admin")}
-                        className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                           activeTab === "admin"
                             ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
@@ -659,8 +659,8 @@ export default function App() {
               </div>
 
               {/* Bottom sidebar DealDeck contrast callout card */}
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3 text-left">
-                <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-2 relative overflow-hidden shadow-lg shadow-slate-900/10">
+              <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-left">
+                <div className="bg-slate-900 text-white rounded-2xl p-3.5 space-y-2 relative overflow-hidden shadow-lg shadow-slate-900/10">
                   <div className="text-[11px] font-bold flex items-center justify-between">
                     <span>Estado del Sistema</span>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -678,7 +678,7 @@ export default function App() {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-3 py-2 text-xs font-semibold text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 flex items-center gap-2.5 transition-all cursor-pointer"
+                  className="w-full px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 flex items-center gap-2.5 transition-all cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Cerrar Sesión</span>
