@@ -374,7 +374,7 @@ export default function App() {
     <div className="min-h-screen transition-colors duration-300 flex flex-col font-sans" style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}>
       <AnimatePresence mode="wait">
         {!isLoggedIn ? (
-          /* High-Fidelity Login Interface */
+          /* High-Fidelity Split Diagonal Login Interface (Inspired by Image 1 & Image 2) */
           <motion.div
             key="login"
             initial={{ opacity: 0 }}
@@ -384,91 +384,137 @@ export default function App() {
             style={{
               backgroundColor: "var(--bg-main)",
               backgroundImage:
-                "radial-gradient(circle at 10% 20%, rgba(59, 82, 246, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%)"
+                "radial-gradient(circle at 10% 20%, rgba(229, 25, 32, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(225, 29, 72, 0.06) 0%, transparent 50%)"
             }}
           >
             {/* Top theme toggle button on login screen */}
-            <div className="absolute top-6 right-6">
+            <div className="absolute top-6 right-6 z-20">
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm flex items-center gap-2 text-xs font-medium"
+                className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-md flex items-center gap-2 text-xs font-semibold"
                 title="Cambiar Tema"
               >
-                {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-600" />}
+                {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-red-600" />}
                 <span className="capitalize">{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
               </button>
             </div>
 
-            <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-6 relative overflow-hidden">
-              {/* Brand Header */}
-              <div className="flex flex-col items-center justify-center text-center space-y-3">
-                <ChohoLogo size="lg" />
-                <div className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/40 text-blue-600 dark:text-blue-400 font-bold px-3.5 py-1 rounded-full text-xs font-display shadow-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  Plataforma Comercial B2B
+            {/* Split Container with Diagonal Divider */}
+            <div className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative min-h-[480px]">
+              
+              {/* LEFT SIDE: Brand Logo & Information (White background) */}
+              <div className="md:col-span-5 p-8 md:p-10 flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 relative z-10 space-y-6">
+                <div className="space-y-4 flex flex-col items-center">
+                  <ChohoLogo size="xl" showTagline={true} />
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Ingresa con tus credenciales corporativas de Choho Perú
-                </p>
+
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 w-full max-w-xs">
+                  <div className="inline-flex items-center gap-1.5 bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-800/40 text-red-600 dark:text-red-400 font-extrabold px-3 py-1 rounded-full text-[11px] font-display">
+                    <Sparkles className="w-3.5 h-3.5 text-red-600" />
+                    Plataforma Comercial B2B
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                    Sistemas de transmisión de alta tecnología y componentes de fricción.
+                  </p>
+                </div>
               </div>
 
-              {loginError && (
-                <div className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 text-red-600 dark:text-red-400 rounded-2xl text-xs flex items-center gap-2.5">
-                  <ShieldAlert className="w-4 h-4 shrink-0 animate-bounce" />
-                  <span>{loginError}</span>
-                </div>
-              )}
+              {/* RIGHT SIDE: Diagonal Split Red Form Panel */}
+              <div className="md:col-span-7 relative bg-gradient-to-br from-[#E51920] via-red-600 to-rose-800 text-white p-8 md:p-12 flex flex-col justify-center text-left">
+                {/* Diagonal cut divider for desktop layout */}
+                <div 
+                  className="hidden md:block absolute inset-y-0 -left-12 w-24 bg-gradient-to-br from-[#E51920] via-red-600 to-rose-800 transform -skew-x-12 origin-top-left z-0 pointer-events-none"
+                />
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider block">
-                    Correo Corporativo
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      required
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="usuario@choho.pe"
-                      className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700/60 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 rounded-2xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none transition-all"
-                    />
+                <div className="relative z-10 space-y-5">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight font-display text-white">
+                      INICIAR SESIÓN
+                    </h2>
+                    <p className="text-xs text-red-100 mt-1 font-medium">
+                      Ingresa tus credenciales corporativas para acceder
+                    </p>
                   </div>
-                </div>
 
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider block">
-                    Clave de Acceso
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="password"
-                      required
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700/60 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 rounded-2xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoggingIn}
-                  className="w-full bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-500/25 active:scale-[0.99]"
-                >
-                  {isLoggingIn ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Verificando credenciales...</span>
-                    </>
-                  ) : (
-                    <span>Iniciar Sesión Comercial</span>
+                  {loginError && (
+                    <div className="p-3 bg-slate-950/80 border border-red-300/40 text-white rounded-xl text-xs flex items-center gap-2.5 shadow-lg">
+                      <ShieldAlert className="w-4 h-4 shrink-0 text-red-400 animate-bounce" />
+                      <span className="font-semibold">{loginError}</span>
+                    </div>
                   )}
-                </button>
-              </form>
+
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-extrabold text-red-100 uppercase tracking-wider block">
+                        Correo Corporativo
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="email"
+                          required
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="usuario@choho.pe"
+                          className="w-full bg-white text-slate-900 placeholder-slate-400 font-semibold rounded-xl pl-10 pr-4 py-3 text-xs focus:outline-none focus:ring-4 focus:ring-red-300 shadow-sm transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-extrabold text-red-100 uppercase tracking-wider block">
+                        Clave de Acceso
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="password"
+                          required
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full bg-white text-slate-900 placeholder-slate-400 font-semibold rounded-xl pl-10 pr-4 py-3 text-xs focus:outline-none focus:ring-4 focus:ring-red-300 shadow-sm transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Options row: Remember me / Recover password (inspired by Image 1) */}
+                    <div className="flex items-center justify-between text-xs text-red-100 pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer font-medium select-none">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="rounded text-slate-950 focus:ring-0 accent-slate-950 w-4 h-4 cursor-pointer"
+                        />
+                        <span>Recordar sesión</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => alert("Para restablecer su contraseña de acceso corporativo, por favor contacte al Administrador del Sistema.")}
+                        className="hover:underline font-semibold text-white/90 hover:text-white cursor-pointer"
+                      >
+                        ¿Olvidaste tu clave?
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoggingIn}
+                      className="w-full bg-slate-950 hover:bg-slate-900 active:bg-black text-white font-extrabold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 border border-slate-800"
+                    >
+                      {isLoggingIn ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin text-red-500" />
+                          <span>Verificando credenciales...</span>
+                        </>
+                      ) : (
+                        <span>Iniciar Sesión Comercial</span>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              </div>
+
             </div>
           </motion.div>
         ) : (
