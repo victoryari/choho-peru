@@ -99,14 +99,14 @@ export function NotificationCenter() {
           setIsOpen(!isOpen);
           setHasNew(false);
         }}
-        className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+        className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-[#E51920] dark:hover:text-red-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
       >
         <Bell className="w-5 h-5" />
         {hasNew && notifications.length > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full animate-ping" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#E51920] rounded-full animate-ping" />
         )}
         {notifications.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-extrabold px-1.5 rounded-full shadow-xs">
+          <span className="absolute -top-0.5 -right-0.5 bg-[#E51920] text-white text-[10px] font-extrabold px-1.5 rounded-full shadow-xs">
             {notifications.length}
           </span>
         )}
@@ -122,14 +122,14 @@ export function NotificationCenter() {
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-blue-600" />
+                <Bell className="w-4 h-4 text-[#E51920]" />
                 <span className="font-extrabold text-sm text-slate-900 dark:text-white font-display">Notificaciones de Red</span>
               </div>
               <div className="flex items-center gap-3">
                 {notifications.length > 0 && (
                   <button
                     onClick={clearAll}
-                    className="text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                    className="text-xs font-semibold text-slate-400 hover:text-[#E51920] transition-colors cursor-pointer"
                   >
                     Limpiar todo
                   </button>
@@ -152,13 +152,13 @@ export function NotificationCenter() {
                 notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className="flex gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 hover:border-blue-500/40 transition-all text-left"
+                    className="flex gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 hover:border-red-500/40 transition-all text-left"
                   >
                     <div className="mt-0.5 shrink-0">
                       {notif.type === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-blue-600" />}
+                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-[#E51920]" />}
                       {notif.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-blue-600" />}
+                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-[#E51920]" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">

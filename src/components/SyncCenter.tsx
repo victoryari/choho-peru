@@ -68,7 +68,7 @@ export function SyncCenter({
       <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="font-extrabold text-base text-slate-900 dark:text-white font-display flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-blue-600" />
+            <Cloud className="w-5 h-5 text-[#E51920]" />
             Centro de Sincronización Automática
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -121,7 +121,7 @@ export function SyncCenter({
             </div>
 
             <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+              <div className="p-2 rounded-xl bg-red-50 text-[#E51920] dark:bg-red-950/40 dark:text-red-400">
                 <Laptop className="w-5 h-5" />
               </div>
               <div>
@@ -170,7 +170,7 @@ export function SyncCenter({
               </div>
               <div className="flex justify-between items-center text-slate-400">
                 <span>Base de Datos Remota:</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">TIDB_CLOUD_LIVE</span>
+                <span className="font-mono text-[#E51920] dark:text-red-400 font-bold">TIDB_CLOUD_LIVE</span>
               </div>
               <div className="flex justify-between items-center text-slate-400">
                 <span>Velocidad de Respuesta:</span>
@@ -183,7 +183,7 @@ export function SyncCenter({
             <button
               onClick={handleManualSync}
               disabled={isSyncing || isOfflineMode}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25 disabled:opacity-50"
             >
               {isSyncing ? (
                 <>

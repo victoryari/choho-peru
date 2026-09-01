@@ -84,7 +84,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               {tagsList.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs"
+                  className="absolute top-3 left-3 bg-[#E51920] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs"
                 >
                   {tag}
                 </span>
@@ -100,7 +100,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                     onClick={() => setActiveImageIndex(idx)}
                     className={`w-14 h-14 rounded-xl bg-white dark:bg-slate-900 border p-1 shrink-0 transition-all cursor-pointer overflow-hidden ${
                       activeImageIndex === idx
-                        ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md scale-105"
+                        ? "border-[#E51920] ring-2 ring-red-500/20 shadow-md scale-105"
                         : "border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -130,7 +130,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
         {/* Info Section */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-between text-left">
           <div>
-            <div className="text-[11px] font-mono tracking-wider text-blue-600 dark:text-blue-400 uppercase font-bold">
+            <div className="text-[11px] font-mono tracking-wider text-[#E51920] dark:text-red-400 uppercase font-bold">
               SKU: {product.sku}
             </div>
             <h2 className="text-xl font-extrabold font-display text-slate-900 dark:text-white mt-1 leading-snug">
@@ -149,7 +149,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               <div className="text-xs font-bold text-slate-900 dark:text-white font-display">Disponibilidad en Almacén</div>
               <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-                  <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                  <MapPin className="w-4 h-4 text-[#E51920] shrink-0" />
                   <span className="font-semibold">Almacén Central CHOHO Perú</span>
                 </div>
                 <span className={`text-xs font-extrabold font-mono ${product.stock > 10 ? 'text-emerald-600' : product.stock > 0 ? 'text-amber-500' : 'text-red-500'}`}>
@@ -170,10 +170,10 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold font-mono block">
+                <span className="text-[10px] text-[#E51920] dark:text-red-400 font-bold font-mono block">
                   {discountPercent > 0 ? `AHORRAS S/ ${(basePriceNum * discountPercent / 100).toFixed(2)} (${discountPercent}%)` : "Precio Regular"}
                 </span>
-                <span className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400">
+                <span className="text-2xl font-extrabold font-mono text-[#E51920] dark:text-red-400">
                   S/ {discountedPrice.toFixed(2)}
                 </span>
               </div>
@@ -186,10 +186,10 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     <span className="flex items-center gap-1">
-                      <Percent className="w-3.5 h-3.5 text-blue-600" />
+                      <Percent className="w-3.5 h-3.5 text-[#E51920]" />
                       <span>Descuento de Asesor autorizado:</span>
                     </span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400">{discountPercent}%</span>
+                    <span className="font-bold text-[#E51920] dark:text-red-400">{discountPercent}%</span>
                   </div>
                   <input
                     type="range"
@@ -198,7 +198,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                     step="1"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                    className="w-full accent-blue-600 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none h-1.5 cursor-pointer"
+                    className="w-full accent-[#E51920] bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none h-1.5 cursor-pointer"
                   />
                   <span className="text-[9px] text-slate-400 italic block text-right">
                     *Margen máximo permitido para cotizaciones de campo es 15%
@@ -209,7 +209,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                   <div className="flex items-center border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl">
                     <button
                       onClick={() => setQty(q => Math.max(1, q - 1))}
-                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-bold transition-colors cursor-pointer"
+                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-[#E51920] font-bold transition-colors cursor-pointer"
                     >
                       -
                     </button>
@@ -218,12 +218,18 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
                       min="1"
                       max={product.stock}
                       value={qty}
-                      onChange={(e) => setQty(Math.min(product.stock, Math.max(1, Number(e.target.value))))}
-                      className="w-12 text-center bg-transparent border-0 font-bold font-mono text-xs text-slate-900 dark:text-white focus:ring-0 focus:outline-none"
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) {
+                          setQty(Math.min(product.stock, Math.max(1, val)));
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
+                      className="w-12 text-center bg-transparent border-0 font-bold font-mono text-xs text-slate-900 dark:text-white focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <button
                       onClick={() => setQty(q => Math.min(product.stock, q + 1))}
-                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-bold transition-colors cursor-pointer"
+                      className="px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-[#E51920] font-bold transition-colors cursor-pointer"
                     >
                       +
                     </button>
@@ -231,7 +237,7 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
 
                   <button
                     onClick={handleAdd}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all duration-150 shadow-md shadow-blue-500/20 cursor-pointer"
+                    className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all duration-150 shadow-md shadow-red-600/25 cursor-pointer"
                   >
                     {successMsg ? (
                       <>

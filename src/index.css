@@ -14,23 +14,23 @@
   --border-color: #E5E9F2;
   --text-main: #0F172A;
   --text-muted: #64748B;
-  --accent-primary: #3B52F6;
-  --accent-glow: rgba(59, 82, 246, 0.18);
+  --accent-primary: #E51920;
+  --accent-glow: rgba(229, 25, 32, 0.18);
   --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
 }
 
 .dark,
 .dark-theme,
 :root.dark {
-  --bg-main: #0B0F19;
+  --bg-main: #090D16;
   --bg-card: #111827;
   --bg-card-hover: #1E293B;
   --bg-header: rgba(15, 23, 42, 0.9);
   --border-color: rgba(51, 65, 85, 0.6);
   --text-main: #F8FAFC;
   --text-muted: #94A3B8;
-  --accent-primary: #3B82F6;
-  --accent-glow: rgba(59, 130, 246, 0.25);
+  --accent-primary: #E51920;
+  --accent-glow: rgba(229, 25, 32, 0.25);
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 

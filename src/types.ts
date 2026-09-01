@@ -18,7 +18,9 @@ export interface RolePermission {
     billing: boolean;
     inventory: boolean;
     telemetry: boolean;
+    expenses: boolean;
     admin: boolean;
+    dashboard?: boolean;
   };
 }
 
@@ -75,4 +77,22 @@ export interface Telemetry {
   quote?: string;
   lat: number;
   lng: number;
+  address?: string;
+}
+
+export interface TravelExpense {
+  id: string;
+  advisor: string;
+  date: string;
+  category: 'Alimentación' | 'Hospedaje' | 'Transporte' | 'Peaje' | 'Mantenimiento' | 'Otros';
+  docType: 'Factura' | 'Boleta' | 'Ticket';
+  rucIssuer: string;
+  companyName: string;
+  series: string;
+  number: string;
+  amount: number;
+  receiptImage?: string;
+  sunatStatus: 'ACEPTADO' | 'RECHAZADO' | 'PENDIENTE';
+  approvalStatus: 'Pendiente' | 'Aprobado' | 'Observado';
+  notes?: string;
 }

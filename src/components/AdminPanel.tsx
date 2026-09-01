@@ -9,6 +9,7 @@ interface AdminPanelProps {
   onAddUser: (user: Omit<User, "id">) => Promise<void>;
   onUpdateUser: (id: string, updated: Partial<User>) => Promise<void>;
   onUpdateProduct: (sku: string, updatedPayload: Partial<Product>) => Promise<void>;
+  onRolesUpdated?: (roles: RolePermission[]) => void;
 }
 
 const DEFAULT_ROLES: RolePermission[] = [
@@ -16,25 +17,31 @@ const DEFAULT_ROLES: RolePermission[] = [
     id: "ROL-1",
     name: "Admin General",
     description: "Acceso total a la administración, usuarios, catálogo, reportes y configuración de sistema.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: true, telemetry: true, admin: true }
+    permissions: { catalog: true, quotes: true, billing: true, inventory: true, telemetry: true, expenses: true, admin: true, dashboard: true }
   },
   {
     id: "ROL-2",
     name: "Asesor Comercial",
-    description: "Acceso a Catálogo de repuestos, creación de presupuestos de campo, mis cotizaciones y geolocalización.",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, admin: false }
+    description: "Acceso a Catálogo de repuestos, creación de presupuestos de campo, mis cotizaciones, geolocalización y viáticos.",
+    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
   },
   {
     id: "ROL-3",
-    name: "Jefe de Finanzas",
-    description: "Acceso a Panel de analíticas, historial de cotizaciones y facturación electrónica SUNAT.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: false, telemetry: false, admin: false }
+    name: "Ventas",
+    description: "Rol comercial de ventas de campo (Catálogo, Cotizaciones, Check-ins y Sustento de Viáticos).",
+    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
   },
   {
     id: "ROL-4",
+    name: "Jefe de Finanzas",
+    description: "Acceso a Panel de analíticas, historial de cotizaciones, facturación SUNAT y aprobación de viáticos.",
+    permissions: { catalog: true, quotes: true, billing: true, inventory: false, telemetry: false, expenses: true, admin: false, dashboard: true }
+  },
+  {
+    id: "ROL-5",
     name: "Jefe de Almacén",
     description: "Acceso al control de inventario, stock físico y consulta del catálogo de productos.",
-    permissions: { catalog: true, quotes: false, billing: false, inventory: true, telemetry: false, admin: false }
+    permissions: { catalog: true, quotes: false, billing: false, inventory: true, telemetry: false, expenses: false, admin: false, dashboard: false }
   }
 ];
 
@@ -59,7 +66,8 @@ export function AdminPanel({
   products,
   onAddUser,
   onUpdateUser,
-  onUpdateProduct
+  onUpdateProduct,
+  onRolesUpdated
 }: AdminPanelProps) {
   // Tabs within admin panel
   const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products">("users");
@@ -72,8 +80,18 @@ export function AdminPanel({
   const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>(DEFAULT_DEPARTMENTS);
   const [branchesList, setBranchesList] = useState<BranchItem[]>(DEFAULT_BRANCHES);
 
-  // Fetch branches and departments from DB
+  // Fetch branches, departments, and roles from DB
   useEffect(() => {
+    fetch("/api/roles")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setRolesList(data);
+          if (onRolesUpdated) onRolesUpdated(data);
+        }
+      })
+      .catch(() => {});
+
     fetch("/api/branches")
       .then(res => res.json())
       .then(data => { if (Array.isArray(data) && data.length > 0) setBranchesList(data); })
@@ -125,7 +143,9 @@ export function AdminPanel({
     billing: false,
     inventory: false,
     telemetry: false,
-    admin: false
+    expenses: false,
+    admin: false,
+    dashboard: false
   });
   const [roleMsg, setRoleMsg] = useState("");
 
@@ -139,7 +159,9 @@ export function AdminPanel({
     billing: false,
     inventory: false,
     telemetry: false,
-    admin: false
+    expenses: false,
+    admin: false,
+    dashboard: false
   });
 
   // Product Edit State
@@ -259,18 +281,31 @@ export function AdminPanel({
     }
   };
 
-  const handleCreateRole = (e: React.FormEvent) => {
+  const handleCreateRole = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newRoleName) return;
+    if (!newRoleName.trim()) return;
 
     const newRoleObj: RolePermission = {
       id: `ROL-${Date.now()}`,
-      name: newRoleName,
+      name: newRoleName.trim(),
       description: newRoleDesc || "Rol personalizado definido por el administrador.",
       permissions: { ...newRolePerms }
     };
 
-    setRolesList((prev) => [...prev, newRoleObj]);
+    try {
+      await fetch("/api/roles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRoleObj)
+      });
+    } catch (err) {
+      console.error("Error al registrar rol en servidor:", err);
+    }
+
+    const updatedList = [...rolesList, newRoleObj];
+    setRolesList(updatedList);
+    if (onRolesUpdated) onRolesUpdated(updatedList);
+
     setNewRoleName("");
     setNewRoleDesc("");
     setRoleMsg("¡Nuevo rol registrado con éxito!");
@@ -282,10 +317,19 @@ export function AdminPanel({
     setEditingRole(role);
     setEditRoleName(role.name);
     setEditRoleDesc(role.description);
-    setEditRolePerms({ ...role.permissions });
+    setEditRolePerms({
+      catalog: role.permissions.catalog ?? true,
+      quotes: role.permissions.quotes ?? true,
+      billing: role.permissions.billing ?? false,
+      inventory: role.permissions.inventory ?? false,
+      telemetry: role.permissions.telemetry ?? false,
+      expenses: role.permissions.expenses ?? false,
+      admin: role.permissions.admin ?? false,
+      dashboard: role.permissions.dashboard ?? false
+    });
   };
 
-  const handleSaveRoleEdit = (e: React.FormEvent) => {
+  const handleSaveRoleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRole || !editRoleName.trim()) return;
 
@@ -297,7 +341,19 @@ export function AdminPanel({
       permissions: { ...editRolePerms }
     };
 
-    setRolesList((prev) => prev.map((r) => (r.id === editingRole.id ? updatedRole : r)));
+    try {
+      await fetch(`/api/roles/${editingRole.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedRole)
+      });
+    } catch (err) {
+      console.error("Error al actualizar rol en servidor:", err);
+    }
+
+    const newList = rolesList.map((r) => (r.id === editingRole.id ? updatedRole : r));
+    setRolesList(newList);
+    if (onRolesUpdated) onRolesUpdated(newList);
 
     // Cascade role name update to assigned users if changed
     if (oldName !== editRoleName.trim()) {
@@ -420,7 +476,7 @@ export function AdminPanel({
       <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
-            <Settings className="w-5 h-5 text-blue-600" />
+            <Settings className="w-5 h-5 text-[#E51920]" />
             Panel de Administración Web & Configuración
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -433,7 +489,7 @@ export function AdminPanel({
           <button
             onClick={() => setAdminTab("users")}
             className={`flex-1 lg:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              adminTab === "users" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              adminTab === "users" ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -443,7 +499,7 @@ export function AdminPanel({
           <button
             onClick={() => setAdminTab("roles")}
             className={`flex-1 lg:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              adminTab === "roles" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              adminTab === "roles" ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -453,7 +509,7 @@ export function AdminPanel({
           <button
             onClick={() => setAdminTab("structure")}
             className={`flex-1 lg:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              adminTab === "structure" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              adminTab === "structure" ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -463,7 +519,7 @@ export function AdminPanel({
           <button
             onClick={() => setAdminTab("products")}
             className={`flex-1 lg:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              adminTab === "products" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              adminTab === "products" ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Package className="w-3.5 h-3.5" />
@@ -480,7 +536,7 @@ export function AdminPanel({
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-2 flex items-center justify-between">
               <span>Personal Autorizado ({users.length})</span>
               {isAdminUser && (
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-bold flex items-center gap-1">
+                <span className="text-[10px] text-[#E51920] dark:text-red-400 font-mono font-bold flex items-center gap-1">
                   <KeyRound className="w-3 h-3" />
                   Modo Administrador Habilitado
                 </span>
@@ -491,7 +547,7 @@ export function AdminPanel({
               {users.map((u) => (
                 <div
                   key={u.id}
-                  className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-500/40 transition-all text-left"
+                  className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-red-500/40 transition-all text-left"
                 >
                   <div>
                     <div className="flex items-center gap-2">
@@ -505,7 +561,7 @@ export function AdminPanel({
                     </div>
 
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
-                      Email: {u.email} • Rol: <span className="text-blue-600 dark:text-blue-400 font-bold">{u.role}</span>
+                      Email: {u.email} • Rol: <span className="text-[#E51920] dark:text-red-400 font-bold">{u.role}</span>
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
                       Sede: {u.branch} • Departamento: <span className="text-emerald-600 dark:text-emerald-400 font-medium">{u.department}</span>
@@ -527,7 +583,7 @@ export function AdminPanel({
 
                     <button
                       onClick={() => handleStartUserEdit(u)}
-                      className="p-1.5 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
+                      className="p-1.5 rounded-xl border border-red-200 dark:border-red-800 text-[#E51920] dark:text-red-400 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
                       title="Editar Rol y Datos"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -555,7 +611,7 @@ export function AdminPanel({
           {/* Add User panel */}
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center gap-1.5">
-              <UserPlus className="w-4 h-4 text-blue-600" />
+              <UserPlus className="w-4 h-4 text-[#E51920]" />
               Registrar Colaborador
             </h4>
 
@@ -567,7 +623,7 @@ export function AdminPanel({
                   placeholder="Ej. Roberto Mendoza"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
               </div>
@@ -579,17 +635,17 @@ export function AdminPanel({
                   placeholder="ejemplo@choho.pe"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-blue-600 dark:text-blue-400 uppercase font-bold block">Rol / Perfil Asignado</label>
+                <label className="text-[11px] text-[#E51920] dark:text-red-400 uppercase font-bold block">Rol / Perfil Asignado</label>
                 <select
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-blue-600 dark:text-blue-400 font-bold focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-[#E51920] dark:text-red-400 font-bold focus:outline-none"
                 >
                   {rolesList.map((r) => (
                     <option key={r.id} value={r.name}>{r.name}</option>
@@ -603,7 +659,7 @@ export function AdminPanel({
                   <select
                     value={newUserBranch}
                     onChange={(e) => setNewUserBranch(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   >
                     {branchesList.map((b) => (
                       <option key={b.id} value={b.name}>
@@ -617,7 +673,7 @@ export function AdminPanel({
                   <select
                     value={newUserDept}
                     onChange={(e) => setNewUserDept(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-3 py-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium focus:outline-none"
                   >
                     {departmentsList.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -637,7 +693,7 @@ export function AdminPanel({
               <button
                 type="submit"
                 disabled={isAddingUser}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25"
               >
                 <Plus className="w-4 h-4" />
                 <span>Agregar Colaborador</span>
@@ -654,25 +710,25 @@ export function AdminPanel({
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-2 flex items-center justify-between">
               <span>Roles y Niveles de Permiso Definidos ({rolesList.length})</span>
-              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">Permisos Granulares</span>
+              <span className="text-[10px] font-mono text-[#E51920] dark:text-red-400 font-bold">Permisos Granulares</span>
             </h4>
 
             <div className="space-y-4">
               {rolesList.map((role) => (
                 <div
                   key={role.id}
-                  className="p-4 bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-3 text-left hover:border-blue-500/40 transition-all"
+                  className="p-4 bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-3 text-left hover:border-red-500/40 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-blue-600" />
+                      <ShieldCheck className="w-4 h-4 text-[#E51920]" />
                       <span className="text-sm font-extrabold text-slate-900 dark:text-white">{role.name}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleStartRoleEdit(role)}
-                        className="px-3 py-1 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                        className="px-3 py-1 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 hover:bg-red-100 text-[#E51920] dark:text-red-400 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
                         title="Editar Rol y Permisos"
                       >
                         <Edit3 className="w-3 h-3" />
@@ -689,22 +745,28 @@ export function AdminPanel({
                   </p>
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.catalog ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.catalog ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       🛍️ Catálogo: {role.permissions.catalog ? 'Sí' : 'No'}
                     </span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.quotes ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.quotes ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       📝 Cotizaciones: {role.permissions.quotes ? 'Sí' : 'No'}
                     </span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.billing ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.billing ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       🧾 Facturas: {role.permissions.billing ? 'Sí' : 'No'}
                     </span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.inventory ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.inventory ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       📦 Inventario: {role.permissions.inventory ? 'Sí' : 'No'}
                     </span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.telemetry ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.telemetry ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       📍 Visitas: {role.permissions.telemetry ? 'Sí' : 'No'}
                     </span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.admin ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.expenses ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                      💳 Viáticos: {role.permissions.expenses ? 'Sí' : 'No'}
+                    </span>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.dashboard ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
+                      📊 Dashboard: {role.permissions.dashboard ? 'Sí' : 'No'}
+                    </span>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full border ${role.permissions.admin ? 'bg-red-50 text-[#E51920] border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800' : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-800'}`}>
                       ⚙️ Administración: {role.permissions.admin ? 'Sí' : 'No'}
                     </span>
                   </div>
@@ -716,7 +778,7 @@ export function AdminPanel({
           {/* Create New Role Panel */}
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center gap-1.5">
-              <ShieldAlert className="w-4 h-4 text-blue-600" />
+              <ShieldAlert className="w-4 h-4 text-[#E51920]" />
               Crear Nuevo Rol Personalizado
             </h4>
 
@@ -740,7 +802,7 @@ export function AdminPanel({
                   placeholder="Alcance del perfil y responsabilidades..."
                   value={newRoleDesc}
                   onChange={(e) => setNewRoleDesc(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
                 />
               </div>
 
@@ -752,7 +814,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={newRolePerms.catalog}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, catalog: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>Catálogo</span>
                   </label>
@@ -761,7 +823,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={newRolePerms.quotes}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, quotes: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>Cotizaciones</span>
                   </label>
@@ -770,7 +832,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={newRolePerms.billing}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, billing: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>Facturación</span>
                   </label>
@@ -779,7 +841,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={newRolePerms.inventory}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, inventory: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>Inventario</span>
                   </label>
@@ -788,16 +850,34 @@ export function AdminPanel({
                       type="checkbox"
                       checked={newRolePerms.telemetry}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, telemetry: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
-                    <span>Visitas</span>
+                    <span>Visitas GPS</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newRolePerms.expenses}
+                      onChange={(e) => setNewRolePerms({ ...newRolePerms, expenses: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Viáticos SUNAT</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newRolePerms.dashboard}
+                      onChange={(e) => setNewRolePerms({ ...newRolePerms, dashboard: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Cuadro de Mando</span>
                   </label>
                   <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={newRolePerms.admin}
                       onChange={(e) => setNewRolePerms({ ...newRolePerms, admin: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>Administración</span>
                   </label>
@@ -812,7 +892,7 @@ export function AdminPanel({
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25"
               >
                 <Plus className="w-4 h-4" />
                 <span>Registrar Nuevo Rol</span>
@@ -894,7 +974,7 @@ export function AdminPanel({
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-blue-600" />
+                <GitBranch className="w-4 h-4 text-[#E51920]" />
                 Gestión de Sedes y Almacenes ({branchesList.length})
               </h4>
             </div>
@@ -905,11 +985,11 @@ export function AdminPanel({
                 placeholder="Nombre de nueva sede (ej. Sede Huancayo)"
                 value={newBranchName}
                 onChange={(e) => setNewBranchName(e.target.value)}
-                className="flex-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                className="flex-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
               />
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                className="bg-[#E51920] hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
               >
                 <Plus className="w-4 h-4" />
                 <span>Crear</span>
@@ -923,12 +1003,12 @@ export function AdminPanel({
                   className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all"
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`w-2.5 h-2.5 rounded-full ${branch.status === 'ACTIVE' ? 'bg-blue-600' : 'bg-red-500'}`} />
+                    <span className={`w-2.5 h-2.5 rounded-full ${branch.status === 'ACTIVE' ? 'bg-[#E51920]' : 'bg-red-500'}`} />
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{branch.name}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${branch.status === 'ACTIVE' ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400 border border-blue-200' : 'bg-red-50 text-red-500 dark:bg-red-950 dark:text-red-400 border border-red-200'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${branch.status === 'ACTIVE' ? 'bg-red-50 text-[#E51920] dark:bg-red-950 dark:text-red-400 border border-red-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400 border border-slate-200'}`}>
                       {branch.status === 'ACTIVE' ? 'Activa' : 'Desactivada'}
                     </span>
                     <button
@@ -936,7 +1016,7 @@ export function AdminPanel({
                       className={`p-1.5 rounded-xl border text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold ${
                         branch.status === "ACTIVE"
                           ? "border-red-200 text-red-600 dark:border-red-800/50 dark:text-red-400 hover:bg-red-50"
-                          : "border-blue-200 text-blue-600 dark:border-blue-800/50 dark:text-blue-400 hover:bg-blue-50"
+                          : "border-red-200 text-[#E51920] dark:border-red-800/50 dark:text-red-400 hover:bg-red-50"
                       }`}
                       title={branch.status === "ACTIVE" ? "Desactivar Sede" : "Reactivar Sede"}
                     >
@@ -964,10 +1044,10 @@ export function AdminPanel({
               {products.map((p) => (
                 <div
                   key={p.sku}
-                  className="p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-500/40 transition-all text-left"
+                  className="p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-red-500/40 transition-all text-left"
                 >
                   <div className="min-w-0">
-                    <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">{p.sku}</span>
+                    <span className="text-[10px] font-mono text-[#E51920] dark:text-red-400 font-bold">{p.sku}</span>
                     <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{p.name}</h5>
                     <span className="text-[10px] text-slate-400">Categoría: {p.category}</span>
                   </div>
@@ -975,7 +1055,7 @@ export function AdminPanel({
                   <div className="flex items-center justify-between sm:justify-end gap-5 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800">
                     <div className="text-right">
                       <span className="text-[9px] text-slate-400 block font-medium">BASE (U.N.)</span>
-                      <span className="text-xs font-mono font-extrabold text-blue-600 dark:text-blue-400">
+                      <span className="text-xs font-mono font-extrabold text-[#E51920] dark:text-red-400">
                         S/ {Number(p.basePrice || 0).toFixed(2)}
                       </span>
                     </div>
@@ -989,7 +1069,7 @@ export function AdminPanel({
 
                     <button
                       onClick={() => handleSelectProduct(p)}
-                      className="p-2 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-all cursor-pointer"
+                      className="p-2 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 rounded-xl text-[#E51920] dark:text-red-400 hover:bg-red-100 transition-all cursor-pointer"
                       title="Editar Precios y Stock"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -1009,7 +1089,7 @@ export function AdminPanel({
             {selectedProductSku ? (
               <div className="space-y-4">
                 <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-0.5">
-                  <div className="text-[9px] font-mono text-blue-600 dark:text-blue-400 font-bold uppercase">EDITANDO SKU</div>
+                  <div className="text-[9px] font-mono text-[#E51920] dark:text-red-400 font-bold uppercase">EDITANDO SKU</div>
                   <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{selectedProductSku}</div>
                 </div>
 
@@ -1020,7 +1100,7 @@ export function AdminPanel({
                     step="0.1"
                     value={editingPrice}
                     onChange={(e) => setEditingPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
                   />
                 </div>
 
@@ -1030,7 +1110,7 @@ export function AdminPanel({
                     type="number"
                     value={editingStock}
                     onChange={(e) => setEditingStock(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
                   />
                 </div>
 
@@ -1044,7 +1124,7 @@ export function AdminPanel({
                   <button
                     onClick={handleSaveProductChanges}
                     disabled={isUpdatingProduct}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                    className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
                   >
                     <Check className="w-4 h-4" />
                     <span>Guardar</span>
@@ -1067,7 +1147,7 @@ export function AdminPanel({
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2 font-display">
-                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                <ShieldCheck className="w-4 h-4 text-[#E51920]" />
                 Editar Rol y Niveles de Permiso
               </h4>
               <button
@@ -1080,7 +1160,7 @@ export function AdminPanel({
 
             <form onSubmit={handleSaveRoleEdit} className="space-y-4">
               <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div className="text-[9px] font-mono text-blue-600 dark:text-blue-400 font-bold uppercase">ID DEL ROL</div>
+                <div className="text-[9px] font-mono text-[#E51920] dark:text-red-400 font-bold uppercase">ID DEL ROL</div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">{editingRole.id}</div>
               </div>
 
@@ -1090,7 +1170,7 @@ export function AdminPanel({
                   type="text"
                   value={editRoleName}
                   onChange={(e) => setEditRoleName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
               </div>
@@ -1101,19 +1181,19 @@ export function AdminPanel({
                   rows={2}
                   value={editRoleDesc}
                   onChange={(e) => setEditRoleDesc(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] text-blue-600 dark:text-blue-400 font-bold uppercase block">Permisos Granulares por Módulo</label>
+                <label className="text-[11px] text-[#E51920] dark:text-red-400 font-bold uppercase block">Permisos Granulares por Módulo</label>
                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
                   <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={editRolePerms.catalog}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, catalog: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>🛍️ Catálogo</span>
                   </label>
@@ -1122,7 +1202,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={editRolePerms.quotes}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, quotes: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>📝 Cotizaciones</span>
                   </label>
@@ -1131,7 +1211,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={editRolePerms.billing}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, billing: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>🧾 Facturación</span>
                   </label>
@@ -1140,7 +1220,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={editRolePerms.inventory}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, inventory: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>📦 Inventario</span>
                   </label>
@@ -1149,7 +1229,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={editRolePerms.telemetry}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, telemetry: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>📍 Visitas</span>
                   </label>
@@ -1158,7 +1238,7 @@ export function AdminPanel({
                       type="checkbox"
                       checked={editRolePerms.admin}
                       onChange={(e) => setEditRolePerms({ ...editRolePerms, admin: e.target.checked })}
-                      className="rounded accent-blue-600"
+                      className="rounded accent-[#E51920]"
                     />
                     <span>⚙️ Administración</span>
                   </label>
@@ -1175,7 +1255,7 @@ export function AdminPanel({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                  className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
                 >
                   <Check className="w-4 h-4" />
                   <span>Guardar Cambios</span>
@@ -1192,7 +1272,7 @@ export function AdminPanel({
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2 font-display">
-                <Edit3 className="w-4 h-4 text-blue-600" />
+                <Edit3 className="w-4 h-4 text-[#E51920]" />
                 Editar Perfil y Rol de Colaborador
               </h4>
               <button
@@ -1205,7 +1285,7 @@ export function AdminPanel({
 
             <form onSubmit={handleSaveUserEdit} className="space-y-4">
               <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div className="text-[9px] font-mono text-blue-600 dark:text-blue-400 font-bold uppercase">ID COLABORADOR</div>
+                <div className="text-[9px] font-mono text-[#E51920] dark:text-red-400 font-bold uppercase">ID COLABORADOR</div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">{editingUser.id}</div>
               </div>
 
@@ -1215,7 +1295,7 @@ export function AdminPanel({
                   type="text"
                   value={editUserName}
                   onChange={(e) => setEditUserName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
               </div>
@@ -1226,17 +1306,17 @@ export function AdminPanel({
                   type="email"
                   value={editUserEmail}
                   onChange={(e) => setEditUserEmail(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-blue-600 dark:text-blue-400 uppercase font-bold block">Rol / Perfil Asignado</label>
+                <label className="text-[11px] text-[#E51920] dark:text-red-400 uppercase font-bold block">Rol / Perfil Asignado</label>
                 <select
                   value={editUserRole}
                   onChange={(e) => setEditUserRole(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-blue-600 dark:text-blue-400 font-bold focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-[#E51920] dark:text-red-400 font-bold focus:outline-none"
                 >
                   {rolesList.map((r) => (
                     <option key={r.id} value={r.name}>{r.name}</option>
@@ -1250,7 +1330,7 @@ export function AdminPanel({
                   <select
                     value={editUserBranch}
                     onChange={(e) => setEditUserBranch(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   >
                     {branchesList.map((b) => (
                       <option key={b.id} value={b.name}>
@@ -1265,7 +1345,7 @@ export function AdminPanel({
                   <select
                     value={editUserStatus}
                     onChange={(e) => setEditUserStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-bold"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-bold"
                   >
                     <option value="ACTIVE">Activo</option>
                     <option value="INACTIVE">Suspendido</option>
@@ -1278,7 +1358,7 @@ export function AdminPanel({
                 <select
                   value={editUserDept}
                   onChange={(e) => setEditUserDept(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-3 py-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold focus:outline-none"
                 >
                   {departmentsList.map((d) => (
                     <option key={d.id} value={d.name}>
@@ -1316,7 +1396,7 @@ export function AdminPanel({
                 <button
                   type="submit"
                   disabled={isSavingUserEdit}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                  className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
                 >
                   <Check className="w-4 h-4" />
                   <span>Guardar Cambios</span>
@@ -1348,7 +1428,7 @@ export function AdminPanel({
               <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-0.5">
                 <div className="text-[10px] font-mono text-slate-400 uppercase">COLABORADOR SELECCIONADO</div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white">{resettingUserPassword.name}</div>
-                <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono font-bold">{resettingUserPassword.email}</div>
+                <div className="text-[11px] text-[#E51920] dark:text-red-400 font-mono font-bold">{resettingUserPassword.email}</div>
               </div>
 
               <div className="space-y-1">
@@ -1357,7 +1437,7 @@ export function AdminPanel({
                   <button
                     type="button"
                     onClick={generateRandomPassword}
-                    className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer font-mono font-bold"
+                    className="text-[10px] text-[#E51920] dark:text-red-400 hover:underline flex items-center gap-1 cursor-pointer font-mono font-bold"
                   >
                     <RefreshCw className="w-3 h-3" />
                     <span>Generar Aleatoria</span>
@@ -1370,14 +1450,14 @@ export function AdminPanel({
                     placeholder="Escriba nueva contraseña"
                     value={newPasswordInput}
                     onChange={(e) => setNewPasswordInput(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
                     required
                   />
                   {newPasswordInput && (
                     <button
                       type="button"
                       onClick={handleCopyPassword}
-                      className="absolute right-2.5 text-slate-400 hover:text-blue-600 p-1 cursor-pointer"
+                      className="absolute right-2.5 text-slate-400 hover:text-[#E51920] p-1 cursor-pointer"
                       title="Copiar contraseña"
                     >
                       <Copy className="w-4 h-4" />
@@ -1409,12 +1489,157 @@ export function AdminPanel({
                   <button
                     type="submit"
                     disabled={isResettingPassword || !newPasswordInput}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                    className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
                   >
                     <Check className="w-4 h-4" />
                     <span>Guardar Clave</span>
                   </button>
                 )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT ROLE MODAL OVERLAY */}
+      {editingRole && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2 font-display">
+                <ShieldCheck className="w-4 h-4 text-[#E51920]" />
+                Editar Rol y Matriz de Permisos
+              </h4>
+              <button
+                onClick={() => setEditingRole(null)}
+                className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveRoleEdit} className="space-y-4">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div className="text-[9px] font-mono text-[#E51920] dark:text-red-400 font-bold uppercase">CÓDIGO DE ROL</div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">{editingRole.id}</div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Nombre del Rol</label>
+                <input
+                  type="text"
+                  value={editRoleName}
+                  onChange={(e) => setEditRoleName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 font-bold focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Descripción</label>
+                <textarea
+                  rows={2}
+                  value={editRoleDesc}
+                  onChange={(e) => setEditRoleDesc(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] text-[#E51920] dark:text-red-400 font-extrabold uppercase block">
+                  Permisos de Acceso a Módulos
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.catalog}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, catalog: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Catálogo</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.quotes}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, quotes: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Cotizaciones</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.billing}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, billing: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Facturación</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.inventory}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, inventory: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Inventario</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.telemetry}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, telemetry: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Visitas GPS</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.expenses}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, expenses: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Viáticos SUNAT</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.dashboard}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, dashboard: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Cuadro de Mando</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.admin}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, admin: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Administración</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingRole(null)}
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2 rounded-xl text-xs transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-red-600/25"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Guardar Matriz de Permisos</span>
+                </button>
               </div>
             </form>
           </div>

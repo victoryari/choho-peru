@@ -100,7 +100,7 @@ export function BudgetGenerator({
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
+              <FileText className="w-4 h-4 text-[#E51920]" />
               Items del Presupuesto Comercial
             </h3>
             {budgetItems.length > 0 && (
@@ -125,7 +125,7 @@ export function BudgetGenerator({
                   className="flex items-center justify-between gap-4 p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl"
                 >
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">{item.sku}</span>
+                    <span className="text-[10px] font-mono text-[#E51920] dark:text-red-400 font-bold">{item.sku}</span>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{item.name}</h4>
                     <span className="text-[11px] font-mono text-slate-400 font-medium">
                       S/ {item.price.toFixed(2)} c/u
@@ -133,27 +133,41 @@ export function BudgetGenerator({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    {/* Qty edit */}
-                    <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+                    {/* Qty edit with direct keyboard input support */}
+                    <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-1">
                       <button
                         onClick={() => onUpdateQty(item.sku, Math.max(1, item.qty - 1))}
-                        className="px-2.5 py-1 text-slate-500 hover:text-blue-600 font-bold transition-colors cursor-pointer"
+                        className="px-2 py-1 text-slate-500 hover:text-[#E51920] font-bold transition-colors cursor-pointer"
+                        title="Disminuir cantidad"
                       >
                         -
                       </button>
-                      <span className="w-8 text-center text-xs font-mono font-bold text-slate-900 dark:text-white">
-                        {item.qty}
-                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.qty === 0 ? "" : item.qty}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && val > 0) {
+                            onUpdateQty(item.sku, val);
+                          } else if (e.target.value === "") {
+                            onUpdateQty(item.sku, 1);
+                          }
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        className="w-12 text-center text-xs font-mono font-bold text-slate-900 dark:text-white bg-transparent focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800 rounded py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
                       <button
                         onClick={() => onUpdateQty(item.sku, item.qty + 1)}
-                        className="px-2.5 py-1 text-slate-500 hover:text-blue-600 font-bold transition-colors cursor-pointer"
+                        className="px-2 py-1 text-slate-500 hover:text-[#E51920] font-bold transition-colors cursor-pointer"
+                        title="Aumentar cantidad"
                       >
                         +
                       </button>
                     </div>
 
                     <div className="text-right min-w-[75px]">
-                      <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
+                      <span className="text-xs font-bold font-mono text-[#E51920] dark:text-red-400">
                         S/ {(item.qty * item.price).toFixed(2)}
                       </span>
                     </div>
@@ -190,7 +204,7 @@ export function BudgetGenerator({
                     placeholder="Ej. 20608542193"
                     value={ruc}
                     onChange={(e) => setRuc(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   />
                 </div>
               </div>
@@ -198,7 +212,7 @@ export function BudgetGenerator({
                 type="button"
                 onClick={querySUNAT}
                 disabled={isSearchingSUNAT}
-                className="w-full bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer h-9.5"
+                className="w-full bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-[#E51920] dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer h-9.5"
               >
                 {isSearchingSUNAT ? "Consultando..." : "Consultar SUNAT"}
               </button>
@@ -229,7 +243,7 @@ export function BudgetGenerator({
                     placeholder="Nombre o razón comercial"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                   />
                 </div>
               </div>
@@ -240,7 +254,7 @@ export function BudgetGenerator({
                   placeholder="Av. Principal, Ciudad"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
                 />
               </div>
             </div>
@@ -266,7 +280,7 @@ export function BudgetGenerator({
             </div>
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm">
               <span className="font-bold text-slate-900 dark:text-white">TOTAL ESTIMADO:</span>
-              <span className="font-extrabold font-mono text-blue-600 dark:text-blue-400 text-xl">
+              <span className="font-extrabold font-mono text-[#E51920] dark:text-red-400 text-xl">
                 S/ {total.toFixed(2)}
               </span>
             </div>
@@ -297,7 +311,7 @@ export function BudgetGenerator({
             <button
               onClick={() => handleSave("Aceptada")}
               disabled={isSaving || budgetItems.length === 0}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25 disabled:opacity-50"
             >
               <span>Aprobar y Emitir (Aceptada)</span>
               <ArrowRight className="w-3.5 h-3.5" />

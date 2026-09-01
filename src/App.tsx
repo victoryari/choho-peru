@@ -21,7 +21,7 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { User, Product, Quote, QuoteItem, Telemetry } from "./types";
+import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermission } from "./types";
 import { NotificationCenter } from "./components/NotificationCenter";
 import { Catalog } from "./components/Catalog";
 import { ProductDetailModal } from "./components/ProductDetailModal";
@@ -33,8 +33,116 @@ import { SyncCenter } from "./components/SyncCenter";
 import { AnalyticsDashboard } from "./components/AnalyticsDashboard";
 import { AdminPanel } from "./components/AdminPanel";
 import { InventoryManager } from "./components/InventoryManager";
+import { ExpensesManager } from "./components/ExpensesManager";
 import { ChohoLogo } from "./components/ChohoLogo";
 import { Sun, Moon, Boxes } from "lucide-react";
+
+export const getUserPermissions = (user: User | null, rolesList: RolePermission[] = []) => {
+  if (!user) {
+    return {
+      dashboard: false,
+      catalog: true,
+      inventory: false,
+      quotes: false,
+      billing: false,
+      telemetry: false,
+      expenses: false,
+      sync: false,
+      admin: false
+    };
+  }
+
+  const roleLower = (user.role || "").trim().toLowerCase();
+
+  // 1. Check dynamic roles matrix configured by Administrator
+  if (rolesList && rolesList.length > 0) {
+    const dynamicRole = rolesList.find(r => r.name.trim().toLowerCase() === roleLower);
+    if (dynamicRole && dynamicRole.permissions) {
+      const p = dynamicRole.permissions;
+      return {
+        catalog: p.catalog ?? true,
+        quotes: p.quotes ?? true,
+        billing: p.billing ?? false,
+        inventory: p.inventory ?? false,
+        telemetry: p.telemetry ?? false,
+        expenses: p.expenses ?? false,
+        sync: true,
+        admin: p.admin ?? false,
+        dashboard: p.dashboard ?? (p.admin || roleLower.includes("admin") || roleLower.includes("finanza"))
+      };
+    }
+  }
+
+  // 2. Default fallback rules by role name string
+  if (roleLower === "admin general" || roleLower.includes("admin") || roleLower.includes("gerencia")) {
+    return {
+      dashboard: true,
+      catalog: true,
+      inventory: true,
+      quotes: true,
+      billing: true,
+      telemetry: true,
+      expenses: true,
+      sync: true,
+      admin: true
+    };
+  }
+
+  if (roleLower === "jefe de finanzas" || roleLower.includes("finanza") || roleLower.includes("contab")) {
+    return {
+      dashboard: true,
+      catalog: true,
+      inventory: false,
+      quotes: true,
+      billing: true,
+      telemetry: false,
+      expenses: true,
+      sync: true,
+      admin: false
+    };
+  }
+
+  if (roleLower === "jefe de almacén" || roleLower === "jefe de almacen" || roleLower.includes("almacen") || roleLower.includes("almacén") || roleLower.includes("logística")) {
+    return {
+      dashboard: false,
+      catalog: true,
+      inventory: true,
+      quotes: false,
+      billing: false,
+      telemetry: false,
+      expenses: false,
+      sync: true,
+      admin: false
+    };
+  }
+
+  if (roleLower === "ventas" || roleLower === "asesor comercial" || roleLower.includes("ventas") || roleLower.includes("comercial")) {
+    return {
+      dashboard: false,
+      catalog: true,
+      inventory: false,
+      quotes: true,
+      billing: false,
+      telemetry: true,
+      expenses: true,
+      sync: true,
+      admin: false
+    };
+  }
+
+  // Default fallback for any custom role
+  return {
+    dashboard: false,
+    catalog: true,
+    inventory: false,
+    quotes: true,
+    billing: false,
+    telemetry: true,
+    expenses: true,
+    sync: true,
+    admin: false
+  };
+};
 
 export default function App() {
   // Theme state
@@ -67,6 +175,18 @@ export default function App() {
       return null;
     }
   });
+
+  // Core Data Lists
+  const [products, setProducts] = useState<Product[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [telemetry, setTelemetry] = useState<Telemetry[]>([]);
+  const [expenses, setExpenses] = useState<TravelExpense[]>([]);
+  const [rolesList, setRolesList] = useState<RolePermission[]>([]);
+
+  // Calculate dynamic user permissions from role matrix
+  const userPermissions = getUserPermissions(currentUser, rolesList);
+
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return Boolean(localStorage.getItem("choho_user") && localStorage.getItem("choho_token"));
   });
@@ -75,21 +195,28 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Core Data Lists
-  const [products, setProducts] = useState<Product[]>([]);
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [telemetry, setTelemetry] = useState<Telemetry[]>([]);
-
   // Local active shopping budget cart
   const [budgetItems, setBudgetItems] = useState<QuoteItem[]>([]);
   const [offlinePendingQuotes, setOfflinePendingQuotes] = useState<Quote[]>([]);
 
   // UI Navigation Toggles
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "catalog" | "inventory" | "cart" | "quotes" | "billing" | "telemetry" | "sync" | "admin"
+    "dashboard" | "catalog" | "inventory" | "cart" | "quotes" | "billing" | "telemetry" | "expenses" | "sync" | "admin"
   >("catalog");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Enforce access control on active tab
+  useEffect(() => {
+    if (!isLoggedIn || !currentUser) return;
+    if (activeTab === "inventory" && !userPermissions.inventory) setActiveTab("catalog");
+    if (activeTab === "billing" && !userPermissions.billing) setActiveTab("catalog");
+    if (activeTab === "admin" && !userPermissions.admin) setActiveTab("catalog");
+    if (activeTab === "dashboard" && !userPermissions.dashboard) setActiveTab("catalog");
+    if (activeTab === "telemetry" && !userPermissions.telemetry) setActiveTab("catalog");
+    if (activeTab === "expenses" && !userPermissions.expenses) setActiveTab("catalog");
+    if (activeTab === "cart" && !userPermissions.quotes) setActiveTab("catalog");
+    if (activeTab === "quotes" && !userPermissions.quotes) setActiveTab("catalog");
+  }, [currentUser, activeTab, isLoggedIn, userPermissions.inventory, userPermissions.billing, userPermissions.admin, userPermissions.dashboard, userPermissions.telemetry, userPermissions.expenses, userPermissions.quotes]);
 
   // Selection modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -101,17 +228,23 @@ export default function App() {
   const fetchBaselineData = async () => {
     if (isOfflineMode) return;
     try {
-      const [resProducts, resQuotes, resUsers, resTelemetry] = await Promise.all([
+      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles] = await Promise.all([
         fetch("/api/products"),
         fetch("/api/quotes"),
         fetch("/api/users"),
-        fetch("/api/telemetry")
+        fetch("/api/telemetry"),
+        fetch("/api/expenses"),
+        fetch("/api/roles")
       ]);
 
       if (resProducts.ok) setProducts(await resProducts.json());
       if (resQuotes.ok) setQuotes(await resQuotes.json());
       if (resUsers.ok) setUsers(await resUsers.json());
       if (resTelemetry.ok) setTelemetry(await resTelemetry.json());
+      if (resRoles.ok) {
+        const rolesData = await resRoles.json();
+        if (Array.isArray(rolesData) && rolesData.length > 0) setRolesList(rolesData);
+      }
     } catch (err) {
       console.error("Error loading baseline fullstack data, entering offline grace mode:", err);
     }
@@ -144,8 +277,9 @@ export default function App() {
       setCurrentUser(data.user);
       setIsLoggedIn(true);
 
-      // Boot application tab based on access role
-      if (data.user.role === "Admin General" || data.user.role === "Jefe de Finanzas") {
+      // Boot application tab based on role permissions
+      const perms = getUserPermissions(data.user, rolesList);
+      if (perms.dashboard) {
         setActiveTab("dashboard");
       } else {
         setActiveTab("catalog");
@@ -298,6 +432,49 @@ export default function App() {
     const id = `T-0${telemetry.length + 1}`;
     const newVisit = { ...visitPayload, id };
     setTelemetry((prev) => [newVisit, ...prev]);
+  };
+
+  // Add travel expense
+  const handleAddExpense = async (expensePayload: Omit<TravelExpense, "id">) => {
+    const id = `EXP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newExpense = { ...expensePayload, id };
+
+    if (!isOfflineMode) {
+      try {
+        const res = await fetch("/api/expenses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newExpense)
+        });
+        if (res.ok) {
+          const added = await res.json();
+          setExpenses((prev) => [added, ...prev]);
+          return;
+        }
+      } catch (err) {
+        console.error("Error al registrar viático en servidor:", err);
+      }
+    }
+    setExpenses((prev) => [newExpense, ...prev]);
+  };
+
+  // Update travel expense status
+  const handleUpdateExpenseStatus = async (id: string, approvalStatus: 'Pendiente' | 'Aprobado' | 'Observado') => {
+    setExpenses((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, approvalStatus } : e))
+    );
+
+    if (!isOfflineMode) {
+      try {
+        await fetch(`/api/expenses/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approvalStatus })
+        });
+      } catch (err) {
+        console.error("Error actualizando estado del viático en servidor:", err);
+      }
+    }
   };
 
   // Add new product
@@ -530,7 +707,7 @@ export default function App() {
               <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
                 {/* Brand Logo */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <ChohoLogo size="sm" showTagline={false} />
+                  <ChohoLogo size="sm" showTagline={true} />
 
                   {/* Mobile responsive indicator */}
                   <span
@@ -543,7 +720,7 @@ export default function App() {
 
                 {/* User Card info */}
                 <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-0.5 text-left relative group">
-                  <div className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wide">
+                  <div className="text-[10px] text-[#E51920] dark:text-red-400 font-extrabold uppercase tracking-wide">
                     {currentUser?.role}
                   </div>
                   <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{currentUser?.name}</div>
@@ -557,12 +734,12 @@ export default function App() {
                     Menú Principal
                   </div>
                   <nav className="space-y-1">
-                    {(currentUser?.role === "Admin General" || currentUser?.role === "Jefe de Finanzas") && (
+                    {userPermissions.dashboard && (
                       <button
                         onClick={() => setActiveTab("dashboard")}
                         className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                           activeTab === "dashboard"
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                            ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
                         }`}
                       >
@@ -571,96 +748,124 @@ export default function App() {
                       </button>
                     )}
 
-                    <button
-                      onClick={() => setActiveTab("catalog")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                        activeTab === "catalog"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>Catálogo de Repuestos</span>
-                    </button>
+                    {userPermissions.catalog && (
+                      <button
+                        onClick={() => setActiveTab("catalog")}
+                        className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                          activeTab === "catalog"
+                            ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                        }`}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Catálogo de Repuestos</span>
+                      </button>
+                    )}
                   </nav>
                 </div>
 
                 {/* Navigation Category: COMMERCIAL */}
-                <div className="space-y-1.5 text-left pt-1">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">
-                    Módulos Comerciales
-                  </div>
-                  <nav className="space-y-1">
-                    <button
-                      onClick={() => setActiveTab("inventory")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                        activeTab === "inventory"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <Boxes className="w-4 h-4" />
-                      <span>Control de Inventario</span>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab("cart")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                        activeTab === "cart"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-4 h-4" />
-                        <span>Crear Presupuesto</span>
-                      </div>
-                      {budgetItems.length > 0 && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          activeTab === "cart" ? "bg-white text-blue-600" : "bg-amber-500 text-slate-950"
-                        }`}>
-                          {budgetItems.length}
-                        </span>
+                {(userPermissions.inventory || userPermissions.quotes || userPermissions.billing || userPermissions.telemetry) && (
+                  <div className="space-y-1.5 text-left pt-1">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">
+                      Módulos Comerciales
+                    </div>
+                    <nav className="space-y-1">
+                      {userPermissions.inventory && (
+                        <button
+                          onClick={() => setActiveTab("inventory")}
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                            activeTab === "inventory"
+                              ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          <Boxes className="w-4 h-4" />
+                          <span>Control de Inventario</span>
+                        </button>
                       )}
-                    </button>
 
-                    <button
-                      onClick={() => setActiveTab("quotes")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                        activeTab === "quotes"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>Mis Cotizaciones</span>
-                    </button>
+                      {userPermissions.quotes && (
+                        <>
+                          <button
+                            onClick={() => setActiveTab("cart")}
+                            className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                              activeTab === "cart"
+                                ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-4 h-4" />
+                              <span>Crear Presupuesto</span>
+                            </div>
+                            {budgetItems.length > 0 && (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                activeTab === "cart" ? "bg-white text-[#E51920]" : "bg-amber-500 text-slate-950"
+                              }`}>
+                                {budgetItems.length}
+                              </span>
+                            )}
+                          </button>
 
-                    <button
-                      onClick={() => setActiveTab("billing")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                        activeTab === "billing"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <Receipt className="w-4 h-4" />
-                      <span>Facturación SUNAT</span>
-                    </button>
+                          <button
+                            onClick={() => setActiveTab("quotes")}
+                            className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                              activeTab === "quotes"
+                                ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                            }`}
+                          >
+                            <FileText className="w-4 h-4" />
+                            <span>Mis Cotizaciones</span>
+                          </button>
+                        </>
+                      )}
 
-                    <button
-                      onClick={() => setActiveTab("telemetry")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                        activeTab === "telemetry"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <Compass className="w-4 h-4" />
-                      <span>Check-ins de Campo</span>
-                    </button>
-                  </nav>
-                </div>
+                      {userPermissions.billing && (
+                        <button
+                          onClick={() => setActiveTab("billing")}
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                            activeTab === "billing"
+                              ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          <Receipt className="w-4 h-4" />
+                          <span>Facturación SUNAT</span>
+                        </button>
+                      )}
+
+                      {userPermissions.telemetry && (
+                        <button
+                          onClick={() => setActiveTab("telemetry")}
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                            activeTab === "telemetry"
+                              ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          <Compass className="w-4 h-4" />
+                          <span>Check-ins de Campo</span>
+                        </button>
+                      )}
+
+                      {userPermissions.expenses && (
+                        <button
+                          onClick={() => setActiveTab("expenses")}
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                            activeTab === "expenses"
+                              ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
+                              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          <Receipt className="w-4 h-4" />
+                          <span>Sustento de Viáticos</span>
+                        </button>
+                      )}
+                    </nav>
+                  </div>
+                )}
 
                 {/* Navigation Category: SYSTEM */}
                 <div className="space-y-1.5 text-left pt-1">
@@ -668,31 +873,33 @@ export default function App() {
                     Sistema & Ajustes
                   </div>
                   <nav className="space-y-1">
-                    <button
-                      onClick={() => setActiveTab("sync")}
-                      className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                        activeTab === "sync"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Cloud className="w-4 h-4" />
-                        <span>Sincronización</span>
-                      </div>
-                      {offlinePendingQuotes.length > 0 && (
-                        <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce">
-                          {offlinePendingQuotes.length}
-                        </span>
-                      )}
-                    </button>
+                    {userPermissions.sync && (
+                      <button
+                        onClick={() => setActiveTab("sync")}
+                        className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                          activeTab === "sync"
+                            ? "bg-[#E51920] text-[#E51920] text-white shadow-md shadow-red-600/25"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Cloud className="w-4 h-4" />
+                          <span>Sincronización</span>
+                        </div>
+                        {offlinePendingQuotes.length > 0 && (
+                          <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce">
+                            {offlinePendingQuotes.length}
+                          </span>
+                        )}
+                      </button>
+                    )}
 
-                    {currentUser?.role === "Admin General" && (
+                    {userPermissions.admin && (
                       <button
                         onClick={() => setActiveTab("admin")}
                         className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
                           activeTab === "admin"
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                            ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
                         }`}
                       >
@@ -706,7 +913,7 @@ export default function App() {
 
               {/* Bottom sidebar DealDeck contrast callout card */}
               <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-left">
-                <div className="bg-slate-900 text-white rounded-2xl p-3.5 space-y-2 relative overflow-hidden shadow-lg shadow-slate-900/10">
+                <div className="bg-slate-900 text-white rounded-2xl p-3.5 space-y-2 relative overflow-hidden shadow-lg shadow-slate-900/10 border border-slate-800/80">
                   <div className="text-[11px] font-bold flex items-center justify-between">
                     <span>Estado del Sistema</span>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -716,7 +923,7 @@ export default function App() {
                   </p>
                   <button
                     onClick={() => setActiveTab("sync")}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-xl text-[11px] transition-all cursor-pointer"
+                    className="w-full bg-[#E51920] hover:bg-red-700 text-white font-bold py-1.5 px-3 rounded-xl text-[11px] transition-all cursor-pointer shadow-md shadow-red-600/20"
                   >
                     Sincronización Pro
                   </button>
@@ -759,6 +966,7 @@ export default function App() {
                       {activeTab === "quotes" && "Historial de Cotizaciones de Campo"}
                       {activeTab === "billing" && "Facturación Electrónica SUNAT"}
                       {activeTab === "telemetry" && "Geolocalización & Visitas de Campo"}
+                      {activeTab === "expenses" && "Sustento & Rendición de Viáticos SUNAT"}
                       {activeTab === "sync" && "Centro de Sincronización de Datos"}
                       {activeTab === "admin" && "Administración de Usuarios y Sedes"}
                     </span>
@@ -796,7 +1004,7 @@ export default function App() {
               {/* Tab views with scrollbar wrapper & mobile bottom dock padding */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-28 md:pb-6">
                 {activeTab === "dashboard" && (
-                  <AnalyticsDashboard products={products} quotes={quotes} />
+                  <AnalyticsDashboard products={products} quotes={quotes} expenses={expenses} />
                 )}
 
                 {activeTab === "catalog" && (
@@ -831,7 +1039,12 @@ export default function App() {
                 )}
 
                 {activeTab === "billing" && (
-                  <BillingInvoice quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} />
+                  <BillingInvoice 
+                    quotes={quotes} 
+                    onUpdateQuoteStatus={handleUpdateQuoteStatus} 
+                    products={products}
+                    onUpdateProduct={handleUpdateProduct}
+                  />
                 )}
 
                 {activeTab === "telemetry" && (
@@ -839,6 +1052,16 @@ export default function App() {
                     telemetryList={telemetry}
                     onAddVisit={handleAddVisit}
                     currentUserName={currentUser?.name || "Asesor"}
+                  />
+                )}
+
+                {activeTab === "expenses" && (
+                  <ExpensesManager
+                    expensesList={expenses}
+                    onAddExpense={handleAddExpense}
+                    onUpdateExpenseStatus={handleUpdateExpenseStatus}
+                    currentUserName={currentUser?.name || "Asesor"}
+                    currentUserRole={currentUser?.role}
                   />
                 )}
 
@@ -859,6 +1082,7 @@ export default function App() {
                     onAddUser={handleAddUser}
                     onUpdateUser={handleUpdateUser}
                     onUpdateProduct={handleUpdateProduct}
+                    onRolesUpdated={(newRoles) => setRolesList(newRoles)}
                   />
                 )}
               </div>
@@ -879,77 +1103,102 @@ export default function App() {
       {/* Mobile App Bottom Navigation Dock (Native App Style) */}
       {currentUser && (
         <div className="mobile-bottom-dock md:hidden fixed bottom-0 inset-x-0 z-40 px-2 py-1.5 flex items-center justify-around border-t border-slate-800/80">
-          <button
-            onClick={() => setActiveTab("catalog")}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
-              activeTab === "catalog" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <ShoppingBag className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5 font-sans font-medium">Catálogo</span>
-            {activeTab === "catalog" && (
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("cart")}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
-              activeTab === "cart" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <div className="relative">
-              <FileText className="w-5 h-5" />
-              {budgetItems.length > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
-                  {budgetItems.length}
-                </span>
+          {userPermissions.catalog && (
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "catalog" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Catálogo</span>
+              {activeTab === "catalog" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
               )}
-            </div>
-            <span className="text-[10px] mt-0.5 font-sans font-medium">Cotizar</span>
-            {activeTab === "cart" && (
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
-            )}
-          </button>
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveTab("billing")}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
-              activeTab === "billing" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Receipt className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5 font-sans font-medium">Facturas</span>
-            {activeTab === "billing" && (
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
-            )}
-          </button>
+          {userPermissions.quotes && (
+            <button
+              onClick={() => setActiveTab("cart")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "cart" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <div className="relative">
+                <FileText className="w-5 h-5" />
+                {budgetItems.length > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
+                    {budgetItems.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Cotizar</span>
+              {activeTab === "cart" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+              )}
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveTab("inventory")}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
-              activeTab === "inventory" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Package className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5 font-sans font-medium">Inventario</span>
-            {activeTab === "inventory" && (
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
-            )}
-          </button>
+          {userPermissions.billing && (
+            <button
+              onClick={() => setActiveTab("billing")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "billing" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Receipt className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Facturas</span>
+              {activeTab === "billing" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+              )}
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveTab("telemetry")}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
-              activeTab === "telemetry" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <MapPin className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5 font-sans font-medium">Visitas</span>
-            {activeTab === "telemetry" && (
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
-            )}
-          </button>
+          {userPermissions.inventory && (
+            <button
+              onClick={() => setActiveTab("inventory")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "inventory" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Package className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Inventario</span>
+              {activeTab === "inventory" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+              )}
+            </button>
+          )}
+
+          {userPermissions.telemetry && (
+            <button
+              onClick={() => setActiveTab("telemetry")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "telemetry" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <MapPin className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Visitas</span>
+              {activeTab === "telemetry" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+              )}
+            </button>
+          )}
+
+          {userPermissions.expenses && (
+            <button
+              onClick={() => setActiveTab("expenses")}
+              className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${
+                activeTab === "expenses" ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Receipt className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 font-sans font-medium">Viáticos</span>
+              {activeTab === "expenses" && (
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-0.5 shadow-sm shadow-cyan-400" />
+              )}
+            </button>
+          )}
         </div>
       )}
 
@@ -995,7 +1244,7 @@ export default function App() {
 
                 {/* Mobile Drawer Links */}
                 <nav className="space-y-1 text-left">
-                  {(currentUser?.role === "Admin General" || currentUser?.role === "Jefe de Finanzas") && (
+                  {userPermissions.dashboard && (
                     <button
                       onClick={() => { setActiveTab("dashboard"); setIsMobileMenuOpen(false); }}
                       className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
@@ -1007,84 +1256,110 @@ export default function App() {
                     </button>
                   )}
 
-                  <button
-                    onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "catalog" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <ShoppingBag className="w-4 h-4 text-cyan-400" />
-                    <span>Catálogo y Productos</span>
-                  </button>
+                  {userPermissions.catalog && (
+                    <button
+                      onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "catalog" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <ShoppingBag className="w-4 h-4 text-cyan-400" />
+                      <span>Catálogo y Productos</span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveTab("inventory"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "inventory" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <Package className="w-4 h-4 text-cyan-400" />
-                    <span>Control de Inventario</span>
-                  </button>
+                  {userPermissions.inventory && (
+                    <button
+                      onClick={() => { setActiveTab("inventory"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "inventory" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Package className="w-4 h-4 text-cyan-400" />
+                      <span>Control de Inventario</span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveTab("cart"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 transition-all cursor-pointer ${
-                      activeTab === "cart" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-cyan-400" />
-                      <span>Crear Presupuesto</span>
-                    </div>
-                    {budgetItems.length > 0 && (
-                      <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
-                        {budgetItems.length}
-                      </span>
-                    )}
-                  </button>
+                  {userPermissions.quotes && (
+                    <>
+                      <button
+                        onClick={() => { setActiveTab("cart"); setIsMobileMenuOpen(false); }}
+                        className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                          activeTab === "cart" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-4 h-4 text-cyan-400" />
+                          <span>Crear Presupuesto</span>
+                        </div>
+                        {budgetItems.length > 0 && (
+                          <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                            {budgetItems.length}
+                          </span>
+                        )}
+                      </button>
 
-                  <button
-                    onClick={() => { setActiveTab("quotes"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "quotes" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <span>Mis Cotizaciones</span>
-                  </button>
+                      <button
+                        onClick={() => { setActiveTab("quotes"); setIsMobileMenuOpen(false); }}
+                        className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                          activeTab === "quotes" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 text-cyan-400" />
+                        <span>Mis Cotizaciones</span>
+                      </button>
+                    </>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveTab("billing"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "billing" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <Receipt className="w-4 h-4 text-cyan-400" />
-                    <span>Facturación SUNAT</span>
-                  </button>
+                  {userPermissions.billing && (
+                    <button
+                      onClick={() => { setActiveTab("billing"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "billing" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Receipt className="w-4 h-4 text-cyan-400" />
+                      <span>Facturación SUNAT (POS)</span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveTab("telemetry"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "telemetry" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <Compass className="w-4 h-4 text-cyan-400" />
-                    <span>Visitas de Campo</span>
-                  </button>
+                  {userPermissions.telemetry && (
+                    <button
+                      onClick={() => { setActiveTab("telemetry"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "telemetry" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Compass className="w-4 h-4 text-cyan-400" />
+                      <span>Visitas de Campo</span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveTab("sync"); setIsMobileMenuOpen(false); }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
-                      activeTab === "sync" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
-                    }`}
-                  >
-                    <Cloud className="w-4 h-4 text-cyan-400" />
-                    <span>Sincronización</span>
-                  </button>
+                  {userPermissions.expenses && (
+                    <button
+                      onClick={() => { setActiveTab("expenses"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "expenses" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Receipt className="w-4 h-4 text-cyan-400" />
+                      <span>Sustento de Viáticos</span>
+                    </button>
+                  )}
 
-                  {currentUser?.role === "Admin General" && (
+                  {userPermissions.sync && (
+                    <button
+                      onClick={() => { setActiveTab("sync"); setIsMobileMenuOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${
+                        activeTab === "sync" ? "bg-cyan-500/15 text-cyan-400" : "text-slate-300"
+                      }`}
+                    >
+                      <Cloud className="w-4 h-4 text-cyan-400" />
+                      <span>Sincronización</span>
+                    </button>
+                  )}
+
+                  {userPermissions.admin && (
                     <button
                       onClick={() => { setActiveTab("admin"); setIsMobileMenuOpen(false); }}
                       className={`w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${

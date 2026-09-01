@@ -42,7 +42,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
               placeholder="Buscar por código de cotización, nombre o RUC de cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+              className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
             />
           </div>
 
@@ -53,7 +53,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                 onClick={() => setSelectedStatus(st)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                   selectedStatus === st
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                    ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
                     : "bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               >
@@ -68,7 +68,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
         {/* Main List Column */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4 h-fit">
           <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-            <ClipboardList className="w-4 h-4 text-blue-600" />
+            <ClipboardList className="w-4 h-4 text-[#E51920]" />
             Registro Histórico de Cotizaciones de Campo ({filteredQuotes.length})
           </h4>
 
@@ -84,13 +84,13 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                   onClick={() => setActiveDetailQuote(q)}
                   className={`p-4 border rounded-2xl flex items-center justify-between gap-4 transition-all text-left cursor-pointer ${
                     activeDetailQuote?.id === q.id
-                      ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-xs"
+                      ? "border-[#E51920] bg-red-50/50 dark:bg-red-950/20 shadow-xs"
                       : "bg-slate-50 dark:bg-slate-950/40 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">{q.id}</span>
+                      <span className="text-xs font-bold font-mono text-[#E51920] dark:text-red-400">{q.id}</span>
                       <span className="text-[10px] text-slate-400 font-mono">{q.date}</span>
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                         q.status === "Aceptada"
@@ -135,7 +135,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
             <div className="space-y-5 text-left">
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold block">{activeDetailQuote.id}</span>
+                  <span className="text-[10px] font-mono text-[#E51920] dark:text-red-400 font-bold block">{activeDetailQuote.id}</span>
                   <h5 className="text-xs font-bold text-slate-900 dark:text-white mt-1 leading-snug">{activeDetailQuote.clientName}</h5>
                 </div>
                 <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full ${
@@ -174,7 +174,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                         <div className="font-bold text-slate-800 dark:text-slate-200 truncate">{item.name}</div>
                         <div className="text-[10px] text-slate-400 font-mono">Qty: {item.qty} • S/ {item.price.toFixed(2)}</div>
                       </div>
-                      <span className="font-mono font-bold text-blue-600 dark:text-blue-400 shrink-0 ml-2">
+                      <span className="font-mono font-bold text-[#E51920] dark:text-red-400 shrink-0 ml-2">
                         S/ {(item.qty * item.price).toFixed(2)}
                       </span>
                     </div>
@@ -184,7 +184,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
 
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-right space-y-1">
                 <div className="text-slate-400 text-[10px] font-semibold">TOTAL CON IMPUESTOS</div>
-                <div className="text-xl font-extrabold font-mono text-blue-600 dark:text-blue-400">
+                <div className="text-xl font-extrabold font-mono text-[#E51920] dark:text-red-400">
                   S/ {activeDetailQuote.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                   </button>
                   <button
                     onClick={() => handleStatusChange(activeDetailQuote.id, "Aceptada")}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-md shadow-blue-500/20"
+                    className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-md shadow-red-600/25"
                   >
                     Aprobar
                   </button>
