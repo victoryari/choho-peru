@@ -90,9 +90,9 @@ export function ExpensesManager({
     } catch (err) {
       console.error("Error al validar comprobante en SUNAT:", err);
       setSunatValidationResult({
-        valid: true,
-        sunatStatus: "ACEPTADO",
-        message: "Comprobante verificado con firma digital SUNAT. Emisor RUC Activo."
+        valid: false,
+        sunatStatus: 'RECHAZADO',
+        message: "Error de conexión con el servicio de validación SUNAT. Por favor intente más tarde."
       });
     } finally {
       setIsValidatingSunat(false);

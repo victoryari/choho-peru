@@ -12,53 +12,6 @@ interface AdminPanelProps {
   onRolesUpdated?: (roles: RolePermission[]) => void;
 }
 
-const DEFAULT_ROLES: RolePermission[] = [
-  {
-    id: "ROL-1",
-    name: "Admin General",
-    description: "Acceso total a la administración, usuarios, catálogo, reportes y configuración de sistema.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: true, telemetry: true, expenses: true, admin: true, dashboard: true }
-  },
-  {
-    id: "ROL-2",
-    name: "Asesor Comercial",
-    description: "Acceso a Catálogo de repuestos, creación de presupuestos de campo, mis cotizaciones, geolocalización y viáticos.",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
-  },
-  {
-    id: "ROL-3",
-    name: "Ventas",
-    description: "Rol comercial de ventas de campo (Catálogo, Cotizaciones, Check-ins y Sustento de Viáticos).",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
-  },
-  {
-    id: "ROL-4",
-    name: "Jefe de Finanzas",
-    description: "Acceso a Panel de analíticas, historial de cotizaciones, facturación SUNAT y aprobación de viáticos.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: false, telemetry: false, expenses: true, admin: false, dashboard: true }
-  },
-  {
-    id: "ROL-5",
-    name: "Jefe de Almacén",
-    description: "Acceso al control de inventario, stock físico y consulta del catálogo de productos.",
-    permissions: { catalog: true, quotes: false, billing: false, inventory: true, telemetry: false, expenses: false, admin: false, dashboard: false }
-  }
-];
-
-const DEFAULT_DEPARTMENTS: DepartmentItem[] = [
-  { id: "DEP-1", name: "Ventas", status: "ACTIVE" },
-  { id: "DEP-2", name: "Facturación", status: "ACTIVE" },
-  { id: "DEP-3", name: "Almacén", status: "ACTIVE" },
-  { id: "DEP-4", name: "Gerencia", status: "ACTIVE" },
-  { id: "DEP-5", name: "Marketing", status: "ACTIVE" }
-];
-
-const DEFAULT_BRANCHES: BranchItem[] = [
-  { id: "BR-1", name: "Sede Trujillo", status: "ACTIVE" },
-  { id: "BR-2", name: "Sede Lima", status: "ACTIVE" },
-  { id: "BR-3", name: "Sede Lima Centro", status: "ACTIVE" },
-  { id: "BR-4", name: "Sede Arequipa", status: "ACTIVE" }
-];
 
 export function AdminPanel({
   currentUser,
@@ -76,31 +29,31 @@ export function AdminPanel({
   const isAdminUser = !currentUser || currentUser.role === "Admin General" || currentUser.role.toLowerCase().includes("admin");
 
   // Dynamic lists with DB persistence
-  const [rolesList, setRolesList] = useState<RolePermission[]>(DEFAULT_ROLES);
-  const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>(DEFAULT_DEPARTMENTS);
-  const [branchesList, setBranchesList] = useState<BranchItem[]>(DEFAULT_BRANCHES);
+  const [rolesList, setRolesList] = useState<RolePermission[]>([]);
+  const [departmentsList, setDepartmentsList] = useState<DepartmentItem[]>([]);
+  const [branchesList, setBranchesList] = useState<BranchItem[]>([]);
 
   // Fetch branches, departments, and roles from DB
   useEffect(() => {
     fetch("/api/roles")
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setRolesList(data);
           if (onRolesUpdated) onRolesUpdated(data);
         }
       })
-      .catch(() => {});
+      .catch(e => console.error(e));
 
     fetch("/api/branches")
       .then(res => res.json())
-      .then(data => { if (Array.isArray(data) && data.length > 0) setBranchesList(data); })
-      .catch(() => {});
+      .then(data => { if (Array.isArray(data)) setBranchesList(data); })
+      .catch(e => console.error(e));
 
     fetch("/api/departments")
       .then(res => res.json())
-      .then(data => { if (Array.isArray(data) && data.length > 0) setDepartmentsList(data); })
-      .catch(() => {});
+      .then(data => { if (Array.isArray(data)) setDepartmentsList(data); })
+      .catch(e => console.error(e));
   }, []);
 
   // New Department & Branch State

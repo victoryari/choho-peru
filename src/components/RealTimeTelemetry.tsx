@@ -29,25 +29,36 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
     e.preventDefault();
     if (!newClientName.trim()) return;
 
-    const mockLat = -12.0464 + (Math.random() - 0.5) * 0.08;
-    const mockLng = -77.0428 + (Math.random() - 0.5) * 0.08;
+    if (!navigator.geolocation) {
+      alert("Geolocalización no es soportada por este navegador.");
+      return;
+    }
 
-    const payload = {
-      advisor: currentUserName,
-      client: newClientName,
-      time: newClientTime || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      status: "Visited" as const,
-      lat: Number(mockLat.toFixed(4)),
-      lng: Number(mockLng.toFixed(4)),
-      address: newAddress || "Av. Nicolás de Piérola 450, Cercado de Lima"
-    };
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const payload = {
+          advisor: currentUserName,
+          client: newClientName,
+          time: newClientTime || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          status: "Visited" as const,
+          lat: Number(position.coords.latitude.toFixed(6)),
+          lng: Number(position.coords.longitude.toFixed(6)),
+          address: newAddress || "Ubicación detectada por GPS"
+        };
 
-    await onAddVisit(payload);
-    setNewClientName("");
-    setNewClientTime("");
-    setNewAddress("");
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2500);
+        await onAddVisit(payload);
+        setNewClientName("");
+        setNewClientTime("");
+        setNewAddress("");
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 2500);
+      },
+      (error) => {
+        console.error("GPS Error:", error);
+        alert("Error obteniendo ubicación GPS. Por favor, permite el acceso a la ubicación en tu navegador.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   return (

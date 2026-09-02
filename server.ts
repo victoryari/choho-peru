@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -475,6 +476,8 @@ async function initDatabase() {
 
 // --- REST API ENDPOINTS FOR FULL PERSISTENCE ---
 
+const JWT_SECRET = process.env.JWT_SECRET || "choho_secret_key_123";
+
 // 1. AUTHENTICATION (Login API)
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
@@ -489,8 +492,14 @@ app.post("/api/auth/login", async (req, res) => {
         if (user.status !== "ACTIVE") {
           return res.status(403).json({ error: "Usuario suspendido o inactivo" });
         }
+        const token = jwt.sign(
+          { id: user.id, role: user.role, email: user.email },
+          JWT_SECRET,
+          { expiresIn: "12h" }
+        );
+
         return res.json({
-          token: `jwt_session_${user.id}_${Date.now()}`,
+          token,
           user: {
             id: user.id,
             name: user.name,
@@ -514,8 +523,14 @@ app.post("/api/auth/login", async (req, res) => {
       if (foundUser.status !== "ACTIVE") {
         return res.status(403).json({ error: "Usuario suspendido o inactivo" });
       }
+      const token = jwt.sign(
+        { id: foundUser.id, role: foundUser.role, email: foundUser.email },
+        JWT_SECRET,
+        { expiresIn: "12h" }
+      );
+
       return res.json({
-        token: `jwt_session_mem_${foundUser.id}_${Date.now()}`,
+        token,
         user: {
           id: foundUser.id,
           name: foundUser.name,
