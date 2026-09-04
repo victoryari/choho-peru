@@ -35,203 +35,19 @@ const pool = mysql.createPool({
 
 // --- IN-MEMORY BACKUP ARRAYS (For Offline / Fallback Sync) ---
 
-const SEED_ROLES = [
-  {
-    id: "ROL-1",
-    name: "Admin General",
-    description: "Acceso total a la administración, usuarios, catálogo, reportes y configuración de sistema.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: true, telemetry: true, expenses: true, admin: true, dashboard: true }
-  },
-  {
-    id: "ROL-2",
-    name: "Asesor Comercial",
-    description: "Acceso a Catálogo de repuestos, creación de presupuestos de campo, mis cotizaciones, geolocalización y viáticos.",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
-  },
-  {
-    id: "ROL-3",
-    name: "Ventas",
-    description: "Rol comercial de ventas de campo (Catálogo, Cotizaciones, Check-ins y Sustento de Viáticos).",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, admin: false, dashboard: false }
-  },
-  {
-    id: "ROL-4",
-    name: "Jefe de Finanzas",
-    description: "Acceso a Panel de analíticas, historial de cotizaciones, facturación SUNAT y aprobación de viáticos.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: false, telemetry: false, expenses: true, admin: false, dashboard: true }
-  },
-  {
-    id: "ROL-5",
-    name: "Jefe de Almacén",
-    description: "Acceso al control de inventario, stock físico y consulta del catálogo de productos.",
-    permissions: { catalog: true, quotes: false, billing: false, inventory: true, telemetry: false, expenses: false, admin: false, dashboard: false }
-  }
-];
+import {
+  SEED_ROLES, SEED_USERS, SEED_PRODUCTS, SEED_EXPENSES, SEED_BRANCHES, SEED_DEPARTMENTS,
+  inMemoryRoles, inMemoryUsers, inMemoryProducts, inMemoryExpenses, inMemoryTelemetry,
+  inMemoryBranches, inMemoryDepartments, inMemoryInvoices, inMemoryPurchases, inMemoryPayments
+} from "./state.js";
 
-const SEED_USERS = [
-  {
-    id: "USR-101",
-    name: "Carlos Mendoza",
-    email: "cmendoza@choho.pe",
-    password: "123",
-    role: "Ventas",
-    status: "ACTIVE",
-    branch: "Sede Lima Centro",
-    department: "Ventas"
-  },
-  {
-    id: "USR-102",
-    name: "R. Mendoza",
-    email: "rmendoza@choho.pe",
-    password: "123",
-    role: "Asesor Comercial",
-    status: "ACTIVE",
-    branch: "Sede Trujillo",
-    department: "Ventas"
-  },
-  {
-    id: "USR-103",
-    name: "L. Castro",
-    email: "lcastro@choho.pe",
-    password: "123",
-    role: "Admin General",
-    status: "ACTIVE",
-    branch: "Sede Lima Centro",
-    department: "Gerencia"
-  },
-  {
-    id: "USR-104",
-    name: "Jefe de Finanzas",
-    email: "finanzas@choho.pe",
-    password: "123",
-    role: "Jefe de Finanzas",
-    status: "ACTIVE",
-    branch: "Sede Lima Centro",
-    department: "Facturación"
-  }
-];
-
-const SEED_PRODUCTS = [
-  {
-    sku: "CH-CAD-428H-132",
-    name: "Cadena CHOHO 428H - 132 Eslabones Dorada Reforzada",
-    category: "Cadenas",
-    basePrice: 68.50,
-    stock: 24,
-    description: "Cadena de alta durabilidad con aleación de carbono tratada térmicamente.",
-    tags: ["Best Seller", "Reforzada"],
-    img: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400",
-    images: ["https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400"]
-  },
-  {
-    sku: "CH-KIT-PULSAR200",
-    name: "Kit de Arrastre Completo CHOHO Bajaj Pulsar 200 NS",
-    category: "Kits de Arrastre",
-    basePrice: 155.00,
-    stock: 18,
-    description: "Incluye Catalina 39T, Piñón 14T y Cadena 520OR O-Ring siliconada.",
-    tags: ["Kit Completo"],
-    img: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400",
-    images: ["https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400"]
-  },
-  {
-    sku: "CH-PIN-14T-CB190R",
-    name: "Piñón de Ataque CHOHO 14T Honda CB190R",
-    category: "Piñones",
-    basePrice: 28.00,
-    stock: 45,
-    description: "Piñón en acero 1045 con tratamiento de inducción para máxima vida útil.",
-    tags: ["Honda"],
-    img: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=400",
-    images: ["https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=400"]
-  }
-];
-
-const SEED_EXPENSES = [
-  {
-    id: "EXP-2026-001",
-    advisor: "Carlos Mendoza",
-    date: "2026-08-27",
-    category: "Hospedaje",
-    docType: "Factura",
-    rucIssuer: "20124567891",
-    companyName: "Hotel Real Trujillo S.A.C.",
-    series: "F001",
-    number: "0004521",
-    amount: 180.00,
-    receiptImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500",
-    sunatStatus: "ACEPTADO",
-    approvalStatus: "Aprobado",
-    notes: "Noche de hospedaje durante ruta comercial Trujillo - Huanchaco."
-  },
-  {
-    id: "EXP-2026-002",
-    advisor: "Carlos Mendoza",
-    date: "2026-08-28",
-    category: "Alimentación",
-    docType: "Factura",
-    rucIssuer: "20608542193",
-    companyName: "Restaurante El Paisano S.A.C.",
-    series: "F002",
-    number: "0012894",
-    amount: 65.50,
-    receiptImage: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500",
-    sunatStatus: "ACEPTADO",
-    approvalStatus: "Pendiente",
-    notes: "Almuerzo de trabajo con cliente taller Moto Repuestos Lima."
-  },
-  {
-    id: "EXP-2026-003",
-    advisor: "Roberto Mendoza",
-    date: "2026-08-28",
-    category: "Peaje",
-    docType: "Ticket",
-    rucIssuer: "20448123956",
-    companyName: "Concesión Vial del Norte S.A.",
-    series: "T001",
-    number: "0088123",
-    amount: 24.00,
-    receiptImage: "https://images.unsplash.com/photo-1545179652-536308b9bf74?w=500",
-    sunatStatus: "ACEPTADO",
-    approvalStatus: "Aprobado",
-    notes: "Peaje Ancón - Variante Pasamayo ida y vuelta."
-  }
-];
-
-const SEED_BRANCHES = [
-  { id: "BR-1", name: "Sede Trujillo", status: "ACTIVE" },
-  { id: "BR-2", name: "Sede Lima", status: "ACTIVE" },
-  { id: "BR-3", name: "Sede Lima Centro", status: "ACTIVE" },
-  { id: "BR-4", name: "Sede Arequipa", status: "ACTIVE" }
-];
-
-const SEED_DEPARTMENTS = [
-  { id: "DEP-1", name: "Ventas", status: "ACTIVE" },
-  { id: "DEP-2", name: "Facturación", status: "ACTIVE" },
-  { id: "DEP-3", name: "Almacén", status: "ACTIVE" },
-  { id: "DEP-4", name: "Gerencia", status: "ACTIVE" },
-  { id: "DEP-5", name: "Marketing", status: "ACTIVE" }
-];
-
-let inMemoryRoles = [...SEED_ROLES];
-let inMemoryUsers = [...SEED_USERS];
-let inMemoryExpenses = [...SEED_EXPENSES];
-let inMemoryTelemetry: any[] = [
-  {
-    id: "VIS-101",
-    advisor: "Carlos Mendoza",
-    client: "MotoRepuestos El Sol S.A.C.",
-    time: "2026-08-28T09:30:00Z",
-    status: "Visited",
-    quote_id: "COT-2026-101",
-    lat: -8.1116,
-    lng: -79.0287,
-    address: "Av. España 1420, Trujillo"
-  }
-];
-let inMemoryBranches = [...SEED_BRANCHES];
-let inMemoryDepartments = [...SEED_DEPARTMENTS];
-let inMemoryInvoices: any[] = [];
+// --- SMTP CONFIGURATION (IN-MEMORY) ---
+let inMemorySmtp = {
+  host: "",
+  port: "465",
+  user: "",
+  pass: ""
+};
 
 // --- MYSQL SCHEMA INITIALIZATION & PERSISTENCE ENGINE ---
 
@@ -910,6 +726,20 @@ app.post("/api/expenses", async (req, res) => {
   }
 
   inMemoryExpenses.unshift(newExpense);
+  
+  // SMTP Simulation for large expenses (> 200)
+  if (newExpense.amount > 200) {
+    console.log(`\n======================================================`);
+    console.log(`[SMTP SIMULADO] Alerta de Viático Mayor a S/ 200`);
+    console.log(`Host SMTP: ${inMemorySmtp.host || 'No configurado'} | Puerto: ${inMemorySmtp.port}`);
+    console.log(`De: ${inMemorySmtp.user || 'sistema@choho.pe'}`);
+    console.log(`Para: gerencia@choho.pe`);
+    console.log(`Asunto: ⚠️ ALERTA: Viático de S/ ${newExpense.amount} registrado por ${newExpense.advisor}`);
+    console.log(`Cuerpo: Se ha registrado un nuevo gasto que requiere atención de gerencia.`);
+    console.log(`Concepto: ${newExpense.category} - Empresa: ${newExpense.companyName}`);
+    console.log(`======================================================\n`);
+  }
+
   res.status(201).json(newExpense);
 });
 
@@ -1134,7 +964,13 @@ app.get("/api/invoices", async (req, res) => {
 app.post("/api/invoices", async (req, res) => {
   const inv = req.body;
   if (!inv.id) inv.id = `F001-${Date.now()}`;
-  if (!inv.doc_type) inv.doc_type = "01";
+  if (!inv.date) inv.date = new Date().toISOString().split("T")[0];
+  
+  if (inv.payment_type && inv.payment_type.startsWith("Crédito")) {
+    inv.creditStatus = "Pendiente";
+    inv.creditPaidAmount = 0;
+    inv.creditDueAmount = inv.total;
+  }
 
   try {
     await pool.query(
@@ -1154,6 +990,18 @@ app.post("/api/invoices", async (req, res) => {
   }
 
   inMemoryInvoices.unshift(inv);
+
+  // SMTP Simulation for Invoices
+  console.log(`\n======================================================`);
+  console.log(`[SMTP SIMULADO] Envío automático de Factura Electrónica`);
+  console.log(`Host SMTP: ${inMemorySmtp.host || 'No configurado'} | Puerto: ${inMemorySmtp.port}`);
+  console.log(`De: ${inMemorySmtp.user || 'facturacion@choho.pe'}`);
+  console.log(`Para: cliente_${inv.clientDoc}@mail.com`);
+  console.log(`Asunto: Factura Electrónica ${inv.id} - CHOHO PERÚ S.A.C.`);
+  console.log(`Cuerpo: Estimado ${inv.clientName}, adjunto encontrará su comprobante electrónico por S/ ${inv.total}.`);
+  console.log(`Archivos adjuntos: ${inv.id}.pdf, ${inv.id}.xml`);
+  console.log(`======================================================\n`);
+
   res.status(201).json(inv);
 });
 
@@ -1191,6 +1039,106 @@ app.get("/api/sunat/:ruc", async (req, res) => {
     condition: "ACTIVO",
     state: "HABIDO"
   });
+});
+
+// 13. PURCHASES API (Proveedores)
+app.get("/api/purchases", async (req, res) => {
+  res.json(inMemoryPurchases);
+});
+
+app.post("/api/purchases", async (req, res) => {
+  const purchase = req.body;
+  if (!purchase.id) {
+    purchase.id = `PO-${Date.now()}`;
+  }
+  
+  // Si se está recibiendo inmediatamente (según configuración de frontend)
+  if (purchase.status === "Recibido") {
+    // Aumentar inventario (In memory para ahora)
+    for (const item of purchase.items) {
+      const prod = inMemoryProducts.find(p => p.sku === item.sku);
+      if (prod) {
+        prod.stock += Number(item.qty);
+      }
+    }
+  }
+
+  inMemoryPurchases.unshift(purchase);
+  res.status(201).json(purchase);
+});
+
+app.put("/api/purchases/:id/receive", async (req, res) => {
+  const { id } = req.params;
+  const { receivedBy, receiveDate, location } = req.body;
+  
+  const purchase = inMemoryPurchases.find(p => p.id === id);
+  if (!purchase) return res.status(404).json({ error: "Orden de compra no encontrada" });
+
+  if (purchase.status !== "Recibido") {
+    purchase.status = "Recibido";
+    purchase.receivedBy = receivedBy;
+    purchase.receiveDate = receiveDate;
+    purchase.location = location;
+    
+    for (const item of purchase.items) {
+      const prod = inMemoryProducts.find(p => p.sku === item.sku);
+      if (prod) {
+        prod.stock += Number(item.qty);
+      }
+    }
+  }
+  
+  res.json(purchase);
+});
+
+// 14. ACCOUNTS RECEIVABLE API (Cuentas por Cobrar)
+app.get("/api/receivables", async (req, res) => {
+  // Las facturas con crédito pendiente
+  const receivables = inMemoryInvoices.filter(
+    (inv: any) => inv.payment_type && inv.payment_type.startsWith("Crédito") && inv.creditStatus !== "Cancelado"
+  );
+  res.json(receivables);
+});
+
+app.post("/api/receivables/:id/pay", async (req, res) => {
+  const { id } = req.params;
+  const { amount, registeredBy } = req.body;
+  
+  const invoice = inMemoryInvoices.find((inv: any) => inv.id === id);
+  if (!invoice) return res.status(404).json({ error: "Factura no encontrada" });
+
+  const paymentRecord = {
+    id: `PAY-${Date.now()}`,
+    quoteId: id,
+    amount: Number(amount),
+    date: new Date().toISOString(),
+    registeredBy
+  };
+  inMemoryPayments.push(paymentRecord);
+
+  // Actualizar deuda
+  invoice.creditPaidAmount = (invoice.creditPaidAmount || 0) + Number(amount);
+  invoice.creditDueAmount = invoice.total - invoice.creditPaidAmount;
+  
+  if (invoice.creditDueAmount <= 0) {
+    invoice.creditStatus = "Cancelado";
+    invoice.creditDueAmount = 0;
+  } else {
+    invoice.creditStatus = "Pagado Parcial";
+  }
+
+  res.json(invoice);
+});
+
+// 15. SMTP CONFIGURATION API
+app.get("/api/smtp-config", (req, res) => {
+  res.json(inMemorySmtp);
+});
+
+app.post("/api/smtp-config", (req, res) => {
+  const { host, port, user, pass } = req.body;
+  inMemorySmtp = { host, port, user, pass };
+  res.json({ success: true });
 });
 
 app.get("/api/reniec/:dni", async (req, res) => {

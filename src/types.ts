@@ -19,6 +19,8 @@ export interface RolePermission {
     inventory: boolean;
     telemetry: boolean;
     expenses: boolean;
+    purchases: boolean;
+    receivables: boolean;
     admin: boolean;
     dashboard?: boolean;
   };
@@ -66,6 +68,40 @@ export interface Quote {
   date: string;
   status: 'Pendiente' | 'Aceptada' | 'Rechazada';
   items: QuoteItem[];
+  
+  // New fields for billing/credits
+  paymentType?: 'Contado' | 'Crédito';
+  creditStatus?: 'Pendiente' | 'Pagado Parcial' | 'Cancelado';
+  creditPaidAmount?: number;
+  creditDueAmount?: number;
+}
+
+export interface PaymentRecord {
+  id: string;
+  quoteId: string;
+  amount: number;
+  date: string;
+  registeredBy: string;
+}
+
+export interface PurchaseItem {
+  sku: string;
+  name: string;
+  qty: number;
+  unitCost: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  supplierRuc: string;
+  supplierName: string;
+  date: string;
+  total: number;
+  status: 'Pendiente' | 'Recibido';
+  items: PurchaseItem[];
+  receivedBy?: string;
+  receiveDate?: string;
+  location?: string;
 }
 
 export interface Telemetry {

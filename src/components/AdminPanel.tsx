@@ -23,7 +23,7 @@ export function AdminPanel({
   onRolesUpdated
 }: AdminPanelProps) {
   // Tabs within admin panel
-  const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products">("users");
+  const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products" | "smtp">("users");
 
   // Admin permission check (default to true if no currentUser provided)
   const isAdminUser = !currentUser || currentUser.role === "Admin General" || currentUser.role.toLowerCase().includes("admin");
@@ -97,6 +97,8 @@ export function AdminPanel({
     inventory: false,
     telemetry: false,
     expenses: false,
+    purchases: false,
+    receivables: false,
     admin: false,
     dashboard: false
   });
@@ -113,6 +115,8 @@ export function AdminPanel({
     inventory: false,
     telemetry: false,
     expenses: false,
+    purchases: false,
+    receivables: false,
     admin: false,
     dashboard: false
   });
@@ -122,6 +126,44 @@ export function AdminPanel({
   const [editingStock, setEditingStock] = useState(0);
   const [editingPrice, setEditingPrice] = useState(0);
   const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
+
+  // SMTP Configuration State
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("465");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [isSavingSmtp, setIsSavingSmtp] = useState(false);
+  const [smtpMsg, setSmtpMsg] = useState("");
+
+  useEffect(() => {
+    fetch("/api/smtp-config")
+      .then(res => res.json())
+      .then(data => {
+        if (data.host) setSmtpHost(data.host);
+        if (data.port) setSmtpPort(data.port);
+        if (data.user) setSmtpUser(data.user);
+        if (data.pass) setSmtpPass(data.pass);
+      })
+      .catch(e => console.error(e));
+  }, []);
+
+  const handleSaveSmtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingSmtp(true);
+    try {
+      await fetch("/api/smtp-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ host: smtpHost, port: smtpPort, user: smtpUser, pass: smtpPass })
+      });
+      setSmtpMsg("¡Configuración SMTP guardada!");
+      setTimeout(() => setSmtpMsg(""), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSavingSmtp(false);
+    }
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -478,6 +520,16 @@ export function AdminPanel({
             <Package className="w-3.5 h-3.5" />
             <span>Precios</span>
           </button>
+
+          <button
+            onClick={() => setAdminTab("smtp")}
+            className={`flex-1 lg:flex-none px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              adminTab === "smtp" ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>SMTP / Correos</span>
+          </button>
         </div>
       </div>
 
@@ -815,6 +867,24 @@ export function AdminPanel({
                       className="rounded accent-[#E51920]"
                     />
                     <span>Viáticos SUNAT</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newRolePerms.purchases}
+                      onChange={(e) => setNewRolePerms({ ...newRolePerms, purchases: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Compras</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newRolePerms.receivables}
+                      onChange={(e) => setNewRolePerms({ ...newRolePerms, receivables: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>CxC</span>
                   </label>
                   <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
                     <input
@@ -1360,6 +1430,82 @@ export function AdminPanel({
         </div>
       )}
 
+      {/* TAB 5: SMTP CONFIGURATION */}
+      {adminTab === "smtp" && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs max-w-2xl mx-auto space-y-6">
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2 font-display">
+              <Settings className="w-5 h-5 text-[#E51920]" />
+              Configuración de Correos Salientes (SMTP)
+            </h4>
+            <p className="text-xs text-slate-500 mt-1">Configura las credenciales para el envío automático de reportes, facturas y alertas.</p>
+          </div>
+          
+          <form onSubmit={handleSaveSmtp} className="space-y-4 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Servidor SMTP</label>
+                <input
+                  type="text"
+                  placeholder="ej. smtp.sendgrid.net"
+                  value={smtpHost}
+                  onChange={(e) => setSmtpHost(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Puerto</label>
+                <input
+                  type="text"
+                  placeholder="ej. 465 o 587"
+                  value={smtpPort}
+                  onChange={(e) => setSmtpPort(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Usuario</label>
+                <input
+                  type="text"
+                  value={smtpUser}
+                  onChange={(e) => setSmtpUser(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Contraseña</label>
+                <input
+                  type="password"
+                  value={smtpPass}
+                  onChange={(e) => setSmtpPass(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+              {smtpMsg ? (
+                <span className="text-emerald-500 font-bold text-xs flex items-center gap-1">
+                  <Check className="w-4 h-4" /> {smtpMsg}
+                </span>
+              ) : <div />}
+              <button
+                type="submit"
+                disabled={isSavingSmtp}
+                className="w-full sm:w-auto bg-[#E51920] hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-red-600/25 disabled:opacity-50"
+              >
+                {isSavingSmtp ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                <span>Guardar Credenciales</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* PASSWORD RESET MODAL OVERLAY */}
       {resettingUserPassword && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1556,6 +1702,24 @@ export function AdminPanel({
                       className="rounded accent-[#E51920]"
                     />
                     <span>Viáticos SUNAT</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.purchases}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, purchases: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>Compras</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRolePerms.receivables}
+                      onChange={(e) => setEditRolePerms({ ...editRolePerms, receivables: e.target.checked })}
+                      className="rounded accent-[#E51920]"
+                    />
+                    <span>CxC</span>
                   </label>
                   <label className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer">
                     <input

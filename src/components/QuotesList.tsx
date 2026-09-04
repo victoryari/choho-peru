@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, X, ChevronRight, Clock, MapPin, Printer } from "lucide-react";
+import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, X, ChevronRight, Clock, MapPin, Printer, Download } from "lucide-react";
 import { Quote } from "../types";
+import { downloadCSV } from "../utils/exportCsv";
 
 interface QuotesListProps {
   quotes: Quote[];
@@ -28,6 +29,20 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
     if (activeDetailQuote?.id === id) {
       setActiveDetailQuote(prev => prev ? { ...prev, status: nextStatus } : null);
     }
+  };
+
+  const handleExportCSV = () => {
+    const csvData = quotes.map(q => ({
+      "ID": q.id,
+      "Fecha": q.date,
+      "Cliente": q.clientName,
+      "Documento": q.clientDoc,
+      "Estado": q.status,
+      "Subtotal (S/)": q.subtotal.toFixed(2),
+      "Total (S/)": q.total.toFixed(2),
+      "Vendedor": q.assignedTo
+    }));
+    downloadCSV(csvData, "Reporte_Cotizaciones");
   };
 
   return (
@@ -67,10 +82,15 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main List Column */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4 h-fit">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-            <ClipboardList className="w-4 h-4 text-[#E51920]" />
-            Registro Histórico de Cotizaciones de Campo ({filteredQuotes.length})
-          </h4>
+          <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-[#E51920]" />
+              Registro Histórico de Cotizaciones de Campo ({filteredQuotes.length})
+            </h4>
+            <button onClick={handleExportCSV} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+              <Download className="w-3 h-3" /> Exportar CSV
+            </button>
+          </div>
 
           {filteredQuotes.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-xs">
