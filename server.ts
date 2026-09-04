@@ -36,7 +36,7 @@ const pool = mysql.createPool({
 // --- IN-MEMORY BACKUP ARRAYS (For Offline / Fallback Sync) ---
 
 import {
-  SEED_ROLES, SEED_USERS, SEED_PRODUCTS, SEED_EXPENSES, SEED_BRANCHES, SEED_DEPARTMENTS,
+  SEED_ROLES, SEED_USERS, SEED_PRODUCTS, SEED_EXPENSES, SEED_BRANCHES, SEED_DEPARTMENTS, SEED_PURCHASES,
   inMemoryRoles, inMemoryUsers, inMemoryProducts, inMemoryExpenses, inMemoryTelemetry,
   inMemoryBranches, inMemoryDepartments, inMemoryInvoices, inMemoryPurchases, inMemoryPayments
 } from "./state.js";
@@ -225,6 +225,47 @@ async function initDatabase() {
     try { await conn.query("ALTER TABLE invoices ADD COLUMN free_total DECIMAL(10, 2) DEFAULT 0"); } catch(e){}
     try { await conn.query("ALTER TABLE invoices ADD COLUMN credit_quotas JSON"); } catch(e){}
     try { await conn.query("ALTER TABLE invoices ADD COLUMN items JSON"); } catch(e){}
+    try { await conn.query("ALTER TABLE invoices ADD COLUMN creditStatus VARCHAR(50) DEFAULT 'Pendiente'"); } catch(e){}
+    try { await conn.query("ALTER TABLE invoices ADD COLUMN creditPaidAmount DECIMAL(10, 2) DEFAULT 0"); } catch(e){}
+    try { await conn.query("ALTER TABLE invoices ADD COLUMN creditDueAmount DECIMAL(10, 2) DEFAULT 0"); } catch(e){}
+
+    // 11. Purchases Table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS purchases (
+        id VARCHAR(50) PRIMARY KEY,
+        supplierRuc VARCHAR(20) NOT NULL,
+        supplierName VARCHAR(255) NOT NULL,
+        date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        total DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) DEFAULT 'Pendiente',
+        receivedBy VARCHAR(150),
+        receiveDate DATETIME,
+        location VARCHAR(255)
+      )
+    `);
+
+    // 12. Purchase Items Table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS purchase_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        purchase_id VARCHAR(50) NOT NULL,
+        sku VARCHAR(50) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        qty INT NOT NULL,
+        unitCost DECIMAL(10, 2) NOT NULL
+      )
+    `);
+
+    // 13. Payments Table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id VARCHAR(50) PRIMARY KEY,
+        quoteId VARCHAR(50) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        registeredBy VARCHAR(150) NOT NULL
+      )
+    `);
 
     // --- SEED SEED DATA ON INITIAL SETUP ---
 
@@ -280,6 +321,22 @@ async function initDatabase() {
     if (deptCount[0].count === 0) {
       for (const d of SEED_DEPARTMENTS) {
         await conn.query("INSERT INTO departments (id, name, status) VALUES (?, ?, ?)", [d.id, d.name, d.status]);
+      }
+    }
+
+    const [purCount]: any = await conn.query("SELECT COUNT(*) as count FROM purchases");
+    if (purCount[0].count === 0) {
+      for (const p of SEED_PURCHASES) {
+        await conn.query(
+          "INSERT INTO purchases (id, supplierRuc, supplierName, date, total, status, receivedBy, receiveDate, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [p.id, p.supplierRuc, p.supplierName, p.date, p.total, p.status, p.receivedBy || null, p.receiveDate || null, p.location || null]
+        );
+        for (const item of p.items || []) {
+          await conn.query(
+            "INSERT INTO purchase_items (purchase_id, sku, name, qty, unitCost) VALUES (?, ?, ?, ?, ?)",
+            [p.id, item.sku, item.name, item.qty, item.unitCost]
+          );
+        }
       }
     }
 
@@ -372,7 +429,8 @@ app.get("/api/roles", async (req, res) => {
         ...r,
         permissions: typeof r.permissions === "string" ? JSON.parse(r.permissions) : r.permissions
       }));
-      inMemoryRoles = parsedRoles;
+      inMemoryRoles.length = 0;
+      inMemoryRoles.push(...parsedRoles);
       return res.json(parsedRoles);
     }
   } catch (error) {
@@ -432,7 +490,8 @@ app.get("/api/users", async (req, res) => {
   try {
     const [rows]: any = await pool.query("SELECT id, name, email, role, status, branch, department FROM users ORDER BY name ASC");
     if (rows && rows.length > 0) {
-      inMemoryUsers = rows.map((u: any) => ({ ...u, password: "123" }));
+      inMemoryUsers.length = 0;
+      inMemoryUsers.push(...rows.map((u: any) => ({ ...u, password: "123" })));
       return res.json(rows);
     }
   } catch (error) {
@@ -699,7 +758,8 @@ app.get("/api/expenses", async (req, res) => {
         ...e,
         amount: Number(e.amount)
       }));
-      inMemoryExpenses = parsedExpenses;
+      inMemoryExpenses.length = 0;
+      inMemoryExpenses.push(...parsedExpenses);
       return res.json(parsedExpenses);
     }
   } catch (error) {
@@ -814,7 +874,8 @@ app.get("/api/telemetry", async (req, res) => {
         lat: Number(t.lat),
         lng: Number(t.lng)
       }));
-      inMemoryTelemetry = parsedTelemetry;
+      inMemoryTelemetry.length = 0;
+      inMemoryTelemetry.push(...parsedTelemetry);
       return res.json(parsedTelemetry);
     }
   } catch (error) {
@@ -848,7 +909,8 @@ app.get("/api/branches", async (req, res) => {
   try {
     const [rows]: any = await pool.query("SELECT * FROM branches ORDER BY name ASC");
     if (rows && rows.length > 0) {
-      inMemoryBranches = rows;
+      inMemoryBranches.length = 0;
+      inMemoryBranches.push(...rows);
       return res.json(rows);
     }
   } catch (error) {
@@ -900,7 +962,8 @@ app.get("/api/departments", async (req, res) => {
   try {
     const [rows]: any = await pool.query("SELECT * FROM departments ORDER BY name ASC");
     if (rows && rows.length > 0) {
-      inMemoryDepartments = rows;
+      inMemoryDepartments.length = 0;
+      inMemoryDepartments.push(...rows);
       return res.json(rows);
     }
   } catch (error) {
@@ -952,7 +1015,8 @@ app.get("/api/invoices", async (req, res) => {
   try {
     const [rows]: any = await pool.query("SELECT * FROM invoices ORDER BY date DESC");
     if (rows && rows.length > 0) {
-      inMemoryInvoices = rows;
+      inMemoryInvoices.length = 0;
+      inMemoryInvoices.push(...rows);
       return res.json(rows);
     }
   } catch (error) {
@@ -974,7 +1038,7 @@ app.post("/api/invoices", async (req, res) => {
 
   try {
     await pool.query(
-      "INSERT INTO invoices (id, doc_type, quote_id, reference_id, clientName, clientDoc, date, currency, payment_type, subtotal, igv, total, free_total, credit_quotas, items, xml_data, cdr_data, hash, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO invoices (id, doc_type, quote_id, reference_id, clientName, clientDoc, date, currency, payment_type, subtotal, igv, total, free_total, credit_quotas, items, xml_data, cdr_data, hash, status, creditStatus, creditPaidAmount, creditDueAmount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         inv.id, inv.doc_type, inv.quote_id || null, inv.reference_id || null,
         inv.clientName, inv.clientDoc, inv.date || new Date().toISOString(),
@@ -982,7 +1046,8 @@ app.post("/api/invoices", async (req, res) => {
         inv.subtotal || 0, inv.igv || 0, inv.total || 0,
         inv.free_total || 0, inv.credit_quotas ? JSON.stringify(inv.credit_quotas) : null, inv.items ? JSON.stringify(inv.items) : null,
         inv.xml_data || null, inv.cdr_data || null,
-        inv.hash || null, inv.status || "ACEPTADO"
+        inv.hash || null, inv.status || "ACEPTADO",
+        inv.creditStatus || 'Pendiente', inv.creditPaidAmount || 0, inv.creditDueAmount || 0
       ]
     );
   } catch (error: any) {
@@ -1043,6 +1108,28 @@ app.get("/api/sunat/:ruc", async (req, res) => {
 
 // 13. PURCHASES API (Proveedores)
 app.get("/api/purchases", async (req, res) => {
+  try {
+    const [purchases]: any = await pool.query("SELECT * FROM purchases ORDER BY date DESC");
+    const [items]: any = await pool.query("SELECT * FROM purchase_items");
+    
+    if (purchases && purchases.length > 0) {
+      const formatted = purchases.map((p: any) => ({
+        ...p,
+        total: Number(p.total),
+        items: items.filter((i: any) => i.purchase_id === p.id).map((i: any) => ({
+          sku: i.sku,
+          name: i.name,
+          qty: i.qty,
+          unitCost: Number(i.unitCost)
+        }))
+      }));
+      inMemoryPurchases.length = 0;
+      inMemoryPurchases.push(...formatted);
+      return res.json(formatted);
+    }
+  } catch (error) {
+    console.warn("[PURCHASES] Error consultando MySQL:", error);
+  }
   res.json(inMemoryPurchases);
 });
 
@@ -1052,15 +1139,38 @@ app.post("/api/purchases", async (req, res) => {
     purchase.id = `PO-${Date.now()}`;
   }
   
-  // Si se está recibiendo inmediatamente (según configuración de frontend)
-  if (purchase.status === "Recibido") {
-    // Aumentar inventario (In memory para ahora)
-    for (const item of purchase.items) {
-      const prod = inMemoryProducts.find(p => p.sku === item.sku);
-      if (prod) {
-        prod.stock += Number(item.qty);
+  try {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      
+      await connection.query(
+        "INSERT INTO purchases (id, supplierRuc, supplierName, date, total, status, receivedBy, receiveDate, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [purchase.id, purchase.supplierRuc, purchase.supplierName, purchase.date || new Date().toISOString(), purchase.total, purchase.status || "Pendiente", purchase.receivedBy || null, purchase.receiveDate || null, purchase.location || null]
+      );
+
+      if (Array.isArray(purchase.items)) {
+        for (const item of purchase.items) {
+          await connection.query(
+            "INSERT INTO purchase_items (purchase_id, sku, name, qty, unitCost) VALUES (?, ?, ?, ?, ?)",
+            [purchase.id, item.sku, item.name, item.qty, item.unitCost]
+          );
+          
+          if (purchase.status === "Recibido") {
+            await connection.query("UPDATE products SET stock = stock + ? WHERE sku = ?", [item.qty, item.sku]);
+          }
+        }
       }
+
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
+  } catch (error: any) {
+    console.warn("[PURCHASES] Error guardando orden en MySQL:", error?.message);
   }
 
   inMemoryPurchases.unshift(purchase);
@@ -1071,16 +1181,45 @@ app.put("/api/purchases/:id/receive", async (req, res) => {
   const { id } = req.params;
   const { receivedBy, receiveDate, location } = req.body;
   
-  const purchase = inMemoryPurchases.find(p => p.id === id);
-  if (!purchase) return res.status(404).json({ error: "Orden de compra no encontrada" });
+  try {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      
+      const [existing]: any = await connection.query("SELECT status FROM purchases WHERE id = ?", [id]);
+      const prevStatus = existing[0]?.status;
 
-  if (purchase.status !== "Recibido") {
+      if (prevStatus !== "Recibido") {
+        await connection.query(
+          "UPDATE purchases SET status = 'Recibido', receivedBy = ?, receiveDate = ?, location = ? WHERE id = ?",
+          [receivedBy, receiveDate || new Date().toISOString(), location, id]
+        );
+
+        const [items]: any = await connection.query("SELECT sku, qty FROM purchase_items WHERE purchase_id = ?", [id]);
+        for (const item of items) {
+          await connection.query("UPDATE products SET stock = stock + ? WHERE sku = ?", [item.qty, item.sku]);
+        }
+      }
+
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error: any) {
+    console.warn("[PURCHASES] Error actualizando orden en MySQL:", error?.message);
+  }
+
+  const purchase = inMemoryPurchases.find(p => p.id === id);
+  if (purchase && purchase.status !== "Recibido") {
     purchase.status = "Recibido";
     purchase.receivedBy = receivedBy;
     purchase.receiveDate = receiveDate;
     purchase.location = location;
     
-    for (const item of purchase.items) {
+    for (const item of purchase.items || []) {
       const prod = inMemoryProducts.find(p => p.sku === item.sku);
       if (prod) {
         prod.stock += Number(item.qty);
@@ -1088,12 +1227,28 @@ app.put("/api/purchases/:id/receive", async (req, res) => {
     }
   }
   
-  res.json(purchase);
+  res.json({ id, status: "Recibido", receivedBy, receiveDate, location });
 });
 
 // 14. ACCOUNTS RECEIVABLE API (Cuentas por Cobrar)
 app.get("/api/receivables", async (req, res) => {
-  // Las facturas con crédito pendiente
+  try {
+    const [rows]: any = await pool.query("SELECT * FROM invoices WHERE payment_type LIKE 'Crédito%' AND creditStatus != 'Cancelado' ORDER BY date DESC");
+    if (rows && rows.length > 0) {
+      return res.json(rows.map((r: any) => ({
+        ...r,
+        total: Number(r.total),
+        creditPaidAmount: Number(r.creditPaidAmount),
+        creditDueAmount: Number(r.creditDueAmount)
+      })));
+    } else {
+      return res.json([]);
+    }
+  } catch (error) {
+    console.warn("[RECEIVABLES] Error consultando MySQL:", error);
+  }
+  
+  // Fallback
   const receivables = inMemoryInvoices.filter(
     (inv: any) => inv.payment_type && inv.payment_type.startsWith("Crédito") && inv.creditStatus !== "Cancelado"
   );
@@ -1103,31 +1258,74 @@ app.get("/api/receivables", async (req, res) => {
 app.post("/api/receivables/:id/pay", async (req, res) => {
   const { id } = req.params;
   const { amount, registeredBy } = req.body;
+  const paymentId = `PAY-${Date.now()}`;
   
-  const invoice = inMemoryInvoices.find((inv: any) => inv.id === id);
-  if (!invoice) return res.status(404).json({ error: "Factura no encontrada" });
+  let currentInvoice: any = null;
 
-  const paymentRecord = {
-    id: `PAY-${Date.now()}`,
-    quoteId: id,
-    amount: Number(amount),
-    date: new Date().toISOString(),
-    registeredBy
-  };
-  inMemoryPayments.push(paymentRecord);
-
-  // Actualizar deuda
-  invoice.creditPaidAmount = (invoice.creditPaidAmount || 0) + Number(amount);
-  invoice.creditDueAmount = invoice.total - invoice.creditPaidAmount;
-  
-  if (invoice.creditDueAmount <= 0) {
-    invoice.creditStatus = "Cancelado";
-    invoice.creditDueAmount = 0;
-  } else {
-    invoice.creditStatus = "Pagado Parcial";
+  try {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      
+      const [invs]: any = await connection.query("SELECT * FROM invoices WHERE id = ?", [id]);
+      if (invs.length > 0) {
+        currentInvoice = invs[0];
+        
+        await connection.query(
+          "INSERT INTO payments (id, quoteId, amount, date, registeredBy) VALUES (?, ?, ?, ?, ?)",
+          [paymentId, id, amount, new Date().toISOString(), registeredBy]
+        );
+        
+        const newPaid = Number(currentInvoice.creditPaidAmount || 0) + Number(amount);
+        const newDue = Number(currentInvoice.total) - newPaid;
+        const newStatus = newDue <= 0 ? "Cancelado" : "Pagado Parcial";
+        
+        await connection.query(
+          "UPDATE invoices SET creditPaidAmount = ?, creditDueAmount = ?, creditStatus = ? WHERE id = ?",
+          [newPaid, Math.max(0, newDue), newStatus, id]
+        );
+        
+        currentInvoice.creditPaidAmount = newPaid;
+        currentInvoice.creditDueAmount = Math.max(0, newDue);
+        currentInvoice.creditStatus = newStatus;
+      }
+      
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error: any) {
+    console.warn("[RECEIVABLES] Error procesando pago en MySQL:", error?.message);
   }
 
-  res.json(invoice);
+  const invoice = inMemoryInvoices.find((inv: any) => inv.id === id);
+  if (invoice) {
+    invoice.creditPaidAmount = (invoice.creditPaidAmount || 0) + Number(amount);
+    invoice.creditDueAmount = invoice.total - invoice.creditPaidAmount;
+    if (invoice.creditDueAmount <= 0) {
+      invoice.creditStatus = "Cancelado";
+      invoice.creditDueAmount = 0;
+    } else {
+      invoice.creditStatus = "Pagado Parcial";
+    }
+    
+    inMemoryPayments.push({
+      id: paymentId,
+      quoteId: id,
+      amount: Number(amount),
+      date: new Date().toISOString(),
+      registeredBy
+    });
+    
+    return res.json(invoice);
+  } else if (currentInvoice) {
+    return res.json(currentInvoice);
+  }
+
+  res.status(404).json({ error: "Factura no encontrada" });
 });
 
 // 15. SMTP CONFIGURATION API
