@@ -187,10 +187,10 @@ export function InventoryManager({
   return (
     <div className="space-y-6 text-left">
       {/* Title Header Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
-            <Package className="w-5 h-5 text-[#E51920]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
+            <Package className="w-5 h-5 text-[#4D4DFF]" />
             Control de Inventario & Gestión de Stock
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -200,7 +200,7 @@ export function InventoryManager({
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-red-600/25 shrink-0"
+          className="bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30 shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>Registrar Nuevo Producto</span>
@@ -215,7 +215,7 @@ export function InventoryManager({
       )}
 
       {/* Search and Category Filters */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -224,7 +224,7 @@ export function InventoryManager({
               placeholder="Buscar por SKU o nombre de producto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+              className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] placeholder-slate-400 focus:outline-none"
             />
           </div>
         </div>
@@ -240,8 +240,8 @@ export function InventoryManager({
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 cursor-pointer transition-all ${
                 selectedCategory === cat
-                  ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
-                  : "bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                  ? "bg-[#4D4DFF] text-white shadow-md shadow-[#4D4DFF]/30"
+                  : "bg-white dark:bg-[#F7F8FC] border border-slate-200/60 dark:border-[#E5DEC9] text-slate-600 dark:text-[#7F735F] hover:text-slate-900 dark:hover:text-slate-100"
               }`}
             >
               {cat}
@@ -251,9 +251,9 @@ export function InventoryManager({
       </div>
 
       {/* Inventory Items List Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs overflow-hidden">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs overflow-hidden">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
+          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display">
             Lista de Repuestos e Inventario Disponible ({filteredProducts.length})
           </h4>
         </div>
@@ -267,23 +267,23 @@ export function InventoryManager({
             return (
               <div
                 key={p.sku}
-                className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 hover:border-red-500/40 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
+                className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 hover:border-blue-500/20 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.03)]"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ProtectedImage
                     src={p.img}
                     alt={p.name}
                     className="max-h-full max-w-full object-contain"
-                    containerClassName="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shrink-0 overflow-hidden"
+                    containerClassName="w-10 h-10 rounded-xl bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] shrink-0 overflow-hidden"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{p.name}</span>
-                      <span className="text-[9.5px] font-mono font-bold bg-red-50 dark:bg-red-950/40 text-[#E51920] dark:text-red-400 px-2 py-0.5 rounded border border-red-200/60 dark:border-red-800/60">
+                      <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{p.name}</span>
+                      <span className="text-[9.5px] font-mono font-bold bg-[#E6E6FA] dark:bg-[#F2ECDE] text-[#4D4DFF] dark:text-[#4D4DFF] px-2 py-0.5 rounded border border-[#DCD0FF]/50">
                         {p.sku}
                       </span>
                       {photoCount > 0 && (
-                        <span className="text-[9px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-800">
+                        <span className="text-[9px] font-mono text-slate-400 bg-slate-100 dark:bg-[#FAF6ED] px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-[#E5DEC9]">
                           📷 {photoCount} foto(s)
                         </span>
                       )}
@@ -295,10 +295,10 @@ export function InventoryManager({
                 </div>
 
                 {/* Stock & Actions Controls */}
-                <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-[#E5DEC9]">
                   <div className="text-right">
                     <span className="text-[9px] text-slate-400 block font-mono uppercase font-medium">PRECIO BASE</span>
-                    <span className="text-xs font-bold font-mono text-[#E51920] dark:text-red-400">
+                    <span className="text-xs font-bold font-mono text-[#4D4DFF] dark:text-blue-500">
                       S/ {p.basePrice.toFixed(2)}
                     </span>
                   </div>
@@ -316,10 +316,10 @@ export function InventoryManager({
 
                   <button
                     onClick={() => handleStartEdit(p)}
-                    className="p-2 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200/60 dark:border-red-800/60 rounded-xl text-[#E51920] dark:text-red-400 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                    className="px-4 py-2 bg-[#F7F8FC] dark:bg-[#FDF9F1] hover:bg-[#E6E6FA] dark:hover:bg-[#F2ECDE] border-none rounded-xl text-[#4D4DFF] dark:text-[#4D4DFF] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
                     title="Editar producto completo (Nombre, categoría, descripción, fotos, precio, stock)"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-[#E51920]" />
+                    <Edit3 className="w-3.5 h-3.5" />
                     <span>Editar</span>
                   </button>
                 </div>
@@ -332,10 +332,10 @@ export function InventoryManager({
       {/* Modal for Registering a New Product */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 relative">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-bold text-sm font-display flex items-center gap-2 text-slate-900 dark:text-white">
-                <Plus className="w-4 h-4 text-[#E51920]" />
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 relative">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <h3 className="font-bold text-sm font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
+                <Plus className="w-4 h-4 text-[#4D4DFF]" />
                 Registrar Nuevo Producto en Catálogo
               </h3>
               <button
@@ -356,7 +356,7 @@ export function InventoryManager({
                     placeholder="Ej. CAT-SPROCKET-005"
                     value={newSku}
                     onChange={(e) => setNewSku(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   />
                 </div>
 
@@ -365,7 +365,7 @@ export function InventoryManager({
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                   >
                     <option value="Transmisión">Transmisión</option>
                     <option value="Cadenas">Cadenas</option>
@@ -386,7 +386,7 @@ export function InventoryManager({
                   placeholder="Ej. Cadena Dorada 520H O-Ring 120 Eslabones"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 />
               </div>
 
@@ -400,7 +400,7 @@ export function InventoryManager({
                     placeholder="125.50"
                     value={newBasePrice}
                     onChange={(e) => setNewBasePrice(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   />
                 </div>
 
@@ -412,7 +412,7 @@ export function InventoryManager({
                     placeholder="50"
                     value={newStock}
                     onChange={(e) => setNewStock(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   />
                 </div>
               </div>
@@ -424,16 +424,16 @@ export function InventoryManager({
                   placeholder="Especificaciones técnicas o compatibilidad de moto..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-[11px] text-slate-500 font-semibold uppercase block">Fotos del Producto</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <label className="p-3 bg-slate-50 dark:bg-slate-950/80 border border-dashed border-red-300 dark:border-red-700 hover:border-[#E51920] rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
-                    <Upload className="w-4 h-4 text-[#E51920] mb-1 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Subir fotos (Multi-Archivo)</span>
+                  <label className="p-3 bg-[#F7F8FC] dark:bg-[#F7F8FC] border border-dashed border-red-300 dark:border-red-700 hover:border-[#4D4DFF] rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
+                    <Upload className="w-4 h-4 text-[#4D4DFF] mb-1 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-800 dark:text-[#3D3528]">Subir fotos (Multi-Archivo)</span>
                     <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB c/u</span>
                     <input
                       type="file"
@@ -455,7 +455,7 @@ export function InventoryManager({
                           setNewImages((prev) => [...prev, e.target.value]);
                         }
                       }}
-                      className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-[11px] text-slate-900 dark:text-slate-100 focus:outline-none"
+                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-[11px] text-slate-900 dark:text-[#3D3528] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -464,11 +464,11 @@ export function InventoryManager({
                   <div className="pt-2">
                     <div className="text-[10px] text-slate-400 font-mono mb-1.5 flex items-center justify-between">
                       <span>Galería cargada ({newImages.length} foto/s):</span>
-                      <span className="text-[#E51920] font-bold">Foto #1 es Portada</span>
+                      <span className="text-[#4D4DFF] font-bold">Foto #1 es Portada</span>
                     </div>
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
                       {newImages.map((imgUrl, idx) => (
-                        <div key={idx} className="relative w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shrink-0 overflow-hidden group">
+                        <div key={idx} className="relative w-14 h-14 rounded-xl bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none shrink-0 overflow-hidden group">
                           <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
                           <button
                             type="button"
@@ -479,7 +479,7 @@ export function InventoryManager({
                             <X className="w-3 h-3" />
                           </button>
                           {idx === 0 && (
-                            <span className="absolute bottom-0 inset-x-0 bg-[#E51920] text-white text-[7.5px] font-black text-center uppercase">
+                            <span className="absolute bottom-0 inset-x-0 bg-[#4D4DFF] text-white text-[7.5px] font-black text-center uppercase">
                               PORTADA
                             </span>
                           )}
@@ -490,7 +490,7 @@ export function InventoryManager({
                 )}
 
                 {isCompressing && (
-                  <div className="p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
+                  <div className="p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-blue-500 rounded-xl text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
                     <RefreshCw className="w-3 h-3 animate-spin" />
                     <span>Optimizando espacio de imágenes...</span>
                   </div>
@@ -504,18 +504,18 @@ export function InventoryManager({
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#E5DEC9]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] text-xs font-bold transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-extrabold transition-all shadow-md shadow-red-600/25 cursor-pointer flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-[#4D4DFF] hover:bg-blue-600 text-white text-xs font-extrabold transition-all shadow-md shadow-[#4D4DFF]/30 cursor-pointer flex items-center gap-1.5"
                 >
                   {isSaving ? (
                     <>
@@ -535,7 +535,7 @@ export function InventoryManager({
       {/* Modal de Edición Completa de Producto */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-4 text-left relative">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-4 text-left relative">
             <button
               onClick={() => setIsEditModalOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -543,10 +543,10 @@ export function InventoryManager({
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <Edit3 className="w-5 h-5 text-[#E51920]" />
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white font-display">
-                Editar Producto: <span className="text-[#E51920] font-mono">{editSku}</span>
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <Edit3 className="w-5 h-5 text-[#4D4DFF]" />
+              <h3 className="font-bold text-sm text-slate-900 dark:text-[#3D3528] font-display">
+                Editar Producto: <span className="text-[#4D4DFF] font-mono">{editSku}</span>
               </h3>
             </div>
 
@@ -558,7 +558,7 @@ export function InventoryManager({
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 />
               </div>
 
@@ -567,7 +567,7 @@ export function InventoryManager({
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 >
                   {categories.filter(c => c !== "Todos").map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -584,7 +584,7 @@ export function InventoryManager({
                     required
                     value={editBasePrice}
                     onChange={(e) => setEditBasePrice(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   />
                 </div>
 
@@ -595,7 +595,7 @@ export function InventoryManager({
                     required
                     value={editStock}
                     onChange={(e) => setEditStock(e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   />
                 </div>
               </div>
@@ -607,7 +607,7 @@ export function InventoryManager({
                   placeholder="Especificaciones técnicas, compatibilidad con motores o motocicletas..."
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 />
               </div>
 
@@ -615,9 +615,9 @@ export function InventoryManager({
               <div className="space-y-2">
                 <label className="text-[11px] text-slate-500 font-semibold uppercase block">Imágenes del Producto</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <label className="p-3 bg-slate-50 dark:bg-slate-950/80 border border-dashed border-red-300 dark:border-red-700 hover:border-[#E51920] rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
-                    <Upload className="w-4 h-4 text-[#E51920] mb-1 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Agregar Fotos</span>
+                  <label className="p-3 bg-[#F7F8FC] dark:bg-[#F7F8FC] border border-dashed border-red-300 dark:border-red-700 hover:border-[#4D4DFF] rounded-xl cursor-pointer flex flex-col items-center justify-center text-center group transition-all">
+                    <Upload className="w-4 h-4 text-[#4D4DFF] mb-1 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-slate-800 dark:text-[#3D3528]">Agregar Fotos</span>
                     <span className="text-[9px] text-slate-400">Compresión automática &lt;80 KB</span>
                     <input
                       type="file"
@@ -642,7 +642,7 @@ export function InventoryManager({
                           }
                         }
                       }}
-                      className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-[11px] text-slate-900 dark:text-slate-100 focus:outline-none"
+                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-[11px] text-slate-900 dark:text-[#3D3528] focus:outline-none"
                     />
                     <span className="text-[9px] text-slate-400">Presiona Enter para agregar URL</span>
                   </div>
@@ -653,11 +653,11 @@ export function InventoryManager({
                   <div className="pt-2">
                     <div className="text-[10px] text-slate-400 font-mono mb-1.5 flex items-center justify-between">
                       <span>Fotos en Galería ({editImages.length}):</span>
-                      <span className="text-[#E51920] font-bold">Foto #1 es Portada</span>
+                      <span className="text-[#4D4DFF] font-bold">Foto #1 es Portada</span>
                     </div>
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
                       {editImages.map((imgUrl, idx) => (
-                        <div key={idx} className="relative w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shrink-0 overflow-hidden group">
+                        <div key={idx} className="relative w-14 h-14 rounded-xl bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none shrink-0 overflow-hidden group">
                           <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-contain" />
                           <button
                             type="button"
@@ -668,7 +668,7 @@ export function InventoryManager({
                             <X className="w-3 h-3" />
                           </button>
                           {idx === 0 && (
-                            <span className="absolute bottom-0 inset-x-0 bg-[#E51920] text-white text-[7.5px] font-black text-center uppercase">
+                            <span className="absolute bottom-0 inset-x-0 bg-[#4D4DFF] text-white text-[7.5px] font-black text-center uppercase">
                               PORTADA
                             </span>
                           )}
@@ -679,18 +679,18 @@ export function InventoryManager({
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#E5DEC9]">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] text-xs font-bold transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-extrabold transition-all shadow-md shadow-red-600/25 cursor-pointer flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-[#4D4DFF] hover:bg-blue-600 text-white text-xs font-extrabold transition-all shadow-md shadow-[#4D4DFF]/30 cursor-pointer flex items-center gap-1.5"
                 >
                   {isSaving ? (
                     <>

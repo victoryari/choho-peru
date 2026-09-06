@@ -77,9 +77,9 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex-1 flex flex-col md:flex-row h-screen overflow-hidden">
       {/* Sidebar Left Navigation (Desktop Only) */}
-      <aside className="hidden md:flex flex-col w-64 h-full bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 p-4 shrink-0 shadow-xs">
+      <aside className="hidden md:flex flex-col w-64 h-full bg-[#E6E6FA] dark:bg-[#FAF6ED] border-r border-[#DCD0FF]/50 dark:border-[#E5DEC9] p-4 shrink-0 shadow-xs">
         <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
             <ChohoLogo size="sm" showTagline={true} />
             <span
               className={`w-2.5 h-2.5 rounded-full ${
@@ -89,13 +89,13 @@ export function Layout({ children }: LayoutProps) {
             />
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl space-y-0.5 text-left relative group">
-            <div className="text-[10px] text-[#E51920] dark:text-red-400 font-extrabold uppercase tracking-wide">
+          <div className="p-3 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-slate-200/70 dark:border-[#E5DEC9] rounded-2xl space-y-0.5 text-left relative group">
+            <div className="text-[10px] text-[#4D4DFF] dark:text-blue-500 font-extrabold uppercase tracking-wide">
               {currentUser.role}
             </div>
-            <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{currentUser.name}</div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{currentUser.email}</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Sede: <span className="font-semibold text-slate-700 dark:text-slate-300">{currentUser.branch}</span></div>
+            <div className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{currentUser.name}</div>
+            <div className="text-[11px] text-slate-500 dark:text-[#7F735F] truncate">{currentUser.email}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">Sede: <span className="font-semibold text-slate-700 dark:text-[#7F735F]">{currentUser.branch}</span></div>
           </div>
 
           {/* Menú Principal */}
@@ -103,13 +103,13 @@ export function Layout({ children }: LayoutProps) {
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">Menú Principal</div>
             <nav className="space-y-1">
               {userPermissions.dashboard && (
-                <Link to="/" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                <Link to="/" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                   <LayoutDashboard className="w-4 h-4" />
                   <span>Cuadro de Mando</span>
                 </Link>
               )}
               {userPermissions.catalog && (
-                <Link to="/catalog" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/catalog") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                <Link to="/catalog" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/catalog") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                   <ShoppingBag className="w-4 h-4" />
                   <span>Catálogo de Repuestos</span>
                 </Link>
@@ -123,46 +123,46 @@ export function Layout({ children }: LayoutProps) {
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">Módulos Comerciales</div>
               <nav className="space-y-1">
                 {userPermissions.inventory && (
-                  <Link to="/inventory" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/inventory") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/inventory" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/inventory") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Boxes className="w-4 h-4" />
                     <span>Control de Inventario</span>
                   </Link>
                 )}
                 {userPermissions.quotes && (
                   <>
-                    <Link to="/cart" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/cart") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                    <Link to="/cart" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/cart") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                       <div className="flex items-center gap-3"><FileText className="w-4 h-4" /><span>Crear Presupuesto</span></div>
                       {budgetItems.length > 0 && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive("/cart") ? "bg-white text-[#E51920]" : "bg-amber-500 text-slate-950"}`}>{budgetItems.length}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive("/cart") ? "bg-white text-[#4D4DFF]" : "bg-amber-500 text-slate-950"}`}>{budgetItems.length}</span>
                       )}
                     </Link>
-                    <Link to="/quotes" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/quotes") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                    <Link to="/quotes" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/quotes") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                       <FileText className="w-4 h-4" /><span>Mis Cotizaciones</span>
                     </Link>
                   </>
                 )}
                 {userPermissions.billing && (
-                  <Link to="/billing" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/billing") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/billing" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/billing") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Receipt className="w-4 h-4" /><span>Facturación SUNAT</span>
                   </Link>
                 )}
                 {userPermissions.telemetry && (
-                  <Link to="/telemetry" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/telemetry") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/telemetry" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/telemetry") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Compass className="w-4 h-4" /><span>Check-ins de Campo</span>
                   </Link>
                 )}
                 {userPermissions.expenses && (
-                  <Link to="/expenses" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/expenses") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/expenses" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/expenses") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Receipt className="w-4 h-4" /><span>Sustento de Viáticos</span>
                   </Link>
                 )}
                 {userPermissions.purchases && (
-                  <Link to="/purchases" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/purchases") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/purchases" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/purchases") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Truck className="w-4 h-4" /><span>Compras y Recepción</span>
                   </Link>
                 )}
                 {userPermissions.receivables && (
-                  <Link to="/receivables" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/receivables") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                  <Link to="/receivables" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/receivables") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <DollarSign className="w-4 h-4" /><span>Cuentas por Cobrar</span>
                   </Link>
                 )}
@@ -175,13 +175,13 @@ export function Layout({ children }: LayoutProps) {
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">Sistema & Ajustes</div>
             <nav className="space-y-1">
               {userPermissions.sync && (
-                <Link to="/sync" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/sync") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                <Link to="/sync" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/sync") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                   <div className="flex items-center gap-3"><Cloud className="w-4 h-4" /><span>Sincronización</span></div>
                   {offlinePendingQuotes.length > 0 && <span className="bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce">{offlinePendingQuotes.length}</span>}
                 </Link>
               )}
               {userPermissions.admin && (
-                <Link to="/admin" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/admin") ? "bg-[#E51920] text-white shadow-md shadow-red-600/25" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"}`}>
+                <Link to="/admin" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/admin") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                   <Users className="w-4 h-4" /><span>Administrar Sistema</span>
                 </Link>
               )}
@@ -189,24 +189,24 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
 
-        <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-left">
-          <button onClick={handleLogout} className="w-full px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 flex items-center gap-2.5 transition-all cursor-pointer">
+        <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-[#E5DEC9] space-y-2.5 text-left">
+          <button onClick={handleLogout} className="w-full px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 dark:text-[#7F735F] dark:hover:text-blue-500 flex items-center gap-2.5 transition-all cursor-pointer">
             <LogOut className="w-4 h-4" /><span>Cerrar Sesión</span>
           </button>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-main)' }}>
-        <header className="h-16 bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/80 dark:border-slate-800 px-4 md:px-6 flex items-center justify-between shrink-0 backdrop-blur-md">
+        <header className="h-16 bg-[var(--bg-header)] border-b border-slate-200/80 dark:border-[#E5DEC9] px-4 md:px-6 flex items-center justify-between shrink-0 backdrop-blur-md z-40 relative">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 md:hidden">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-blue-600 cursor-pointer">
+              <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-xl border border-slate-200 dark:border-[#E5DEC9] bg-slate-50 dark:bg-[#F2ECDE] text-slate-700 dark:text-[#3D3528] hover:text-blue-600 cursor-pointer">
                 <Menu className="w-5 h-5" />
               </button>
               <ChohoLogo size="sm" showTagline={false} />
             </div>
             <div className="hidden md:flex flex-col text-left">
-              <span className="text-base font-extrabold text-slate-900 dark:text-white font-display">
+              <span className="text-base font-extrabold text-slate-900 dark:text-[#3D3528] font-display">
                 {getPageTitle()}
               </span>
               <span className="text-[11px] text-slate-400 font-medium">Miércoles, 27 de Agosto de 2026</span>
@@ -218,7 +218,7 @@ export function Layout({ children }: LayoutProps) {
             )}
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <button onClick={toggleTheme} className="p-2 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-xs">
+            <button onClick={toggleTheme} className="p-2 rounded-full border border-slate-200 dark:border-[#E5DEC9] bg-slate-50 dark:bg-[#F2ECDE] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-[#3D3528] transition-all cursor-pointer shadow-xs">
               {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-600" />}
             </button>
             <NotificationCenter />
@@ -312,7 +312,7 @@ export function Layout({ children }: LayoutProps) {
                </nav>
 
                <div className="mt-auto pt-4 border-t border-slate-800 shrink-0">
-                <button onClick={handleLogout} className="w-full px-3 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-xl flex items-center gap-3">
+                <button onClick={handleLogout} className="w-full px-3 py-2.5 text-xs font-semibold text-blue-500 hover:bg-red-500/10 rounded-xl flex items-center gap-3">
                   <LogOut className="w-4 h-4" /><span>Cerrar Sesión</span>
                 </button>
                </div>

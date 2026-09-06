@@ -48,7 +48,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
   return (
     <div className="space-y-6 text-left">
       {/* Search and status filter banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
         <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -57,7 +57,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
               placeholder="Buscar por código de cotización, nombre o RUC de cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+              className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-[#3D3528] placeholder-slate-400 focus:outline-none"
             />
           </div>
 
@@ -68,8 +68,8 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                 onClick={() => setSelectedStatus(st)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                   selectedStatus === st
-                    ? "bg-[#E51920] text-white shadow-md shadow-red-600/25"
-                    : "bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                    ? "bg-[#4D4DFF] text-white shadow-md shadow-[#4D4DFF]/30"
+                    : "bg-white dark:bg-[#F7F8FC] border border-slate-200/60 dark:border-[#E5DEC9] text-slate-600 dark:text-[#7F735F] hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               >
                 {st}
@@ -81,13 +81,13 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main List Column */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4 h-fit">
-          <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-[#E51920]" />
+        <div className="lg:col-span-2 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4 h-fit">
+          <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-[#4D4DFF]" />
               Registro Histórico de Cotizaciones de Campo ({filteredQuotes.length})
             </h4>
-            <button onClick={handleExportCSV} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+            <button onClick={handleExportCSV} className="px-3 py-1.5 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] rounded-xl text-xs font-bold transition-all flex items-center gap-2">
               <Download className="w-3 h-3" /> Exportar CSV
             </button>
           </div>
@@ -104,25 +104,25 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                   onClick={() => setActiveDetailQuote(q)}
                   className={`p-4 border rounded-2xl flex items-center justify-between gap-4 transition-all text-left cursor-pointer ${
                     activeDetailQuote?.id === q.id
-                      ? "border-[#E51920] bg-red-50/50 dark:bg-red-950/20 shadow-xs"
-                      : "bg-slate-50 dark:bg-slate-950/40 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      ? "border-[#4D4DFF] bg-red-50/50 dark:bg-red-950/20 shadow-xs"
+                      : "bg-[#F7F8FC] dark:bg-[#F7F8FC]/40 border-slate-100 dark:border-[#E5DEC9] hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold font-mono text-[#E51920] dark:text-red-400">{q.id}</span>
+                      <span className="text-xs font-bold font-mono text-[#4D4DFF] dark:text-blue-500">{q.id}</span>
                       <span className="text-[10px] text-slate-400 font-mono">{q.date}</span>
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                         q.status === "Aceptada"
-                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
+                          ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
                           : q.status === "Rechazada"
-                          ? "bg-red-50 text-red-500 dark:bg-red-950/50 dark:text-red-400 border border-red-200 dark:border-red-800/60"
-                          : "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60"
+                          ? "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/50 dark:text-blue-500 border border-red-200 dark:border-red-800/60"
+                          : "bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60"
                       }`}>
                         {q.status}
                       </span>
                     </div>
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-1.5 truncate max-w-[280px]">
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-[#3D3528] mt-1.5 truncate max-w-[280px]">
                       {q.clientName}
                     </h5>
                     <p className="text-[10px] text-slate-400 mt-0.5">
@@ -133,7 +133,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                   <div className="text-right shrink-0 flex items-center gap-3">
                     <div>
                       <span className="text-[9px] text-slate-400 block font-mono font-medium">TOTAL NETO</span>
-                      <span className="text-xs font-mono font-extrabold text-slate-900 dark:text-slate-100">
+                      <span className="text-xs font-mono font-extrabold text-slate-900 dark:text-[#3D3528]">
                         S/ {q.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -146,8 +146,8 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
         </div>
 
         {/* Selected Quote Detail Sidebar Panel */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit">
+          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
             Detalle del Documento Comercial
           </h4>
 
@@ -155,32 +155,32 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
             <div className="space-y-5 text-left">
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-mono text-[#E51920] dark:text-red-400 font-bold block">{activeDetailQuote.id}</span>
-                  <h5 className="text-xs font-bold text-slate-900 dark:text-white mt-1 leading-snug">{activeDetailQuote.clientName}</h5>
+                  <span className="text-[10px] font-mono text-[#4D4DFF] dark:text-blue-500 font-bold block">{activeDetailQuote.id}</span>
+                  <h5 className="text-xs font-bold text-slate-900 dark:text-[#3D3528] mt-1 leading-snug">{activeDetailQuote.clientName}</h5>
                 </div>
                 <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full ${
                   activeDetailQuote.status === "Aceptada"
-                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400 border border-emerald-200"
+                    ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border border-emerald-200"
                     : activeDetailQuote.status === "Rechazada"
-                    ? "bg-red-50 text-red-500 dark:bg-red-950 dark:text-red-400 border border-red-200"
-                    : "bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400 border border-amber-200"
+                    ? "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950 dark:text-blue-500 border border-red-200"
+                    : "bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950 dark:text-amber-400 border border-amber-200"
                 }`}>
                   {activeDetailQuote.status}
                 </span>
               </div>
 
-              <div className="space-y-2.5 text-xs border-y border-slate-100 dark:border-slate-800 py-3.5">
+              <div className="space-y-2.5 text-xs border-y border-slate-100 dark:border-[#E5DEC9] py-3.5">
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-medium">RUC/DNI:</span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{activeDetailQuote.clientDoc}</span>
+                  <span className="font-mono text-slate-700 dark:text-[#7F735F] font-bold">{activeDetailQuote.clientDoc}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-medium">Fecha registro:</span>
-                  <span className="text-slate-700 dark:text-slate-300 font-semibold">{activeDetailQuote.date}</span>
+                  <span className="text-slate-700 dark:text-[#7F735F] font-semibold">{activeDetailQuote.date}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-medium">Asesor Comercial:</span>
-                  <span className="text-slate-900 dark:text-slate-100 font-bold">{activeDetailQuote.advisor}</span>
+                  <span className="text-slate-900 dark:text-[#3D3528] font-bold">{activeDetailQuote.advisor}</span>
                 </div>
               </div>
 
@@ -189,12 +189,12 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                 <span className="text-[10px] text-slate-400 font-semibold uppercase font-mono tracking-wider block">Items de Compra</span>
                 <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
                   {activeDetailQuote.items?.map((item) => (
-                    <div key={item.sku} className="p-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 rounded-xl text-xs flex justify-between items-center">
+                    <div key={item.sku} className="p-2.5 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-slate-100 dark:border-[#E5DEC9] rounded-xl text-xs flex justify-between items-center">
                       <div className="min-w-0">
-                        <div className="font-bold text-slate-800 dark:text-slate-200 truncate">{item.name}</div>
+                        <div className="font-bold text-slate-800 dark:text-[#3D3528] truncate">{item.name}</div>
                         <div className="text-[10px] text-slate-400 font-mono">Qty: {item.qty} • S/ {item.price.toFixed(2)}</div>
                       </div>
-                      <span className="font-mono font-bold text-[#E51920] dark:text-red-400 shrink-0 ml-2">
+                      <span className="font-mono font-bold text-[#4D4DFF] dark:text-blue-500 shrink-0 ml-2">
                         S/ {(item.qty * item.price).toFixed(2)}
                       </span>
                     </div>
@@ -202,9 +202,9 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-right space-y-1">
+              <div className="pt-3 border-t border-slate-100 dark:border-[#E5DEC9] text-xs text-right space-y-1">
                 <div className="text-slate-400 text-[10px] font-semibold">TOTAL CON IMPUESTOS</div>
-                <div className="text-xl font-extrabold font-mono text-[#E51920] dark:text-red-400">
+                <div className="text-xl font-extrabold font-mono text-[#4D4DFF] dark:text-blue-500">
                   S/ {activeDetailQuote.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -214,13 +214,13 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
                 <div className="pt-2 flex gap-2">
                   <button
                     onClick={() => handleStatusChange(activeDetailQuote.id, "Rechazada")}
-                    className="flex-1 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 text-xs font-bold py-2 rounded-xl transition-all cursor-pointer"
+                    className="flex-1 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-blue-500 hover:bg-[#FFB6C1]/50 text-xs font-bold py-2 rounded-xl transition-all cursor-pointer"
                   >
                     Rechazar
                   </button>
                   <button
                     onClick={() => handleStatusChange(activeDetailQuote.id, "Aceptada")}
-                    className="flex-1 bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-md shadow-red-600/25"
+                    className="flex-1 bg-[#4D4DFF] hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30"
                   >
                     Aprobar
                   </button>

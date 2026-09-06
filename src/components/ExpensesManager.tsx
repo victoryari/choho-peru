@@ -159,10 +159,10 @@ export function ExpensesManager({
   return (
     <div className="space-y-6 text-left">
       {/* Title Header */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
-            <Receipt className="w-5 h-5 text-[#E51920]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
+            <Receipt className="w-5 h-5 text-[#4D4DFF]" />
             Módulo de Sustento y Rendición de Viáticos SUNAT
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -179,15 +179,15 @@ export function ExpensesManager({
       {/* KPI Cards (Only for Finance and Management roles) */}
       {isFinanceOrAdmin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
             <span className="text-[10px] text-slate-400 font-bold uppercase block">TOTAL RENDIDO</span>
-            <span className="text-lg font-extrabold font-mono text-slate-900 dark:text-white mt-1 block">
+            <span className="text-lg font-extrabold font-mono text-slate-900 dark:text-[#3D3528] mt-1 block">
               S/ {totalRendido.toFixed(2)}
             </span>
             <span className="text-[10px] text-slate-400 mt-1 block font-mono">{expensesList.length} Comprobantes</span>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
             <span className="text-[10px] text-amber-500 font-bold uppercase block">PENDIENTE DE APROBACIÓN</span>
             <span className="text-lg font-extrabold font-mono text-amber-600 dark:text-amber-400 mt-1 block">
               S/ {totalPendiente.toFixed(2)}
@@ -195,7 +195,7 @@ export function ExpensesManager({
             <span className="text-[10px] text-amber-500/80 mt-1 block font-mono">En revisión por finanzas</span>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
             <span className="text-[10px] text-emerald-500 font-bold uppercase block">APROBADO POR FINANZAS</span>
             <span className="text-lg font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
               S/ {totalAprobado.toFixed(2)}
@@ -203,9 +203,9 @@ export function ExpensesManager({
             <span className="text-[10px] text-emerald-500/80 mt-1 block font-mono">Fondos validados</span>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-            <span className="text-[10px] text-[#E51920] dark:text-red-400 font-bold uppercase block">VALIDEZ SUNAT</span>
-            <span className="text-lg font-extrabold font-mono text-[#E51920] dark:text-red-400 mt-1 block">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
+            <span className="text-[10px] text-[#4D4DFF] dark:text-blue-500 font-bold uppercase block">VALIDEZ SUNAT</span>
+            <span className="text-lg font-extrabold font-mono text-[#4D4DFF] dark:text-blue-500 mt-1 block">
               {expensesList.length > 0 ? Math.round((validadosCount / expensesList.length) * 100) : 100}%
             </span>
             <span className="text-[10px] text-slate-400 mt-1 block font-mono">{validadosCount} de {expensesList.length} Validados</span>
@@ -215,9 +215,9 @@ export function ExpensesManager({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Panel: Register new expense */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit space-y-4">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#E51920]" />
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit space-y-4">
+          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#4D4DFF]" />
             Registrar Comprobante de Viático
           </h4>
 
@@ -228,7 +228,7 @@ export function ExpensesManager({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-semibold focus:outline-none"
                 >
                   <option value="Alimentación">🍔 Alimentación</option>
                   <option value="Hospedaje">🏨 Hospedaje</option>
@@ -244,7 +244,7 @@ export function ExpensesManager({
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as any)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-semibold focus:outline-none"
                 >
                   <option value="Factura">Factura Electrónica</option>
                   <option value="Boleta">Boleta de Venta</option>
@@ -263,7 +263,7 @@ export function ExpensesManager({
                   placeholder="Ej. 20124567891"
                   value={rucIssuer}
                   onChange={(e) => setRucIssuer(e.target.value.replace(/\D/g, ""))}
-                  className="flex-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                  className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   required
                 />
                 <button
@@ -287,7 +287,7 @@ export function ExpensesManager({
                 placeholder="Ej. Hotel Real Trujillo S.A.C."
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 required
               />
             </div>
@@ -301,7 +301,7 @@ export function ExpensesManager({
                   placeholder="F001"
                   value={series}
                   onChange={(e) => setSeries(e.target.value.toUpperCase())}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none uppercase"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none uppercase"
                   required
                 />
               </div>
@@ -313,7 +313,7 @@ export function ExpensesManager({
                   placeholder="0004521"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                   required
                 />
               </div>
@@ -326,7 +326,7 @@ export function ExpensesManager({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono font-bold focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono font-bold focus:outline-none"
                   required
                 />
               </div>
@@ -336,8 +336,8 @@ export function ExpensesManager({
             {sunatValidationResult && (
               <div className={`p-3 rounded-xl border text-xs font-mono space-y-1 ${
                 sunatValidationResult.valid
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                  : "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border-red-200 dark:border-red-800"
+                  ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                  : "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/40 dark:text-blue-500 border-red-200 dark:border-red-800"
               }`}>
                 <div className="flex items-center gap-1.5 font-bold">
                   {sunatValidationResult.valid ? <ShieldCheck className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
@@ -350,9 +350,9 @@ export function ExpensesManager({
             <div className="space-y-1.5">
               <label className="text-[11px] text-slate-500 font-semibold uppercase block">Foto o Imagen del Comprobante</label>
               <div className="flex items-center gap-3">
-                <label className="flex-1 bg-slate-50 dark:bg-slate-950/60 border border-dashed border-slate-300 dark:border-slate-700 hover:border-[#E51920] rounded-xl p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1">
+                <label className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-dashed border-slate-300 dark:border-[#E5DEC9] hover:border-[#4D4DFF] rounded-xl p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1">
                   <ImageIcon className="w-5 h-5 text-slate-400" />
-                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">
+                  <span className="text-[11px] text-slate-600 dark:text-[#7F735F] font-semibold">
                     {receiptImage ? "✓ Imagen Cargada (Cambiar)" : "Subir Foto / Escaneo"}
                   </span>
                   <input
@@ -363,7 +363,7 @@ export function ExpensesManager({
                   />
                 </label>
                 {receiptImage && (
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 group">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-[#E5DEC9] shrink-0 group">
                     <img src={receiptImage} alt="Comprobante" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -385,7 +385,7 @@ export function ExpensesManager({
                 placeholder="Ej. Almuerzo corporativo con cliente de la zona..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none resize-none"
+                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none resize-none"
               />
             </div>
 
@@ -398,7 +398,7 @@ export function ExpensesManager({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25 disabled:opacity-50"
+              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30 disabled:opacity-50"
             >
               <Receipt className="w-4 h-4" />
               <span>Registrar y Sustentar Viático</span>
@@ -408,11 +408,11 @@ export function ExpensesManager({
 
         {/* Expenses List & Approval Table */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
             {/* List Header & Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#E51920]" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#4D4DFF]" />
                 Historial Comprobantes Sustentados ({filteredExpenses.length})
               </h4>
 
@@ -425,7 +425,7 @@ export function ExpensesManager({
                     placeholder="Buscar RUC, emisor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:outline-none"
+                    className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl pl-8 pr-3 py-1.5 text-xs focus:outline-none"
                   />
                 </div>
 
@@ -433,7 +433,7 @@ export function ExpensesManager({
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
+                  className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
                 >
                   <option value="all">Todos los Estados</option>
                   <option value="Pendiente">Pendiente</option>
@@ -453,12 +453,12 @@ export function ExpensesManager({
                 {filteredExpenses.map((exp) => (
                   <div
                     key={exp.id}
-                    className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-red-500/40 transition-all text-left"
+                    className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-500/40 transition-all text-left"
                   >
                     <div className="space-y-1 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold font-mono text-[#E51920] dark:text-red-400">{exp.id}</span>
-                        <span className="text-[10px] bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-bold font-mono text-[#4D4DFF] dark:text-blue-500">{exp.id}</span>
+                        <span className="text-[10px] bg-slate-200/60 dark:bg-[#F2ECDE] text-slate-700 dark:text-[#7F735F] font-semibold px-2 py-0.5 rounded-md">
                           {exp.category}
                         </span>
                         <span className="text-[10px] font-mono text-slate-400">{exp.date}</span>
@@ -466,21 +466,21 @@ export function ExpensesManager({
                         {/* SUNAT Badge */}
                         <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${
                           exp.sunatStatus === "ACEPTADO"
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                            : "bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400 border-red-200 dark:border-red-800"
+                            ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                            : "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/60 dark:text-blue-500 border-red-200 dark:border-red-800"
                         }`}>
                           SUNAT: {exp.sunatStatus}
                         </span>
                       </div>
 
-                      <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{exp.companyName}</h5>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{exp.companyName}</h5>
                       
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap gap-2">
+                      <div className="text-[11px] text-slate-500 dark:text-[#7F735F] font-mono flex flex-wrap gap-2">
                         <span>RUC: {exp.rucIssuer}</span>
                         <span>•</span>
                         <span>{exp.docType}: {exp.series}-{exp.number}</span>
                         <span>•</span>
-                        <span>Asesor: <strong className="text-slate-700 dark:text-slate-300">{exp.advisor}</strong></span>
+                        <span>Asesor: <strong className="text-slate-700 dark:text-[#7F735F]">{exp.advisor}</strong></span>
                       </div>
 
                       {exp.notes && (
@@ -488,10 +488,10 @@ export function ExpensesManager({
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100 dark:border-slate-800 shrink-0">
+                    <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100 dark:border-[#E5DEC9] shrink-0">
                       <div className="text-right">
                         <span className="text-[9px] text-slate-400 block font-medium uppercase">MONTO</span>
-                        <span className="text-sm font-extrabold font-mono text-slate-900 dark:text-white">
+                        <span className="text-sm font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
                           S/ {exp.amount.toFixed(2)}
                         </span>
                       </div>
@@ -500,10 +500,10 @@ export function ExpensesManager({
                       {exp.receiptImage && (
                         <button
                           onClick={() => setViewingImage(exp.receiptImage!)}
-                          className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
+                          className="p-2 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-[#7F735F] rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
                           title="Ver Foto del Comprobante"
                         >
-                          <Eye className="w-3.5 h-3.5 text-[#E51920]" />
+                          <Eye className="w-3.5 h-3.5 text-[#4D4DFF]" />
                           <span>Foto</span>
                         </button>
                       )}
@@ -512,10 +512,10 @@ export function ExpensesManager({
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                           exp.approvalStatus === "Aprobado"
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200"
+                            ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200"
                             : exp.approvalStatus === "Observado"
-                            ? "bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400 border border-red-200"
-                            : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200"
+                            ? "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/60 dark:text-blue-500 border border-red-200"
+                            : "bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200"
                         }`}>
                           {exp.approvalStatus}
                         </span>
@@ -549,28 +549,28 @@ export function ExpensesManager({
       {/* FULLSCREEN RECEIPT IMAGE MODAL */}
       {viewingImage && (
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2 font-display">
-                <ImageIcon className="w-4 h-4 text-[#E51920]" />
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] flex items-center gap-2 font-display">
+                <ImageIcon className="w-4 h-4 text-[#4D4DFF]" />
                 Foto Adjunta del Comprobante
               </h4>
               <button
                 onClick={() => setViewingImage(null)}
-                className="p-1.5 text-slate-400 hover:text-white bg-slate-100 dark:bg-slate-800 rounded-xl"
+                className="p-1.5 text-slate-400 hover:text-white bg-slate-100 dark:bg-[#F2ECDE] rounded-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-center bg-black">
+            <div className="max-h-[70vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-[#E5DEC9] flex items-center justify-center bg-black">
               <img src={viewingImage} alt="Comprobante de Pago" className="max-h-[65vh] w-auto object-contain" />
             </div>
 
             <div className="flex justify-end">
               <button
                 onClick={() => setViewingImage(null)}
-                className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold py-2 px-5 rounded-xl text-xs cursor-pointer"
+                className="bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 text-slate-700 dark:text-[#7F735F] font-bold py-2 px-5 rounded-xl text-xs cursor-pointer"
               >
                 Cerrar Visor
               </button>

@@ -65,10 +65,10 @@ export function SyncCenter({
   return (
     <div className="space-y-6 text-left">
       {/* Title Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base text-slate-900 dark:text-white font-display flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-[#E51920]" />
+          <h3 className="font-extrabold text-base text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+            <Cloud className="w-5 h-5 text-[#4D4DFF]" />
             Centro de Sincronización Automática
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -81,8 +81,8 @@ export function SyncCenter({
           onClick={onToggleOffline}
           className={`px-4 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer shadow-xs shrink-0 ${
             isOfflineMode
-              ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-400 hover:bg-amber-100"
-              : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-400 hover:bg-emerald-100"
+              ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-400 hover:bg-[#FFD7A0]/50"
+              : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-400 hover:bg-[#98FB98]/50"
           }`}
         >
           {isOfflineMode ? (
@@ -102,13 +102,13 @@ export function SyncCenter({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Connection status card */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-start gap-3">
-              <div className={`p-2 rounded-xl ${isOfflineMode ? 'bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400'}`}>
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl flex items-start gap-3">
+              <div className={`p-2 rounded-xl ${isOfflineMode ? 'bg-[#FFD7A0]/50 text-[#B45309] dark:bg-amber-950 dark:text-amber-400' : 'bg-[#98FB98]/40 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'}`}>
                 {isOfflineMode ? <CloudOff className="w-5 h-5" /> : <Cloud className="w-5 h-5" />}
               </div>
               <div>
-                <h4 className="text-xs font-extrabold text-slate-900 dark:text-white font-display">Estado de Conexión</h4>
+                <h4 className="text-xs font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Estado de Conexión</h4>
                 <p className={`text-xs font-bold mt-0.5 ${isOfflineMode ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                   {isOfflineMode ? "Trabajando de forma local" : "Conectado a TiDB Cloud"}
                 </p>
@@ -120,13 +120,13 @@ export function SyncCenter({
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-red-50 text-[#E51920] dark:bg-red-950/40 dark:text-red-400">
+            <div className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-red-50 text-[#4D4DFF] dark:bg-red-950/40 dark:text-blue-500">
                 <Laptop className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs font-extrabold text-slate-900 dark:text-white font-display">Cola de Cambios Locales</h4>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
+                <h4 className="text-xs font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Cola de Cambios Locales</h4>
+                <p className="text-xs font-bold text-slate-700 dark:text-[#7F735F] mt-0.5">
                   {localOfflineCount === 0 ? "Sin cambios pendientes" : `${localOfflineCount} Transacciones pendientes`}
                 </p>
                 <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
@@ -139,15 +139,15 @@ export function SyncCenter({
           </div>
 
           {/* Sync history log */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-3 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
+            <h4 className="font-extrabold text-xs text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-3 flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-500" />
               Log de Auditoría de Sincronización (Tiempo Real)
             </h4>
 
-            <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 font-mono text-[11px] text-slate-500 dark:text-[#7F735F]">
               {syncHistory.map((history, idx) => (
-                <div key={idx} className="flex items-start gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
+                <div key={idx} className="flex items-start gap-2 py-1.5 border-b border-slate-100 dark:border-[#E5DEC9]/60 last:border-0">
                   <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                   <span>{history}</span>
                 </div>
@@ -157,20 +157,20 @@ export function SyncCenter({
         </div>
 
         {/* Sync Controls action card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-6">
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-6">
           <div>
-            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="font-extrabold text-xs text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
               Acciones de Sincronización
             </h4>
 
             <div className="mt-4 space-y-4 text-xs">
               <div className="flex justify-between items-center text-slate-400">
                 <span>Última sincronización:</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{lastSyncTime}</span>
+                <span className="font-mono text-slate-700 dark:text-[#7F735F] font-semibold">{lastSyncTime}</span>
               </div>
               <div className="flex justify-between items-center text-slate-400">
                 <span>Base de Datos Remota:</span>
-                <span className="font-mono text-[#E51920] dark:text-red-400 font-bold">TIDB_CLOUD_LIVE</span>
+                <span className="font-mono text-[#4D4DFF] dark:text-blue-500 font-bold">TIDB_CLOUD_LIVE</span>
               </div>
               <div className="flex justify-between items-center text-slate-400">
                 <span>Velocidad de Respuesta:</span>
@@ -183,7 +183,7 @@ export function SyncCenter({
             <button
               onClick={handleManualSync}
               disabled={isSyncing || isOfflineMode}
-              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25 disabled:opacity-50"
+              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30 disabled:opacity-50"
             >
               {isSyncing ? (
                 <>

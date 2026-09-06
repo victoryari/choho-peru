@@ -39,32 +39,32 @@ export const ChohoLogo: React.FC<ChohoLogoProps> = ({
       <div className={`shrink-0 ${iconSizes[size]} flex items-center justify-center`}>
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm">
           {/* Top Circle */}
-          <circle cx="50" cy="18" r="13" fill="#E51920" />
+          <circle cx="50" cy="18" r="13" fill="#4D4DFF" />
           
           {/* Top-Left Diamond */}
-          <rect x="18" y="32" width="18" height="18" rx="2" transform="rotate(45 27 41)" fill="#E51920" />
+          <rect x="18" y="32" width="18" height="18" rx="2" transform="rotate(45 27 41)" fill="#4D4DFF" />
           
           {/* Top-Right Diamond */}
-          <rect x="64" y="32" width="18" height="18" rx="2" transform="rotate(45 73 41)" fill="#E51920" />
+          <rect x="64" y="32" width="18" height="18" rx="2" transform="rotate(45 73 41)" fill="#4D4DFF" />
           
           {/* Bottom-Left Circle */}
-          <circle cx="27" cy="73" r="13" fill="#E51920" />
+          <circle cx="27" cy="73" r="13" fill="#4D4DFF" />
           
           {/* Bottom-Right Circle */}
-          <circle cx="73" cy="73" r="13" fill="#E51920" />
+          <circle cx="73" cy="73" r="13" fill="#4D4DFF" />
           
           {/* Bottom Center Diamond */}
-          <rect x="41" y="69" width="18" height="18" rx="2" transform="rotate(45 50 78)" fill="#E51920" />
+          <rect x="41" y="69" width="18" height="18" rx="2" transform="rotate(45 50 78)" fill="#4D4DFF" />
         </svg>
       </div>
 
       {/* Brand Text & Skewed Tagline Badge */}
       <div className="flex flex-col text-left justify-center">
         <div className="flex items-start leading-none">
-          <span className={`font-black tracking-tight text-[#E51920] font-sans ${textSizes[size]}`}>
+          <span className={`font-black tracking-tight text-[#4D4DFF] font-sans ${textSizes[size]}`}>
             CHOHO
           </span>
-          <span className="text-[10px] md:text-xs font-bold text-[#E51920] ml-0.5 mt-0.5">
+          <span className="text-[10px] md:text-xs font-bold text-[#4D4DFF] ml-0.5 mt-0.5">
             ®
           </span>
         </div>

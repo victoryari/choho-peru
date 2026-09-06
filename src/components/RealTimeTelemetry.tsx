@@ -64,10 +64,10 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
   return (
     <div className="space-y-6 text-left">
       {/* Upper header with stats & controls */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
-            <Navigation className="w-5 h-5 text-[#E51920]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
+            <Navigation className="w-5 h-5 text-[#4D4DFF]" />
             Panel de Telemetría & Geolocalización de Rutas GPS
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -77,13 +77,13 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Advisor selector */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl text-xs">
+          <div className="flex items-center gap-2 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none px-3 py-1.5 rounded-xl text-xs">
             <Filter className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-400 font-semibold">Asesor:</span>
             <select
               value={selectedAdvisor}
               onChange={(e) => setSelectedAdvisor(e.target.value)}
-              className="bg-transparent font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+              className="bg-transparent font-bold text-slate-900 dark:text-[#3D3528] focus:outline-none cursor-pointer"
             >
               <option value="all">Todos los Asesores</option>
               {advisors.map(adv => (
@@ -93,12 +93,12 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 gap-1">
+          <div className="flex bg-slate-100 dark:bg-[#FDF9F1] p-1 rounded-xl border border-slate-200 dark:border-[#E5DEC9] gap-1">
             <button
               onClick={() => setActiveViewMode("map")}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                 activeViewMode === "map"
-                  ? "bg-[#E51920] text-white shadow-sm"
+                  ? "bg-[#4D4DFF] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -109,7 +109,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
               onClick={() => setActiveViewMode("timeline")}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                 activeViewMode === "timeline"
-                  ? "bg-[#E51920] text-white shadow-sm"
+                  ? "bg-[#4D4DFF] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -118,7 +118,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-[#7F735F] bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none px-3 py-2 rounded-xl">
             <Compass className="w-4 h-4 text-emerald-500 animate-spin" />
             <span>GPS: En Línea</span>
           </div>
@@ -129,10 +129,10 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
         {/* Main Content Area: Interactive GPS Map or Timeline */}
         <div className="lg:col-span-2 space-y-4">
           {activeViewMode === "map" ? (
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#E51920]" />
+            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#4D4DFF]" />
                   Mapa Interactivo de Ruta Comercial ({filteredList.length} Puntos)
                 </h4>
                 <span className="text-[10px] font-mono text-slate-400">Lima Centro • Trujillo • Arequipa</span>
@@ -144,7 +144,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 <div 
                   className="absolute inset-0 opacity-20 pointer-events-none"
                   style={{
-                    backgroundImage: "radial-gradient(#E51920 1px, transparent 1px), radial-gradient(#38bdf8 1px, transparent 1px)",
+                    backgroundImage: "radial-gradient(#4D4DFF 1px, transparent 1px), radial-gradient(#38bdf8 1px, transparent 1px)",
                     backgroundSize: "24px 24px",
                     backgroundPosition: "0 0, 12px 12px"
                   }}
@@ -154,7 +154,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
                   <polyline
                     fill="none"
-                    stroke="#E51920"
+                    stroke="#4D4DFF"
                     strokeWidth="3"
                     strokeDasharray="6 4"
                     points="60,80 140,160 260,110 380,220 500,180"
@@ -165,7 +165,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 {/* Map Control Info Overlay */}
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 p-2.5 rounded-xl text-[10px] text-white font-mono space-y-0.5 shadow-lg">
-                    <div className="text-[#E51920] font-bold">CHOHO FLEET GPS TRACKER v2.4</div>
+                    <div className="text-[#4D4DFF] font-bold">CHOHO FLEET GPS TRACKER v2.4</div>
                     <div className="text-slate-400">Asesor: {selectedAdvisor === "all" ? "Todos" : selectedAdvisor}</div>
                   </div>
 
@@ -183,7 +183,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                         onClick={() => setSelectedPin(pin)}
                         className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-xl cursor-pointer ${
                           selectedPin?.id === pin.id
-                            ? "bg-[#E51920] text-white scale-125 ring-4 ring-red-500/40 z-20"
+                            ? "bg-[#4D4DFF] text-white scale-125 ring-4 ring-red-500/40 z-20"
                             : pin.status === "Visited"
                             ? "bg-emerald-500 text-slate-950 hover:scale-110"
                             : "bg-slate-800 text-slate-300 hover:scale-110"
@@ -204,13 +204,13 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 {selectedPin ? (
                   <div className="relative z-10 bg-slate-900/95 backdrop-blur-md border border-red-500/40 p-3 rounded-xl flex items-center justify-between text-xs text-white shadow-xl animate-fade-in">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#E51920] flex items-center justify-center font-bold text-white shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#4D4DFF] flex items-center justify-center font-bold text-white shrink-0">
                         <MapPin className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="font-extrabold text-white">{selectedPin.client}</div>
                         <div className="text-[10px] text-slate-400 font-mono">
-                          Asesor: <span className="text-red-400 font-bold">{selectedPin.advisor}</span> • Hora: {selectedPin.time}
+                          Asesor: <span className="text-blue-500 font-bold">{selectedPin.advisor}</span> • Hora: {selectedPin.time}
                         </div>
                       </div>
                     </div>
@@ -236,15 +236,15 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
             </div>
           ) : (
             /* Timeline View */
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
                 Línea de Tiempo del Itinerario ({filteredList.length} registros)
               </h4>
 
               <div className="space-y-4 relative pl-4 before:content-[''] before:absolute before:left-6.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
                 {filteredList.map((node) => (
                   <div key={node.id} className="relative flex items-start gap-4">
-                    <div className="relative z-10 mt-1 shrink-0 bg-white dark:bg-slate-900 p-1 rounded-full">
+                    <div className="relative z-10 mt-1 shrink-0 bg-white dark:bg-[#FFFFFF] p-1 rounded-full">
                       {node.status === "Visited" ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                       ) : (
@@ -252,21 +252,21 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                       )}
                     </div>
 
-                    <div className="flex-1 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-red-500/40 transition-all">
+                    <div className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC]/40 border border-slate-100 dark:border-[#E5DEC9] p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-500/40 transition-all">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{node.client}</span>
-                          <span className="text-[9px] bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-mono">
+                          <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528]">{node.client}</span>
+                          <span className="text-[9px] bg-slate-200/60 dark:bg-[#F2ECDE] text-slate-600 dark:text-[#7F735F] px-2 py-0.5 rounded-full font-mono">
                             {node.time}
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
-                          Asesor: <span className="text-[#E51920] dark:text-red-400 font-bold">{node.advisor}</span> • Coordenadas: {node.lat}, {node.lng}
+                          Asesor: <span className="text-[#4D4DFF] dark:text-blue-500 font-bold">{node.advisor}</span> • Coordenadas: {node.lat}, {node.lng}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${node.status === 'Visited' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${node.status === 'Visited' ? 'bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60' : 'bg-slate-100 text-slate-500 dark:bg-[#F2ECDE] dark:text-[#7F735F]'}`}>
                           {node.status === "Visited" ? "Visitado" : "Pendiente"}
                         </span>
                       </div>
@@ -279,9 +279,9 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
         </div>
 
         {/* Advisor check-in generator panel */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#E51920]" />
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit">
+          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-[#4D4DFF]" />
             Registrar Nueva Visita de Campo
           </h4>
 
@@ -293,7 +293,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 placeholder="Ej. Taller Mecánico Trujillo / Moto Repuestos Lima"
                 value={newClientName}
                 onChange={(e) => setNewClientName(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 required
               />
             </div>
@@ -305,7 +305,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                 placeholder="Ej. Av. Nicolás de Piérola 450, Trujillo"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
               />
             </div>
 
@@ -318,7 +318,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
                   placeholder="Ej. 16:30"
                   value={newClientTime}
                   onChange={(e) => setNewClientTime(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none font-mono"
                 />
               </div>
             </div>
@@ -332,7 +332,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-red-600/25"
+              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30"
             >
               <Plus className="w-4 h-4" />
               <span>Registrar Visita (Check-in GPS)</span>

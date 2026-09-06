@@ -62,9 +62,9 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
 
   return (
     <div className="space-y-6 text-left">
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
             <DollarSign className="w-5 h-5 text-emerald-500" />
             Cuentas por Cobrar (Créditos)
           </h3>
@@ -79,14 +79,14 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
             <div className="text-sm font-mono font-extrabold text-slate-900 dark:text-emerald-100">S/ {totalPaid.toFixed(2)}</div>
           </div>
           <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl px-4 py-2 text-right">
-            <div className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase">Por Cobrar</div>
-            <div className="text-sm font-mono font-extrabold text-[#E51920] dark:text-red-400">S/ {totalDue.toFixed(2)}</div>
+            <div className="text-[10px] font-bold text-red-600 dark:text-blue-500 uppercase">Por Cobrar</div>
+            <div className="text-sm font-mono font-extrabold text-[#4D4DFF] dark:text-blue-500">S/ {totalDue.toFixed(2)}</div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-slate-100 dark:border-[#E5DEC9] flex flex-col md:flex-row justify-between gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
             <input
@@ -94,10 +94,10 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
               placeholder="Buscar por cliente, DNI/RUC o N° Comprobante..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full lg:w-1/2 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none transition-all"
+              className="w-full lg:w-1/2 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-[#3D3528] focus:outline-none transition-all"
             />
           </div>
-          <button onClick={handleExportCSV} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+          <button onClick={handleExportCSV} className="px-4 py-2 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
             <Download className="w-3.5 h-3.5" /> Exportar CSV
           </button>
         </div>
@@ -105,7 +105,7 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-950/50 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+              <tr className="bg-[#F7F8FC] dark:bg-[#F7F8FC]/50 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7F735F] border-b border-slate-100 dark:border-[#E5DEC9]">
                 <th className="p-4">Comprobante</th>
                 <th className="p-4">Cliente</th>
                 <th className="p-4">Fecha Emisión</th>
@@ -125,32 +125,32 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
                 return (
                   <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
                     <td className="p-4">
-                      <div className="font-mono text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <div className="font-mono text-xs font-bold text-slate-900 dark:text-[#3D3528] flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-slate-400" />
                         {r.id}
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{r.clientName}</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-[#3D3528]">{r.clientName}</div>
                       <div className="text-[10px] text-slate-500 font-mono mt-0.5">{r.clientDoc}</div>
                     </td>
                     <td className="p-4">
-                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                      <div className="text-xs text-slate-600 dark:text-[#7F735F] flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         {r.date}
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <span className="font-mono text-xs text-slate-600 dark:text-slate-400">S/ {total.toFixed(2)}</span>
+                      <span className="font-mono text-xs text-slate-600 dark:text-[#7F735F]">S/ {total.toFixed(2)}</span>
                     </td>
                     <td className="p-4 text-right">
-                      <span className="font-mono text-sm font-extrabold text-[#E51920] dark:text-red-400">S/ {dueAmount.toFixed(2)}</span>
+                      <span className="font-mono text-sm font-extrabold text-[#4D4DFF] dark:text-blue-500">S/ {dueAmount.toFixed(2)}</span>
                     </td>
                     <td className="p-4 text-center">
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                         status === 'Pagado Parcial' 
-                          ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200' 
-                          : 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-200'
+                          ? 'bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200' 
+                          : 'bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/40 dark:text-blue-500 border border-red-200'
                       }`}>
                         {status}
                       </span>
@@ -158,7 +158,7 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
                     <td className="p-4 text-right">
                       <button
                         onClick={() => setSelectedInvoice(r)}
-                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1"
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-[#98FB98]/40 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1"
                       >
                         <HandCoins className="w-3.5 h-3.5" />
                         Cobrar
@@ -198,34 +198,34 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-6 w-full max-w-md z-10"
+              className="relative bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl shadow-2xl p-6 w-full max-w-md z-10"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 rounded-2xl text-emerald-600 dark:text-emerald-400">
                   <HandCoins className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white font-display">Registrar Cobranza</h3>
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Registrar Cobranza</h3>
                   <p className="text-xs text-slate-500">Amortización de deuda</p>
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl mb-6 space-y-3">
+              <div className="p-4 bg-[#F7F8FC] dark:bg-[#F7F8FC] border border-slate-100 dark:border-[#E5DEC9] rounded-xl mb-6 space-y-3">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-500">Comprobante:</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">{selectedInvoice.id}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-[#3D3528]">{selectedInvoice.id}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-500">Cliente:</span>
-                  <span className="font-bold text-slate-900 dark:text-white max-w-[180px] truncate">{selectedInvoice.clientName}</span>
+                  <span className="font-bold text-slate-900 dark:text-[#3D3528] max-w-[180px] truncate">{selectedInvoice.clientName}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-500">Total Emitido:</span>
-                  <span className="font-mono font-bold text-slate-700 dark:text-slate-300">S/ {(selectedInvoice.total || 0).toFixed(2)}</span>
+                  <span className="font-mono font-bold text-slate-700 dark:text-[#7F735F]">S/ {(selectedInvoice.total || 0).toFixed(2)}</span>
                 </div>
-                <div className="pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Deuda Actual:</span>
-                  <span className="text-lg font-mono font-extrabold text-[#E51920] dark:text-red-400">
+                <div className="pt-3 mt-1 border-t border-slate-200 dark:border-[#E5DEC9] flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-700 dark:text-[#7F735F] uppercase">Deuda Actual:</span>
+                  <span className="text-lg font-mono font-extrabold text-[#4D4DFF] dark:text-blue-500">
                     S/ {(selectedInvoice.creditDueAmount || selectedInvoice.total || 0).toFixed(2)}
                   </span>
                 </div>
@@ -233,7 +233,7 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
 
               <form onSubmit={handleRegisterPayment}>
                 <div className="space-y-1.5 mb-6">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Monto a Amortizar (S/)</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-[#7F735F] uppercase">Monto a Amortizar (S/)</label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
                     <input
@@ -245,7 +245,7 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
                       value={paymentAmount}
                       onChange={e => setPaymentAmount(Number(e.target.value))}
                       placeholder="0.00"
-                      className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-3 text-lg text-slate-900 dark:text-white font-mono font-bold focus:outline-none"
+                      className="w-full bg-white dark:bg-[#FDF9F1] border border-slate-200 dark:border-[#E5DEC9] focus:border-emerald-500 rounded-xl pl-10 pr-4 py-3 text-lg text-slate-900 dark:text-[#3D3528] font-mono font-bold focus:outline-none"
                     />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">El monto no puede superar la deuda actual.</p>
@@ -255,7 +255,7 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
                   <button
                     type="button"
                     onClick={() => setSelectedInvoice(null)}
-                    className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-all"
+                    className="flex-1 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] font-bold py-3 rounded-xl transition-all"
                   >
                     Cancelar
                   </button>

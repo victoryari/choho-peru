@@ -85,10 +85,10 @@ export function PurchasingManager({
 
   return (
     <div className="space-y-6 text-left">
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-white">
-            <Truck className="w-5 h-5 text-[#E51920]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
+            <Truck className="w-5 h-5 text-[#4D4DFF]" />
             Módulo de Compras e Ingresos a Almacén
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -101,7 +101,7 @@ export function PurchasingManager({
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               activeTab === "list" 
                 ? "bg-slate-800 text-white dark:bg-white dark:text-slate-900 shadow-md" 
-                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-600 dark:bg-[#F2ECDE] dark:text-[#7F735F] hover:bg-slate-200"
             }`}
           >
             Órdenes
@@ -110,8 +110,8 @@ export function PurchasingManager({
             onClick={() => setActiveTab("new")}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === "new" 
-                ? "bg-[#E51920] text-white shadow-md shadow-red-600/30" 
-                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200"
+                ? "bg-[#4D4DFF] text-white shadow-md shadow-red-600/30" 
+                : "bg-slate-100 text-slate-600 dark:bg-[#F2ECDE] dark:text-[#7F735F] hover:bg-slate-200"
             }`}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -123,25 +123,25 @@ export function PurchasingManager({
       {activeTab === "list" && (
         <div className="grid grid-cols-1 gap-4">
           {purchases.map(po => (
-            <div key={po.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div key={po.id} className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#E5DEC9] pb-4">
                 <div>
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm font-bold text-[#E51920] dark:text-red-400">{po.id}</span>
+                    <span className="font-mono text-sm font-bold text-[#4D4DFF] dark:text-blue-500">{po.id}</span>
                     <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                       po.status === 'Recibido' 
-                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200' 
-                        : 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200'
+                        ? 'bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200' 
+                        : 'bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200'
                     }`}>
                       {po.status}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{po.supplierName}</h4>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-[#3D3528] mt-1">{po.supplierName}</h4>
                   <p className="text-[11px] text-slate-500">RUC: {po.supplierRuc} | Fecha OC: {po.date}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Total Compra</div>
-                  <div className="text-xl font-mono font-extrabold text-slate-900 dark:text-white">
+                  <div className="text-xl font-mono font-extrabold text-slate-900 dark:text-[#3D3528]">
                     S/ {po.total.toFixed(2)}
                   </div>
                   {po.status === "Pendiente" && (
@@ -161,9 +161,9 @@ export function PurchasingManager({
                   <h5 className="text-[10px] font-bold text-slate-500 uppercase mb-2">Detalle de Productos</h5>
                   <div className="space-y-1">
                     {po.items.map(item => (
-                      <div key={item.sku} className="flex justify-between text-xs p-1.5 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
-                        <span className="text-slate-600 dark:text-slate-400 truncate pr-4">{item.qty}x {item.name}</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-slate-200 whitespace-nowrap">S/ {(item.qty * item.unitCost).toFixed(2)}</span>
+                      <div key={item.sku} className="flex justify-between text-xs p-1.5 bg-[#F7F8FC] dark:bg-[#F7F8FC]/50 rounded-lg">
+                        <span className="text-slate-600 dark:text-[#7F735F] truncate pr-4">{item.qty}x {item.name}</span>
+                        <span className="font-mono font-bold text-slate-900 dark:text-[#3D3528] whitespace-nowrap">S/ {(item.qty * item.unitCost).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -173,13 +173,13 @@ export function PurchasingManager({
                     <h5 className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1 flex items-center gap-1">
                       <Check className="w-3 h-3" /> Recepción Confirmada
                     </h5>
-                    <p className="text-xs text-slate-700 dark:text-slate-300">
+                    <p className="text-xs text-slate-700 dark:text-[#7F735F]">
                       <span className="font-semibold">Responsable:</span> {po.receivedBy}
                     </p>
-                    <p className="text-xs text-slate-700 dark:text-slate-300">
+                    <p className="text-xs text-slate-700 dark:text-[#7F735F]">
                       <span className="font-semibold">Ubicación Física:</span> {po.location}
                     </p>
-                    <p className="text-xs text-slate-700 dark:text-slate-300">
+                    <p className="text-xs text-slate-700 dark:text-[#7F735F]">
                       <span className="font-semibold">Fecha Ingreso:</span> {po.receiveDate}
                     </p>
                   </div>
@@ -196,8 +196,8 @@ export function PurchasingManager({
       {activeTab === "new" && (
         <form onSubmit={handleSubmitPO} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
                 Datos del Proveedor
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -209,7 +209,7 @@ export function PurchasingManager({
                     maxLength={11}
                     value={supplierRuc}
                     onChange={e => setSupplierRuc(e.target.value.replace(/\D/g, ""))}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
                     placeholder="2010..."
                   />
                 </div>
@@ -220,17 +220,17 @@ export function PurchasingManager({
                     required
                     value={supplierName}
                     onChange={e => setSupplierName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none"
+                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-[#3D3528] focus:outline-none"
                     placeholder="Empresa Proveedora S.A.C."
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4 flex items-center justify-between">
+            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4 flex items-center justify-between">
                 <span>Productos a Comprar</span>
-                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-lg">
+                <span className="text-xs bg-slate-100 dark:bg-[#F2ECDE] text-slate-600 dark:text-[#7F735F] px-2 py-1 rounded-lg">
                   {cart.length} ítems
                 </span>
               </h4>
@@ -242,19 +242,19 @@ export function PurchasingManager({
                   placeholder="Buscar código o nombre del producto..."
                   value={searchProductQuery}
                   onChange={e => setSearchProductQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-[#3D3528] focus:outline-none"
                 />
                 
                 {searchProductQuery.length > 2 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#F2ECDE] border border-slate-200 dark:border-[#E5DEC9] rounded-xl shadow-xl max-h-60 overflow-y-auto">
                     {filteredProducts.map(p => (
                       <div 
                         key={p.sku} 
                         onClick={() => handleAddProduct(p)}
-                        className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer border-b border-slate-100 dark:border-slate-700/50 last:border-0"
+                        className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer border-b border-slate-100 dark:border-[#E5DEC9]/50 last:border-0"
                       >
-                        <div className="font-mono text-[10px] text-[#E51920] dark:text-red-400">{p.sku}</div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">{p.name}</div>
+                        <div className="font-mono text-[10px] text-[#4D4DFF] dark:text-blue-500">{p.sku}</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-[#3D3528]">{p.name}</div>
                       </div>
                     ))}
                     {filteredProducts.length === 0 && (
@@ -266,10 +266,10 @@ export function PurchasingManager({
 
               <div className="space-y-2">
                 {cart.map((item) => (
-                  <div key={item.sku} className="p-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between gap-4">
+                  <div key={item.sku} className="p-3 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="font-mono text-[10px] text-[#E51920] dark:text-red-400">{item.sku}</div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.name}</div>
+                      <div className="font-mono text-[10px] text-[#4D4DFF] dark:text-blue-500">{item.sku}</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{item.name}</div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-20">
@@ -280,7 +280,7 @@ export function PurchasingManager({
                           step="0.01"
                           value={item.unitCost}
                           onChange={e => handleUpdateItem(item.sku, "unitCost", Number(e.target.value))}
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-mono font-bold focus:outline-none"
+                          className="w-full bg-white dark:bg-[#FFFFFF] border border-slate-200 dark:border-[#E5DEC9] rounded-lg px-2 py-1 text-xs font-mono font-bold focus:outline-none"
                         />
                       </div>
                       <div className="w-20">
@@ -290,11 +290,11 @@ export function PurchasingManager({
                           min="1"
                           value={item.qty}
                           onChange={e => handleUpdateItem(item.sku, "qty", Number(e.target.value))}
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-mono font-bold focus:outline-none"
+                          className="w-full bg-white dark:bg-[#FFFFFF] border border-slate-200 dark:border-[#E5DEC9] rounded-lg px-2 py-1 text-xs font-mono font-bold focus:outline-none"
                         />
                       </div>
                       <div className="w-24 text-right pt-3">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528]">
                           S/ {(item.qty * item.unitCost).toFixed(2)}
                         </span>
                       </div>
@@ -302,7 +302,7 @@ export function PurchasingManager({
                   </div>
                 ))}
                 {cart.length === 0 && (
-                  <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-[#E5DEC9] rounded-xl">
                     <Package className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
                     <p className="text-xs text-slate-500 font-semibold">Busque y agregue productos a la orden.</p>
                   </div>
@@ -311,8 +311,8 @@ export function PurchasingManager({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs h-fit sticky top-6">
-            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit sticky top-6">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
               Resumen de Compra
             </h4>
             
@@ -325,9 +325,9 @@ export function PurchasingManager({
                 <span>IGV (18%)</span>
                 <span>S/ {(cartTotal - (cartTotal / 1.18)).toFixed(2)}</span>
               </div>
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <span className="text-sm font-bold text-slate-900 dark:text-white uppercase">Costo Total</span>
-                <span className="text-xl font-mono font-extrabold text-[#E51920] dark:text-red-400">
+              <div className="pt-3 border-t border-slate-100 dark:border-[#E5DEC9] flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-900 dark:text-[#3D3528] uppercase">Costo Total</span>
+                <span className="text-xl font-mono font-extrabold text-[#4D4DFF] dark:text-blue-500">
                   S/ {cartTotal.toFixed(2)}
                 </span>
               </div>
@@ -336,7 +336,7 @@ export function PurchasingManager({
             <button
               type="submit"
               disabled={cart.length === 0 || !supplierRuc || !supplierName || isSubmitting}
-              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -364,26 +364,26 @@ export function PurchasingManager({
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-6 w-full max-w-md z-10"
+              className="relative bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl shadow-2xl p-6 w-full max-w-md z-10"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 rounded-2xl text-emerald-600 dark:text-emerald-400">
                   <Box className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white font-display">Recepción en Almacén</h3>
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Recepción en Almacén</h3>
                   <p className="text-xs text-slate-500">Orden {receivingPo.id}</p>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
-                <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl">
-                  <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Proveedor: {receivingPo.supplierName}</p>
+                <div className="p-3 bg-[#F7F8FC] dark:bg-[#F7F8FC] border border-slate-100 dark:border-[#E5DEC9] rounded-xl">
+                  <p className="text-xs text-slate-600 dark:text-[#7F735F] font-semibold">Proveedor: {receivingPo.supplierName}</p>
                   <p className="text-xs text-slate-500 mt-1">{receivingPo.items.length} productos a ingresar.</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-[#7F735F] uppercase flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" /> Ubicación Física en Almacén
                   </label>
                   <input
@@ -392,7 +392,7 @@ export function PurchasingManager({
                     value={locationInput}
                     onChange={e => setLocationInput(e.target.value)}
                     placeholder="Ej. Pasillo A, Estante 3"
-                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white font-semibold focus:outline-none"
+                    className="w-full bg-white dark:bg-[#FDF9F1] border border-slate-200 dark:border-[#E5DEC9] focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-[#3D3528] font-semibold focus:outline-none"
                   />
                 </div>
               </div>
@@ -401,7 +401,7 @@ export function PurchasingManager({
                 <button
                   type="button"
                   onClick={() => setReceivingPo(null)}
-                  className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] font-bold py-3 rounded-xl transition-all"
                 >
                   Cancelar
                 </button>

@@ -7,31 +7,31 @@
 }
 
 :root {
-  --bg-main: #F4F6FB;
+  --bg-main: #F7F8FC;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #FAFCFF;
-  --bg-header: rgba(255, 255, 255, 0.95);
-  --border-color: #E5E9F2;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --accent-primary: #E51920;
-  --accent-glow: rgba(229, 25, 32, 0.18);
-  --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+  --bg-card-hover: #F0F2FA;
+  --bg-header: rgba(255, 255, 255, 0.90);
+  --border-color: #E2E8F0;
+  --text-main: #333333;
+  --text-muted: #777777;
+  --accent-primary: #4D4DFF;
+  --accent-glow: rgba(77, 77, 255, 0.15);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
 
 .dark,
 .dark-theme,
 :root.dark {
-  --bg-main: #090D16;
-  --bg-card: #111827;
-  --bg-card-hover: #1E293B;
-  --bg-header: rgba(15, 23, 42, 0.9);
-  --border-color: rgba(51, 65, 85, 0.6);
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --accent-primary: #E51920;
-  --accent-glow: rgba(229, 25, 32, 0.25);
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --bg-main: #FDF9F1;
+  --bg-card: #FAF6ED;
+  --bg-card-hover: #F2ECDE;
+  --bg-header: rgba(250, 246, 237, 0.9);
+  --border-color: #E5DEC9;
+  --text-main: #3D3528;
+  --text-muted: #7F735F;
+  --accent-primary: #4D4DFF;
+  --accent-glow: rgba(77, 77, 255, 0.15);
+  --shadow-card: 0 8px 30px rgba(61, 53, 40, 0.05);
 }
 
 body {
@@ -145,13 +145,13 @@ body {
 
 /* Common UI Components extracted from inline Tailwind */
 .card {
-  @apply bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs;
+  @apply bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 shadow-[var(--shadow-card)] transition-colors duration-300;
 }
 
 .btn-primary {
-  @apply bg-[#E51920] hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl transition-all shadow-md shadow-red-600/20 flex items-center justify-center gap-2;
+  @apply bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-md shadow-[#4D4DFF]/30 flex items-center justify-center gap-2;
 }
 
 .input-field {
-  @apply w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 focus:border-[#E51920] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none dark:placeholder-slate-500 placeholder-slate-400;
+  @apply w-full bg-[#F7F8FC] dark:bg-[#FDF9F1] border border-slate-200 dark:border-[#E5DEC9] focus:border-[#4D4DFF] dark:focus:border-[#4D4DFF] rounded-xl px-4 py-3 text-sm text-[#333333] dark:text-[#3D3528] font-medium focus:outline-none placeholder-slate-400 focus:ring-4 focus:ring-[#4D4DFF]/10 transition-all;
 }

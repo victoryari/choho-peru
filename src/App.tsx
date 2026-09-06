@@ -53,7 +53,8 @@ export default function App() {
     receivables,
     setPurchases,
     setReceivables,
-    setIsOfflineMode
+    setIsOfflineMode,
+    setOfflinePendingQuotes
   } = useAppStore();
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -174,10 +175,57 @@ export default function App() {
   };
   
   const handleClearBudget = () => setBudgetItems([]);
+
+  const handleAddVisit = async (visit: any) => {
+    // In a real app, this would be a POST.
+    const newVisit = { ...visit, id: `TEL-${Date.now()}` };
+    setTelemetry([newVisit, ...telemetry]);
+  };
+
+  const handleAddExpense = async (expense: Omit<TravelExpense, "id">) => {
+    const newExpense: TravelExpense = { ...expense, id: `EXP-${Date.now()}` };
+    setExpenses([newExpense, ...expenses]);
+  };
+
+  const handleUpdateExpenseStatus = async (id: string, status: "Aprobado" | "Rechazado") => {
+    setExpenses(expenses.map(e => e.id === id ? { ...e, approvalStatus: status } : e));
+  };
+
+  const handleAddUser = async (user: Omit<User, "id">) => {
+    const newUser: User = { ...user, id: `USR-${Date.now()}` };
+    setUsers([...users, newUser]);
+  };
+
+  const handleUpdateUser = async (id: string, updates: Partial<User>) => {
+    setUsers(users.map(u => u.id === id ? { ...u, ...updates } : u));
+  };
+
+  const handleSyncNow = async () => {
+    if (offlinePendingQuotes.length === 0) return;
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Move all offline quotes to main quotes and clear offline queue
+    setQuotes([...offlinePendingQuotes, ...quotes]);
+    setOfflinePendingQuotes([]);
+  };
   
-  const handleSaveQuote = async (client: { name: string; document: string; type: "RUC" | "DNI" }, notes: string) => {
-    // Basic logic
-    setBudgetItems([]);
+  
+  const handleSaveQuote = async (quotePayload: Omit<Quote, "id" | "date">) => {
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(quotePayload)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setQuotes([created, ...quotes]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleCreatePurchase = async (po: Omit<PurchaseOrder, "id" | "status">) => {
@@ -303,9 +351,9 @@ export default function App() {
                 {loginError && (
                   <motion.div initial={{ opacity: 0, y: -10, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }} exit={{ opacity: 0, y: -10, height: 0 }} className="rounded-lg bg-red-500/10 p-3 border border-red-500/20">
                     <div className="flex">
-                      <ShieldAlert className="h-5 w-5 text-red-400" />
+                      <ShieldAlert className="h-5 w-5 text-blue-500" />
                       <div className="ml-3">
-                        <h3 className="text-sm font-bold text-red-400">Autenticación Fallida</h3>
+                        <h3 className="text-sm font-bold text-blue-500">Autenticación Fallida</h3>
                         <div className="mt-1 text-xs text-red-300">{loginError}</div>
                       </div>
                     </div>
@@ -317,7 +365,7 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-red-600/30 text-sm font-bold text-white bg-[#E51920] hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-red-600/30 text-sm font-bold text-white bg-[#4D4DFF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {isLoggingIn ? (
                     <span className="flex items-center gap-2">
@@ -347,12 +395,12 @@ export default function App() {
           <Route path="/cart" element={<BudgetGenerator budgetItems={budgetItems} onUpdateQty={handleUpdateCartQty} onRemoveItem={handleRemoveCartItem} onClearBudget={handleClearBudget} onSaveQuote={handleSaveQuote} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/quotes" element={<QuotesList quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} />} />
           <Route path="/billing" element={<BillingInvoice quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} products={products} onUpdateProduct={handleUpdateProduct} />} />
-          <Route path="/telemetry" element={<RealTimeTelemetry telemetryList={telemetry} onAddVisit={() => {}} currentUserName={currentUser?.name || "Asesor"} />} />
-          <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={() => Promise.resolve()} onUpdateExpenseStatus={() => Promise.resolve()} currentUserName={currentUser?.name || "Asesor"} />} />
+          <Route path="/telemetry" element={<RealTimeTelemetry telemetryList={telemetry} onAddVisit={handleAddVisit} currentUserName={currentUser?.name || "Asesor"} />} />
+          <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/purchases" element={<PurchasingManager purchases={purchases} products={products} currentUserName={currentUser?.name || "Admin"} onReceivePurchase={handleReceivePurchase} onCreatePurchase={handleCreatePurchase} />} />
           <Route path="/receivables" element={<AccountsReceivable receivables={receivables} currentUserName={currentUser?.name || "Admin"} onRegisterPayment={handleRegisterPayment} />} />
-          <Route path="/sync" element={<SyncCenter isOfflineMode={isOfflineMode} onToggleOffline={() => setIsOfflineMode(!isOfflineMode)} onSyncNow={() => {}} localOfflineCount={offlinePendingQuotes.length} />} />
-          <Route path="/admin" element={<AdminPanel currentUser={currentUser} users={users} products={products} onAddUser={() => Promise.resolve()} onUpdateUser={() => Promise.resolve()} onUpdateProduct={() => Promise.resolve()} onRolesUpdated={(roles) => setRolesList(roles)} />} />
+          <Route path="/sync" element={<SyncCenter isOfflineMode={isOfflineMode} onToggleOffline={() => setIsOfflineMode(!isOfflineMode)} onSyncNow={handleSyncNow} localOfflineCount={offlinePendingQuotes.length} />} />
+          <Route path="/admin" element={<AdminPanel currentUser={currentUser} users={users} products={products} onAddUser={handleAddUser} onUpdateUser={handleUpdateUser} onUpdateProduct={handleUpdateProduct} onRolesUpdated={(roles) => setRolesList(roles)} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         

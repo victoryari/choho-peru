@@ -78,7 +78,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     const doc = new jsPDF();
 
     // CHOHO Official Red Header Bar
-    doc.setFillColor(229, 25, 32); // CHOHO Red #E51920
+    doc.setFillColor(229, 25, 32); // CHOHO Red #4D4DFF
     doc.rect(0, 0, 210, 55, "F");
 
     // Skewed black tagline bar underneath
@@ -203,16 +203,16 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
   return (
     <div className="space-y-6">
       {/* Dashboard Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5">
         <div>
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white font-display">Dashboard Analítico</h2>
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Dashboard Analítico</h2>
           <p className="text-xs text-slate-500">Métricas y rendimiento de ventas</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleExportCSV} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+          <button onClick={handleExportCSV} className="px-4 py-2 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] rounded-xl text-xs font-bold transition-all flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> Exportar CSV
           </button>
-          <button onClick={handleExportPDFReport} className="px-4 py-2 bg-[#E51920] hover:bg-red-700 text-white shadow-md shadow-red-600/20 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+          <button onClick={handleExportPDFReport} className="px-4 py-2 bg-[#4D4DFF] hover:bg-blue-600 text-white shadow-md shadow-[#4D4DFF]/30 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> PDF Resumen
           </button>
         </div>
@@ -221,7 +221,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
       {/* Top 4 KPI Metric Cards (DealDeck Style with CHOHO Red branding) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Hero Total Sales (Gradient CHOHO Red Card) */}
-        <div className="bg-gradient-to-br from-[#E51920] via-red-600 to-rose-800 text-white border border-red-500/30 rounded-2xl p-5 shadow-lg shadow-red-600/20 relative overflow-hidden flex flex-col justify-between space-y-4">
+        <div className="bg-[#4D4DFF] text-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(77,77,255,0.3)] relative overflow-hidden flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
               <DollarSign className="w-5 h-5" />
@@ -245,12 +245,12 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         </div>
 
         {/* Card 2: Cartera en Cotización (Total Orders) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-red-50 dark:bg-red-950/40 text-[#E51920] dark:text-red-400 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#87CEEB]/30 dark:bg-[#87CEEB]/30 text-[#4D4DFF] rounded-xl flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
-            <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-[#98FB98]/30 dark:bg-[#98FB98]/30 text-emerald-700 dark:text-emerald-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               +12.4%
             </span>
@@ -260,7 +260,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
               Cartera en Cotización
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
                 S/ {pendingSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Pendientes</span>
@@ -269,12 +269,12 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         </div>
 
         {/* Card 3: Facturas Emitidas (Visitors) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#FFD7A0]/50 dark:bg-[#FFD7A0]/40 text-[#D97706] rounded-xl flex items-center justify-center">
               <Award className="w-5 h-5" />
             </div>
-            <span className="bg-red-50 dark:bg-red-950/40 text-red-500 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-[#FFB6C1]/40 dark:bg-[#FFB6C1]/30 text-rose-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
               -2.08%
             </span>
           </div>
@@ -283,7 +283,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
               Comprobantes Emitidos
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
                 {acceptedQuotesCount}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Facturas aprobadas</span>
@@ -292,12 +292,12 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         </div>
 
         {/* Card 4: Ticket Medio (Total Sold Products) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-red-50 dark:bg-red-950/40 text-[#E51920] dark:text-red-400 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#DCD0FF]/60 dark:bg-[#DCD0FF]/50 text-[#4D4DFF] rounded-xl flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
-            <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-[#98FB98]/30 dark:bg-[#98FB98]/30 text-emerald-700 dark:text-emerald-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               +12.1%
             </span>
@@ -307,7 +307,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
               Ticket Medio de Venta
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
                 S/ {averageTicket.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Por cliente</span>
@@ -321,10 +321,10 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         {/* Left Column (2 Cols): Customer Habbits Bar Chart & Top SKUs */}
         <div className="lg:col-span-2 space-y-6">
           {/* Dual Bar Chart (Customer Habbits - DealDeck Style) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-left">
               <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white font-display">
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-[#3D3528] font-display">
                   Comportamiento de Ventas & Productos
                 </h3>
                 <p className="text-xs text-slate-400">Rendimiento mensual comparativo de repuestos facturados</p>
@@ -332,7 +332,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
 
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#E51920]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4D4DFF]" />
                   <span>Ventas (Soles)</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
@@ -346,11 +346,11 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
             <div className="relative pt-6 pb-2">
               {/* Tooltip Overlay Mock */}
               <div className="absolute top-2 left-[48%] -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-xl px-3 py-1.5 text-[11px] font-semibold flex items-center gap-2 z-10 border border-slate-800">
-                <span className="w-2 h-2 rounded-full bg-[#E51920]" />
+                <span className="w-2 h-2 rounded-full bg-[#4D4DFF]" />
                 <span>S/ 43,787 Productos</span>
               </div>
 
-              <div className="h-52 flex items-end justify-between px-2 pt-6 border-b border-slate-100 dark:border-slate-800">
+              <div className="h-52 flex items-end justify-between px-2 pt-6 border-b border-slate-100 dark:border-[#E5DEC9]">
                 {[
                   { name: "Ene", val1: 45, val2: 70 },
                   { name: "Feb", val1: 65, val2: 85 },
@@ -363,7 +363,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   <div key={i} className="flex flex-col items-center gap-2 flex-1 group">
                     <div className="flex items-end gap-1.5 h-40">
                       <div
-                        className="w-3.5 sm:w-4 rounded-t-lg bg-[#E51920] group-hover:bg-red-700 transition-all duration-300 shadow-xs"
+                        className="w-3.5 sm:w-4 rounded-t-lg bg-[#4D4DFF] group-hover:bg-blue-600 transition-all duration-300 shadow-xs"
                         style={{ height: `${m.val1}%` }}
                       />
                       <div
@@ -381,10 +381,10 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
           </div>
 
           {/* Top Selling Products List */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs text-left space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#E51920]" />
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 text-left space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+                <Award className="w-4 h-4 text-[#4D4DFF]" />
                 Productos Más Vendidos (Top SKUs CHOHO)
               </h4>
               <span className="text-[11px] text-slate-400 font-medium">Actualizado en tiempo real</span>
@@ -401,21 +401,21 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   const percentage = (item.total / maxTotal) * 100;
                   return (
                     <div key={item.sku} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-200">
+                      <div className="flex items-center justify-between text-xs text-slate-700 dark:text-[#3D3528]">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-6 h-6 bg-red-50 dark:bg-red-950/60 text-[#E51920] font-extrabold rounded-lg flex items-center justify-center text-[10px]">
+                          <span className="w-6 h-6 bg-[#F7F8FC] dark:bg-[#F2ECDE] text-[#4D4DFF] font-extrabold rounded-lg flex items-center justify-center text-[10px]">
                             0{idx + 1}
                           </span>
-                          <span className="font-mono text-[#E51920] dark:text-red-400 font-bold">{item.sku}</span>
-                          <span className="text-slate-600 dark:text-slate-400 truncate font-medium">{item.name}</span>
+                          <span className="font-mono text-[#4D4DFF] dark:text-blue-500 font-bold">{item.sku}</span>
+                          <span className="text-slate-600 dark:text-[#7F735F] truncate font-medium">{item.name}</span>
                         </div>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        <span className="font-mono font-bold text-slate-900 dark:text-[#3D3528]">
                           S/ {item.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-100 dark:bg-[#F2ECDE] h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-[#E51920] h-full rounded-full transition-all duration-500 shadow-xs"
+                          className="bg-[#4D4DFF] h-full rounded-full transition-all duration-500 shadow-xs"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -434,15 +434,15 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         {/* Right Column (1 Col): Product Statistic Ring & Customer Growth */}
         <div className="space-y-6 text-left">
           {/* Concentric Ring Radial Chart (Product Statistic - DealDeck Style) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display">
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display">
                   Estadísticas de Productos
                 </h4>
                 <p className="text-[11px] text-slate-400">Distribución de volumen por categoría</p>
               </div>
-              <span className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-xl font-semibold">
+              <span className="text-[11px] bg-slate-100 dark:bg-[#F2ECDE] text-slate-600 dark:text-[#7F735F] px-2.5 py-1 rounded-xl font-semibold">
                 Hoy
               </span>
             </div>
@@ -465,7 +465,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   cy="60"
                   r="50"
                   fill="none"
-                  stroke="#E51920"
+                  stroke="#4D4DFF"
                   strokeWidth="8"
                   strokeDasharray="314"
                   strokeDashoffset="75"
@@ -508,58 +508,58 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-xl font-extrabold text-slate-900 dark:text-white font-mono">
+                <span className="text-xl font-extrabold text-slate-900 dark:text-[#3D3528] font-mono">
                   9,829
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium">Ventas Totales</span>
-                <span className="mt-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                <span className="mt-0.5 bg-[#98FB98]/30 text-emerald-700 text-[9px] font-bold px-1.5 py-0.2 rounded-full">
                   +5.34%
                 </span>
               </div>
             </div>
 
             {/* Category Breakdown list */}
-            <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold">
+            <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-[#E5DEC9] text-xs font-semibold">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#E51920]" />
+                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4D4DFF]" />
                   <span>Cadenas de Transmisión</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-white font-mono font-bold">2,487</span>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded-full">+1.8%</span>
+                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">2,487</span>
+                  <span className="text-[10px] bg-[#98FB98]/30 text-emerald-700 px-1.5 py-0.2 rounded-full">+1.8%</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   <span>Kits de Arrastre</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-white font-mono font-bold">1,828</span>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded-full">+2.3%</span>
+                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">1,828</span>
+                  <span className="text-[10px] bg-[#98FB98]/30 text-emerald-700 px-1.5 py-0.2 rounded-full">+2.3%</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
                   <span>Piñones & Catalina</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-white font-mono font-bold">1,463</span>
-                  <span className="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.2 rounded-full">-1.04%</span>
+                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">1,463</span>
+                  <span className="text-[10px] bg-red-50 dark:bg-red-100 text-rose-500 px-1.5 py-0.2 rounded-full">-1.04%</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Export Report Card & Customer Growth */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="space-y-1">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#E51920]" />
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#4D4DFF]" />
                 Informe Consolidado PDF
               </h4>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -569,7 +569,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
 
             <button
               onClick={handleExportPDFReport}
-              className="w-full bg-gradient-to-r from-[#E51920] to-red-700 hover:from-red-600 hover:to-rose-800 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-red-600/25"
+              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30"
             >
               <Download className="w-4 h-4" />
               <span>Exportar Reporte Mensual PDF</span>
@@ -577,30 +577,30 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
           </div>
 
           {/* Predictive Summary: Ingresos vs Cuentas por Cobrar */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 border border-slate-700 rounded-2xl p-6 shadow-lg shadow-slate-900/50 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-700/50">
-              <h4 className="font-extrabold text-sm text-white font-display flex items-center gap-2">
+          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-50">
+              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
                 Predicción de Flujo de Caja
               </h4>
-              <span className="text-[10px] bg-slate-700/50 text-slate-300 font-bold px-2 py-0.5 rounded-full">Inteligencia Artificial</span>
+              <span className="text-[10px] bg-[#87CEEB]/20 text-[#4D4DFF] font-bold px-2 py-0.5 rounded-full">Inteligencia Artificial</span>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400 font-medium">Ingresos Contado Efectivo</span>
-                <span className="text-white font-mono font-bold">S/ {(totalInvoicedSales * 0.45).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
+                <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">S/ {(totalInvoicedSales * 0.45).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400 font-medium">Cuentas por Cobrar (Pendiente)</span>
-                <span className="text-[#E51920] font-mono font-bold">S/ {(totalInvoicedSales * 0.55).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
+                <span className="text-[#4D4DFF] font-mono font-bold">S/ {(totalInvoicedSales * 0.55).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden flex">
                 <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: '45%' }} />
-                <div className="bg-[#E51920] h-full transition-all duration-500" style={{ width: '55%' }} />
+                <div className="bg-[#4D4DFF] h-full transition-all duration-500" style={{ width: '55%' }} />
               </div>
-              <p className="text-[10px] text-slate-400 leading-relaxed mt-2 pt-2 border-t border-slate-700/50">
-                <strong className="text-white">Alerta de Liquidez:</strong> El 55% de tus ventas actuales están sujetas a cuentas por cobrar. Se recomienda activar el módulo de cobranza para asegurar la liquidez la próxima quincena.
+              <p className="text-[10px] text-slate-400 leading-relaxed mt-2 pt-2 border-t border-slate-100 dark:border-slate-50">
+                <strong className="text-slate-900 dark:text-[#3D3528]">Alerta de Liquidez:</strong> El 55% de tus ventas actuales están sujetas a cuentas por cobrar. Se recomienda activar el módulo de cobranza para asegurar la liquidez la próxima quincena.
               </p>
             </div>
           </div>
@@ -608,11 +608,11 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
       </div>
 
       {/* Corporate Travel Expenses & SUNAT Audit Panel (Executive Overview) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4 text-left">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4 text-left">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
           <div>
-            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white font-display flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-[#E51920]" />
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-[#4D4DFF]" />
               Monitoreo Global de Viáticos Comercial & Rendición SUNAT
             </h4>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -627,9 +627,9 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800 rounded-2xl">
+          <div className="p-4 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-slate-200/70 dark:border-[#E5DEC9] rounded-2xl">
             <span className="text-[10px] text-slate-400 font-bold uppercase block">TOTAL RENDIDO</span>
-            <span className="text-xl font-extrabold font-mono text-slate-900 dark:text-white mt-1 block">
+            <span className="text-xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528] mt-1 block">
               S/ {totalExpensesRendido.toFixed(2)}
             </span>
             <span className="text-[10px] text-slate-400 mt-1 block font-mono">{expenses.length} Comprobantes de Campo</span>
@@ -652,8 +652,8 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
           </div>
 
           <div className="p-4 bg-red-50/50 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/40 rounded-2xl">
-            <span className="text-[10px] text-[#E51920] dark:text-red-400 font-bold uppercase block">COMPROBANTES SUNAT</span>
-            <span className="text-xl font-extrabold font-mono text-[#E51920] dark:text-red-400 mt-1 block">
+            <span className="text-[10px] text-[#4D4DFF] dark:text-blue-500 font-bold uppercase block">COMPROBANTES SUNAT</span>
+            <span className="text-xl font-extrabold font-mono text-[#4D4DFF] dark:text-blue-500 mt-1 block">
               {sunatValidadosCount} / {expenses.length}
             </span>
             <span className="text-[10px] text-slate-400 mt-1 block font-mono">Verificados en padrón</span>
