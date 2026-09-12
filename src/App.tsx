@@ -181,6 +181,19 @@ export default function App() {
     }
   };
 
+  const handleUpdateQuoteStatus = async (id: string, status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string) => {
+    setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: status as any } : q));
+    try {
+      await fetch(`/api/quotes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+    } catch (err) {
+      console.error("Error al actualizar estado de cotización:", err);
+    }
+  };
+
   const handleAddProduct = async (product: Product) => {
     setProducts(prev => [...prev.filter(p => p && p.sku !== product.sku), product]);
     try {
