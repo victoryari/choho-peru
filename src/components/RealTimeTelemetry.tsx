@@ -17,13 +17,14 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
   const [selectedPin, setSelectedPin] = useState<Telemetry | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const safeTelemetry = Array.isArray(telemetryList) ? telemetryList : [];
   // Filter list by selected advisor
   const filteredList = selectedAdvisor === "all"
-    ? telemetryList
-    : telemetryList.filter(t => t && (t.advisor || "").toLowerCase().includes((selectedAdvisor || "").toLowerCase()));
+    ? safeTelemetry
+    : safeTelemetry.filter(t => t && (t.advisor || "").toLowerCase().includes((selectedAdvisor || "").toLowerCase()));
 
   // Available advisors for filter
-  const advisors = Array.from(new Set(telemetryList.map(t => t.advisor)));
+  const advisors = Array.from(new Set(safeTelemetry.map(t => t && t.advisor).filter(Boolean)));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

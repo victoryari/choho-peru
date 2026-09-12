@@ -162,8 +162,9 @@ export function ExpensesManager({
   const totalPendiente = expensesList.filter(e => e.approvalStatus === "Pendiente").reduce((acc, curr) => acc + curr.amount, 0);
   const validadosCount = expensesList.filter(e => e.sunatStatus === "ACEPTADO").length;
 
+  const safeExpenses = Array.isArray(expensesList) ? expensesList : [];
   // Filtered List
-  const filteredExpenses = expensesList.filter(item => {
+  const filteredExpenses = safeExpenses.filter(item => {
     if (!item) return false;
     const matchesStatus = statusFilter === "all" || item.approvalStatus === statusFilter;
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;

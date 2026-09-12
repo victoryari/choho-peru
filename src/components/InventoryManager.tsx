@@ -135,7 +135,8 @@ export function InventoryManager({
 
   const categories = ["Todos", "Transmisión", "Cadenas", "Piñones", "Kits de Arrastre", "Frenos", "Motor", "Accesorios"];
 
-  const filteredProducts = products.filter((p) => {
+  const productList = Array.isArray(products) ? products : [];
+  const filteredProducts = productList.filter((p) => {
     if (!p) return false;
     const name = (p.name || "").toLowerCase();
     const sku = (p.sku || "").toLowerCase();

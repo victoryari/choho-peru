@@ -15,7 +15,8 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
 
   const statuses = ["Todos", "Pendiente", "Aceptada", "Rechazada"];
 
-  const filteredQuotes = quotes.filter((q) => {
+  const quoteList = Array.isArray(quotes) ? quotes : [];
+  const filteredQuotes = quoteList.filter((q) => {
     if (!q) return false;
     const clientName = (q.clientName || "").toLowerCase();
     const id = (q.id || "").toLowerCase();

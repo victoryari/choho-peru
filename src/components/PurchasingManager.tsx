@@ -32,8 +32,9 @@ export function PurchasingManager({
   const [locationInput, setLocationInput] = useState("");
   const [isReceiving, setIsReceiving] = useState(false);
 
+  const productList = Array.isArray(products) ? products : [];
   const filteredProducts = searchProductQuery.length > 2
-    ? products.filter(p => p && ((p.name || '').toLowerCase().includes(searchProductQuery.toLowerCase()) || (p.sku || '').toLowerCase().includes(searchProductQuery.toLowerCase())))
+    ? productList.filter(p => p && ((p.name || '').toLowerCase().includes(searchProductQuery.toLowerCase()) || (p.sku || '').toLowerCase().includes(searchProductQuery.toLowerCase())))
     : [];
 
   const handleAddProduct = (p: Product) => {

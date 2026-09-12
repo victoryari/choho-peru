@@ -99,17 +99,38 @@ export default function App() {
         fetch("/api/receivables")
       ]);
 
-      if (resProducts.ok) setProducts(await resProducts.json());
-      if (resQuotes.ok) setQuotes(await resQuotes.json());
-      if (resUsers.ok) setUsers(await resUsers.json());
-      if (resTelemetry.ok) setTelemetry(await resTelemetry.json());
+      if (resProducts.ok) {
+        const prodData = await resProducts.json();
+        if (Array.isArray(prodData)) setProducts(prodData);
+      }
+      if (resQuotes.ok) {
+        const quotesData = await resQuotes.json();
+        if (Array.isArray(quotesData)) setQuotes(quotesData);
+      }
+      if (resUsers.ok) {
+        const usersData = await resUsers.json();
+        if (Array.isArray(usersData)) setUsers(usersData);
+      }
+      if (resTelemetry.ok) {
+        const telemetryData = await resTelemetry.json();
+        if (Array.isArray(telemetryData)) setTelemetry(telemetryData);
+      }
       if (resRoles.ok) {
         const rolesData = await resRoles.json();
         if (Array.isArray(rolesData) && rolesData.length > 0) setRolesList(rolesData);
       }
-      if (resExpenses.ok) setExpenses(await resExpenses.json());
-      if (resPurchases.ok) setPurchases(await resPurchases.json());
-      if (resReceivables.ok) setReceivables(await resReceivables.json());
+      if (resExpenses.ok) {
+        const expensesData = await resExpenses.json();
+        if (Array.isArray(expensesData)) setExpenses(expensesData);
+      }
+      if (resPurchases.ok) {
+        const purchasesData = await resPurchases.json();
+        if (Array.isArray(purchasesData)) setPurchases(purchasesData);
+      }
+      if (resReceivables.ok) {
+        const receivablesData = await resReceivables.json();
+        if (Array.isArray(receivablesData)) setReceivables(receivablesData);
+      }
     } catch (err) {
       console.error("Error loading baseline fullstack data, entering offline grace mode:", err);
     }

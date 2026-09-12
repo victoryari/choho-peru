@@ -18,7 +18,8 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
   const [paymentAmount, setPaymentAmount] = useState<number | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredReceivables = receivables.filter(r => {
+  const safeReceivables = Array.isArray(receivables) ? receivables : [];
+  const filteredReceivables = safeReceivables.filter(r => {
     if (!r) return false;
     const clientName = (r.clientName || "").toLowerCase();
     const clientDoc = r.clientDoc || "";

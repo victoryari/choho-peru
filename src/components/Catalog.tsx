@@ -16,7 +16,8 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
 
   const categories = ["Todos", "Cadenas", "Piñones", "Kits de Arrastre", "Frenos", "Motor", "Accesorios"];
 
-  const filteredProducts = products.filter((product) => {
+  const productList = Array.isArray(products) ? products : [];
+  const filteredProducts = productList.filter((product) => {
     if (!product) return false;
     const name = (product.name || "").toLowerCase();
     const sku = (product.sku || "").toLowerCase();
