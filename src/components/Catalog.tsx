@@ -17,9 +17,11 @@ export function Catalog({ products, onSelectProduct, onQuickAdd }: CatalogProps)
   const categories = ["Todos", "Cadenas", "Piñones", "Kits de Arrastre", "Frenos", "Motor", "Accesorios"];
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!product) return false;
+    const name = (product.name || "").toLowerCase();
+    const sku = (product.sku || "").toLowerCase();
+    const search = (searchTerm || "").toLowerCase();
+    const matchesSearch = name.includes(search) || sku.includes(search);
     const matchesCategory = selectedCategory === "Todos" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });

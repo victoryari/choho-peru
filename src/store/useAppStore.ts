@@ -8,7 +8,7 @@ export const getUserPermissions = (user: User | null, rolesList: RolePermission[
   const roleLower = (user.role || "").trim().toLowerCase();
   
   if (rolesList && rolesList.length > 0) {
-    const dynamicRole = rolesList.find(r => r.name.trim().toLowerCase() === roleLower);
+    const dynamicRole = rolesList.find(r => (r.name || "").trim().toLowerCase() === roleLower);
     if (dynamicRole && dynamicRole.permissions) {
       const p = dynamicRole.permissions;
       return {

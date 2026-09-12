@@ -16,10 +16,15 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
   const statuses = ["Todos", "Pendiente", "Aceptada", "Rechazada"];
 
   const filteredQuotes = quotes.filter((q) => {
+    if (!q) return false;
+    const clientName = (q.clientName || "").toLowerCase();
+    const id = (q.id || "").toLowerCase();
+    const clientDoc = q.clientDoc || "";
+    const search = (searchTerm || "").toLowerCase();
     const matchesSearch =
-      q.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.clientDoc.includes(searchTerm);
+      clientName.includes(search) ||
+      id.includes(search) ||
+      clientDoc.includes(search);
     const matchesStatus = selectedStatus === "Todos" || q.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });

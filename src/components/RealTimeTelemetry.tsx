@@ -20,7 +20,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
   // Filter list by selected advisor
   const filteredList = selectedAdvisor === "all"
     ? telemetryList
-    : telemetryList.filter(t => t.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase()));
+    : telemetryList.filter(t => t && (t.advisor || "").toLowerCase().includes((selectedAdvisor || "").toLowerCase()));
 
   // Available advisors for filter
   const advisors = Array.from(new Set(telemetryList.map(t => t.advisor)));

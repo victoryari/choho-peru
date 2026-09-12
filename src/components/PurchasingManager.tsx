@@ -33,7 +33,7 @@ export function PurchasingManager({
   const [isReceiving, setIsReceiving] = useState(false);
 
   const filteredProducts = searchProductQuery.length > 2
-    ? products.filter(p => p.name.toLowerCase().includes(searchProductQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchProductQuery.toLowerCase()))
+    ? products.filter(p => p && ((p.name || '').toLowerCase().includes(searchProductQuery.toLowerCase()) || (p.sku || '').toLowerCase().includes(searchProductQuery.toLowerCase())))
     : [];
 
   const handleAddProduct = (p: Product) => {

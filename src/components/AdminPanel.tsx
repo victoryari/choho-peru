@@ -26,7 +26,7 @@ export function AdminPanel({
   const [adminTab, setAdminTab] = useState<"users" | "roles" | "structure" | "products" | "smtp">("users");
 
   // Admin permission check (default to true if no currentUser provided)
-  const isAdminUser = !currentUser || currentUser.role === "Admin General" || currentUser.role.toLowerCase().includes("admin");
+  const isAdminUser = !currentUser || currentUser.role === "Admin General" || (currentUser.role || "").toLowerCase().includes("admin");
 
   // Dynamic lists with DB persistence
   const [rolesList, setRolesList] = useState<RolePermission[]>([]);
@@ -366,7 +366,7 @@ export function AdminPanel({
     e.preventDefault();
     const name = newDepartmentName.trim();
     if (!name) return;
-    if (departmentsList.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+    if (departmentsList.some(d => (d.name || "").toLowerCase() === name.toLowerCase())) {
       setStructureMsg("El departamento ya existe.");
       return;
     }
@@ -408,7 +408,7 @@ export function AdminPanel({
     e.preventDefault();
     const name = newBranchName.trim();
     if (!name) return;
-    if (branchesList.some(b => b.name.toLowerCase() === name.toLowerCase())) {
+    if (branchesList.some(b => (b.name || "").toLowerCase() === name.toLowerCase())) {
       setStructureMsg("La sede ya existe.");
       return;
     }

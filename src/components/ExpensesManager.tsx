@@ -164,12 +164,18 @@ export function ExpensesManager({
 
   // Filtered List
   const filteredExpenses = expensesList.filter(item => {
+    if (!item) return false;
     const matchesStatus = statusFilter === "all" || item.approvalStatus === statusFilter;
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
-    const matchesSearch = item.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.rucIssuer.includes(searchTerm) ||
-                          item.advisor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const search = (searchTerm || "").toLowerCase();
+    const company = (item.companyName || "").toLowerCase();
+    const ruc = item.rucIssuer || "";
+    const advisor = (item.advisor || "").toLowerCase();
+    const id = (item.id || "").toLowerCase();
+    const matchesSearch = company.includes(search) ||
+                          ruc.includes(searchTerm) ||
+                          advisor.includes(search) ||
+                          id.includes(search);
     return matchesStatus && matchesCategory && matchesSearch;
   });
 

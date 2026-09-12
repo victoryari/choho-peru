@@ -136,9 +136,11 @@ export function InventoryManager({
   const categories = ["Todos", "Transmisión", "Cadenas", "Piñones", "Kits de Arrastre", "Frenos", "Motor", "Accesorios"];
 
   const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!p) return false;
+    const name = (p.name || "").toLowerCase();
+    const sku = (p.sku || "").toLowerCase();
+    const search = (searchTerm || "").toLowerCase();
+    const matchesSearch = name.includes(search) || sku.includes(search);
     const matchesCategory = selectedCategory === "Todos" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });

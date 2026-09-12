@@ -18,11 +18,14 @@ export function AccountsReceivable({ receivables, currentUserName, onRegisterPay
   const [paymentAmount, setPaymentAmount] = useState<number | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredReceivables = receivables.filter(r => 
-    r.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    r.clientDoc.includes(searchQuery) ||
-    r.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredReceivables = receivables.filter(r => {
+    if (!r) return false;
+    const clientName = (r.clientName || "").toLowerCase();
+    const clientDoc = r.clientDoc || "";
+    const id = (r.id || "").toLowerCase();
+    const query = (searchQuery || "").toLowerCase();
+    return clientName.includes(query) || clientDoc.includes(searchQuery) || id.includes(query);
+  });
 
   const totalDue = receivables.reduce((acc, r) => acc + (r.creditDueAmount || r.total), 0);
   const totalPaid = receivables.reduce((acc, r) => acc + (r.creditPaidAmount || 0), 0);
