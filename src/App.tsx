@@ -14,13 +14,16 @@ import { Catalog } from "./components/Catalog";
 import { InventoryManager } from "./components/InventoryManager";
 import { BudgetGenerator } from "./components/BudgetGenerator";
 import { QuotesList } from "./components/QuotesList";
-import { BillingInvoice } from "./components/BillingInvoice";
 import { RealTimeTelemetry } from "./components/RealTimeTelemetry";
 import { ExpensesManager } from "./components/ExpensesManager";
 import { SyncCenter } from "./components/SyncCenter";
 import { AdminPanel } from "./components/AdminPanel";
 import { PurchasingManager } from "./components/PurchasingManager";
 import { AccountsReceivable } from "./components/AccountsReceivable";
+import { Maintenance } from "./components/Maintenance";
+import { TravelBudgets } from "./components/TravelBudgets";
+import { DiscountManager } from "./components/DiscountManager";
+import { Commissions } from "./components/Commissions";
 
 import { User, QuoteItem, Quote, Product, TravelExpense, PurchaseOrder } from "./types";
 
@@ -54,7 +57,15 @@ export default function App() {
     setPurchases,
     setReceivables,
     setIsOfflineMode,
-    setOfflinePendingQuotes
+    setOfflinePendingQuotes,
+    maintenanceOrders,
+    setMaintenanceOrders,
+    travelBudgets,
+    setTravelBudgets,
+    discountRules,
+    setDiscountRules,
+    commissions,
+    setCommissions
   } = useAppStore();
 
   const [loginEmail, setLoginEmail] = useState("");
@@ -140,9 +151,9 @@ export default function App() {
 
   // Logic handlers for the views
   const handleAddToBudget = (item: QuoteItem) => {
-    const existing = budgetItems.find((i) => i.id === item.id);
+    const existing = budgetItems.find((i) => i.sku === item.sku);
     if (existing) {
-      setBudgetItems(budgetItems.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i)));
+      setBudgetItems(budgetItems.map((i) => (i.sku === item.sku ? { ...i, qty: i.qty + item.qty } : i)));
     } else {
       setBudgetItems([...budgetItems, item]);
     }
@@ -162,16 +173,16 @@ export default function App() {
     setProducts([...products, newProduct]);
   };
   
-  const handleUpdateCartQty = (id: string, qty: number) => {
+  const handleUpdateCartQty = (sku: string, qty: number) => {
     if (qty <= 0) {
-      setBudgetItems(budgetItems.filter(i => i.id !== id));
+      setBudgetItems(budgetItems.filter(i => i.sku !== sku));
     } else {
-      setBudgetItems(budgetItems.map(i => i.id === id ? { ...i, quantity: qty } : i));
+      setBudgetItems(budgetItems.map(i => i.sku === sku ? { ...i, qty } : i));
     }
   };
   
-  const handleRemoveCartItem = (id: string) => {
-    setBudgetItems(budgetItems.filter(i => i.id !== id));
+  const handleRemoveCartItem = (sku: string) => {
+    setBudgetItems(budgetItems.filter(i => i.sku !== sku));
   };
   
   const handleClearBudget = () => setBudgetItems([]);
@@ -210,7 +221,22 @@ export default function App() {
     setQuotes([...offlinePendingQuotes, ...quotes]);
     setOfflinePendingQuotes([]);
   };
-  
+
+  const handleAddMaintenance = (order: import('./types').MaintenanceOrder) => {
+    setMaintenanceOrders([order, ...maintenanceOrders]);
+  };
+
+  const handleAddTravelBudget = (budget: import('./types').TravelBudget) => {
+    setTravelBudgets([budget, ...travelBudgets]);
+  };
+
+  const handleAddDiscountRule = (rule: import('./types').DiscountRule) => {
+    setDiscountRules([rule, ...discountRules]);
+  };
+
+  const handleAddCommission = (comm: import('./types').Commission) => {
+    setCommissions([comm, ...commissions]);
+  };
   
   const handleSaveQuote = async (quotePayload: Omit<Quote, "id" | "date">) => {
     try {
@@ -390,13 +416,16 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<AnalyticsDashboard products={products} quotes={quotes} expenses={expenses} />} />
-          <Route path="/catalog" element={<Catalog products={products} onSelectProduct={setSelectedProduct} onQuickAdd={(p) => handleAddToBudget({ ...p, quantity: 1, unitPrice: p.price })} />} />
+          <Route path="/catalog" element={<Catalog products={products} onSelectProduct={setSelectedProduct} onQuickAdd={(p) => handleAddToBudget({ sku: p.sku, name: p.name, qty: 1, price: p.basePrice })} />} />
           <Route path="/inventory" element={<InventoryManager products={products} onAddProduct={handleAddProduct} onUpdateProduct={handleUpdateProduct} />} />
           <Route path="/cart" element={<BudgetGenerator budgetItems={budgetItems} onUpdateQty={handleUpdateCartQty} onRemoveItem={handleRemoveCartItem} onClearBudget={handleClearBudget} onSaveQuote={handleSaveQuote} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/quotes" element={<QuotesList quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} />} />
-          <Route path="/billing" element={<BillingInvoice quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} products={products} onUpdateProduct={handleUpdateProduct} />} />
+          <Route path="/maintenance" element={<Maintenance orders={maintenanceOrders} onAddOrder={handleAddMaintenance} />} />
+          <Route path="/travel-budgets" element={<TravelBudgets budgets={travelBudgets} onAddBudget={handleAddTravelBudget} expenses={expenses} />} />
+          <Route path="/discounts" element={<DiscountManager rules={discountRules} onAddRule={handleAddDiscountRule} />} />
+          <Route path="/commissions" element={<Commissions commissions={commissions} onAddCommission={handleAddCommission} quotes={quotes} />} />
           <Route path="/telemetry" element={<RealTimeTelemetry telemetryList={telemetry} onAddVisit={handleAddVisit} currentUserName={currentUser?.name || "Asesor"} />} />
-          <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} />} />
+          <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} travelBudgets={travelBudgets} />} />
           <Route path="/purchases" element={<PurchasingManager purchases={purchases} products={products} currentUserName={currentUser?.name || "Admin"} onReceivePurchase={handleReceivePurchase} onCreatePurchase={handleCreatePurchase} />} />
           <Route path="/receivables" element={<AccountsReceivable receivables={receivables} currentUserName={currentUser?.name || "Admin"} onRegisterPayment={handleRegisterPayment} />} />
           <Route path="/sync" element={<SyncCenter isOfflineMode={isOfflineMode} onToggleOffline={() => setIsOfflineMode(!isOfflineMode)} onSyncNow={handleSyncNow} localOfflineCount={offlinePendingQuotes.length} />} />

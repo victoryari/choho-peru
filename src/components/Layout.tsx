@@ -17,7 +17,11 @@ import {
   Moon,
   Boxes,
   Truck,
-  DollarSign
+  DollarSign,
+  Wrench,
+  Wallet,
+  Tags,
+  TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppStore, getUserPermissions } from "../store/useAppStore";
@@ -141,14 +145,19 @@ export function Layout({ children }: LayoutProps) {
                     </Link>
                   </>
                 )}
-                {userPermissions.billing && (
-                  <Link to="/billing" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/billing") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
-                    <Receipt className="w-4 h-4" /><span>Facturación SUNAT</span>
+                {userPermissions.maintenance && (
+                  <Link to="/maintenance" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/maintenance") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
+                    <Wrench className="w-4 h-4" /><span>Mantenimiento</span>
                   </Link>
                 )}
                 {userPermissions.telemetry && (
                   <Link to="/telemetry" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/telemetry") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Compass className="w-4 h-4" /><span>Check-ins de Campo</span>
+                  </Link>
+                )}
+                {userPermissions.travelBudgets && (
+                  <Link to="/travel-budgets" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/travel-budgets") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
+                    <Wallet className="w-4 h-4" /><span>Caja Chica & Viáticos</span>
                   </Link>
                 )}
                 {userPermissions.expenses && (
@@ -164,6 +173,16 @@ export function Layout({ children }: LayoutProps) {
                 {userPermissions.receivables && (
                   <Link to="/receivables" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/receivables") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <DollarSign className="w-4 h-4" /><span>Cuentas por Cobrar</span>
+                  </Link>
+                )}
+                {userPermissions.discounts && (
+                  <Link to="/discounts" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/discounts") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
+                    <Tags className="w-4 h-4" /><span>Reglas de Descuento</span>
+                  </Link>
+                )}
+                {userPermissions.commissions && (
+                  <Link to="/commissions" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/commissions") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
+                    <TrendingUp className="w-4 h-4" /><span>Cálculo Comisiones</span>
                   </Link>
                 )}
               </nav>

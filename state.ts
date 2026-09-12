@@ -3,31 +3,31 @@ export const SEED_ROLES = [
     id: "ROL-1",
     name: "Admin General",
     description: "Acceso total a la administración, usuarios, catálogo, reportes y configuración de sistema.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: true, telemetry: true, expenses: true, purchases: true, receivables: true, admin: true, dashboard: true }
+    permissions: { catalog: true, quotes: true, maintenance: true, inventory: true, telemetry: true, expenses: true, travelBudgets: true, purchases: true, receivables: true, discounts: true, commissions: true, admin: true, dashboard: true }
   },
   {
     id: "ROL-2",
     name: "Asesor Comercial",
     description: "Acceso a Catálogo de repuestos, creación de presupuestos de campo, mis cotizaciones, geolocalización y viáticos.",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, purchases: false, receivables: false, admin: false, dashboard: false }
+    permissions: { catalog: true, quotes: true, maintenance: false, inventory: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, admin: false, dashboard: false }
   },
   {
     id: "ROL-3",
     name: "Ventas",
     description: "Rol comercial de ventas de campo (Catálogo, Cotizaciones, Check-ins y Sustento de Viáticos).",
-    permissions: { catalog: true, quotes: true, billing: false, inventory: false, telemetry: true, expenses: true, purchases: false, receivables: false, admin: false, dashboard: false }
+    permissions: { catalog: true, quotes: true, maintenance: false, inventory: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, admin: false, dashboard: false }
   },
   {
     id: "ROL-4",
     name: "Jefe de Finanzas",
     description: "Acceso a Panel de analíticas, historial de cotizaciones, facturación SUNAT y aprobación de viáticos.",
-    permissions: { catalog: true, quotes: true, billing: true, inventory: false, telemetry: false, expenses: true, purchases: false, receivables: true, admin: false, dashboard: true }
+    permissions: { catalog: true, quotes: true, maintenance: false, inventory: false, telemetry: false, expenses: true, travelBudgets: true, purchases: false, receivables: true, discounts: true, commissions: true, admin: false, dashboard: true }
   },
   {
     id: "ROL-5",
     name: "Jefe de Almacén",
     description: "Acceso al control de inventario, stock físico y consulta del catálogo de productos.",
-    permissions: { catalog: true, quotes: false, billing: false, inventory: true, telemetry: false, expenses: false, purchases: true, receivables: false, admin: false, dashboard: false }
+    permissions: { catalog: true, quotes: false, maintenance: true, inventory: true, telemetry: false, expenses: false, travelBudgets: false, purchases: true, receivables: false, discounts: false, commissions: false, admin: false, dashboard: false }
   }
 ];
 

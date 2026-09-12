@@ -15,12 +15,15 @@ export interface RolePermission {
   permissions: {
     catalog: boolean;
     quotes: boolean;
-    billing: boolean;
+    maintenance: boolean;
     inventory: boolean;
     telemetry: boolean;
     expenses: boolean;
+    travelBudgets: boolean;
     purchases: boolean;
     receivables: boolean;
+    discounts: boolean;
+    commissions: boolean;
     admin: boolean;
     dashboard?: boolean;
   };
@@ -131,4 +134,39 @@ export interface TravelExpense {
   sunatStatus: 'ACEPTADO' | 'RECHAZADO' | 'PENDIENTE';
   approvalStatus: 'Pendiente' | 'Aprobado' | 'Observado';
   notes?: string;
+}
+
+export interface MaintenanceOrder {
+  id: string;
+  asset: string;
+  status: 'En Proceso' | 'Completado' | 'Pendiente';
+  date: string;
+  mechanic: string;
+}
+
+export interface TravelBudget {
+  id: string;
+  seller: string;
+  assigned: number;
+  spent: number;
+  balance: number;
+  status: 'Activo' | 'Crítico' | 'Agotado';
+}
+
+export interface DiscountRule {
+  id: string;
+  role: string;
+  maxDiscount: number;
+  category: string;
+  status: 'Activo' | 'Inactivo';
+}
+
+export interface Commission {
+  id: string;
+  seller: string;
+  salesTotal: number;
+  rate: number;
+  commission: number;
+  month: string;
+  status: 'Pagado' | 'Pendiente';
 }

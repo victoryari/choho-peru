@@ -8,6 +8,7 @@ interface ExpensesManagerProps {
   onUpdateExpenseStatus: (id: string, approvalStatus: 'Pendiente' | 'Aprobado' | 'Observado') => Promise<void>;
   currentUserName: string;
   currentUserRole?: string;
+  travelBudgets?: import('../types').TravelBudget[];
 }
 
 export function ExpensesManager({
@@ -15,7 +16,8 @@ export function ExpensesManager({
   onAddExpense,
   onUpdateExpenseStatus,
   currentUserName,
-  currentUserRole
+  currentUserRole,
+  travelBudgets
 }: ExpensesManagerProps) {
   // Form states
   const [category, setCategory] = useState<TravelExpense['category']>("Alimentación");
@@ -103,6 +105,21 @@ export function ExpensesManager({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rucIssuer.trim() || !amount || Number(amount) <= 0) return;
+
+    // Validate budget
+    if (travelBudgets) {
+      const myBudget = travelBudgets.find(b => b.seller === currentUserName);
+      if (myBudget) {
+        const sellerExpenses = expensesList.filter(exp => exp.advisor === currentUserName && (exp.approvalStatus === 'Aprobado' || exp.approvalStatus === 'Pendiente'));
+        const spent = sellerExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const balance = myBudget.assigned - spent;
+        
+        if (Number(amount) > balance) {
+          alert(`Presupuesto excedido. Su saldo disponible es S/ ${balance.toFixed(2)}.`);
+          return;
+        }
+      }
+    }
 
     setIsSubmitting(true);
 

@@ -3,7 +3,7 @@ import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermissi
 
 export const getUserPermissions = (user: User | null, rolesList: RolePermission[] = []) => {
   if (!user) {
-    return { dashboard: false, catalog: true, inventory: false, quotes: false, billing: false, telemetry: false, expenses: false, purchases: false, receivables: false, sync: false, admin: false };
+    return { dashboard: false, catalog: true, inventory: false, quotes: false, maintenance: false, telemetry: false, expenses: false, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: false, admin: false };
   }
   const roleLower = (user.role || "").trim().toLowerCase();
   
@@ -14,12 +14,15 @@ export const getUserPermissions = (user: User | null, rolesList: RolePermission[
       return {
         catalog: p.catalog ?? true,
         quotes: p.quotes ?? true,
-        billing: p.billing ?? false,
+        maintenance: p.maintenance ?? (p.admin ?? false),
         inventory: p.inventory ?? false,
         telemetry: p.telemetry ?? false,
         expenses: p.expenses ?? false,
-        purchases: p.purchases ?? p.inventory ?? false, // Defaults to inventory if missing
-        receivables: p.receivables ?? p.billing ?? false, // Defaults to billing if missing
+        travelBudgets: p.travelBudgets ?? (p.admin ?? false),
+        purchases: p.purchases ?? p.inventory ?? false,
+        receivables: p.receivables ?? false,
+        discounts: p.discounts ?? (p.admin ?? false),
+        commissions: p.commissions ?? (p.admin ?? false),
         sync: true,
         admin: p.admin ?? false,
         dashboard: p.dashboard ?? (p.admin || roleLower.includes("admin") || roleLower.includes("finanza"))
@@ -28,18 +31,18 @@ export const getUserPermissions = (user: User | null, rolesList: RolePermission[
   }
 
   if (roleLower === "admin general" || roleLower.includes("admin") || roleLower.includes("gerencia")) {
-    return { dashboard: true, catalog: true, inventory: true, quotes: true, billing: true, telemetry: true, expenses: true, purchases: true, receivables: true, sync: true, admin: true };
+    return { dashboard: true, catalog: true, inventory: true, quotes: true, maintenance: true, telemetry: true, expenses: true, travelBudgets: true, purchases: true, receivables: true, discounts: true, commissions: true, sync: true, admin: true };
   }
   if (roleLower === "jefe de finanzas" || roleLower.includes("finanza") || roleLower.includes("contab")) {
-    return { dashboard: true, catalog: true, inventory: false, quotes: true, billing: true, telemetry: false, expenses: true, purchases: false, receivables: true, sync: true, admin: false };
+    return { dashboard: true, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: false, expenses: true, travelBudgets: true, purchases: false, receivables: true, discounts: true, commissions: true, sync: true, admin: false };
   }
   if (roleLower === "jefe de almacén" || roleLower.includes("almacen") || roleLower.includes("logística")) {
-    return { dashboard: false, catalog: true, inventory: true, quotes: false, billing: false, telemetry: false, expenses: false, purchases: true, receivables: false, sync: true, admin: false };
+    return { dashboard: false, catalog: true, inventory: true, quotes: false, maintenance: true, telemetry: false, expenses: false, travelBudgets: false, purchases: true, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
   }
   if (roleLower === "ventas" || roleLower.includes("ventas") || roleLower.includes("comercial")) {
-    return { dashboard: false, catalog: true, inventory: false, quotes: true, billing: false, telemetry: true, expenses: true, purchases: false, receivables: false, sync: true, admin: false };
+    return { dashboard: false, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
   }
-  return { dashboard: false, catalog: true, inventory: false, quotes: true, billing: false, telemetry: true, expenses: true, purchases: false, receivables: false, sync: true, admin: false };
+  return { dashboard: false, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
 };
 
 interface AppState {
@@ -69,6 +72,14 @@ interface AppState {
   setPurchases: (purchases: PurchaseOrder[]) => void;
   receivables: any[];
   setReceivables: (receivables: any[]) => void;
+  maintenanceOrders: import('../types').MaintenanceOrder[];
+  setMaintenanceOrders: (orders: import('../types').MaintenanceOrder[]) => void;
+  travelBudgets: import('../types').TravelBudget[];
+  setTravelBudgets: (budgets: import('../types').TravelBudget[]) => void;
+  discountRules: import('../types').DiscountRule[];
+  setDiscountRules: (rules: import('../types').DiscountRule[]) => void;
+  commissions: import('../types').Commission[];
+  setCommissions: (commissions: import('../types').Commission[]) => void;
 
   budgetItems: QuoteItem[];
   setBudgetItems: (items: QuoteItem[]) => void;
@@ -122,6 +133,15 @@ export const useAppStore = create<AppState>((set) => ({
   receivables: [],
   setReceivables: (receivables) => set({ receivables }),
   
+  maintenanceOrders: [],
+  setMaintenanceOrders: (orders) => set({ maintenanceOrders: orders }),
+  travelBudgets: [],
+  setTravelBudgets: (budgets) => set({ travelBudgets: budgets }),
+  discountRules: [],
+  setDiscountRules: (rules) => set({ discountRules: rules }),
+  commissions: [],
+  setCommissions: (commissions) => set({ commissions }),
+
   budgetItems: [],
   setBudgetItems: (budgetItems) => set({ budgetItems }),
   offlinePendingQuotes: [],

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { X, Check, ShoppingCart, Percent, Shield, Star, AlertCircle, MapPin } from "lucide-react";
-import { Product } from "../types";
+import { Product, QuoteItem } from "../types";
 import { ProtectedImage } from "./ProtectedImage";
 
 interface ProductDetailModalProps {
   product: Product;
   onClose: () => void;
-  onAddToBudget: (product: Product, qty: number, customPrice: number) => void;
+  onAddToBudget: (item: QuoteItem) => void;
 }
 
 export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductDetailModalProps) {
@@ -49,7 +49,12 @@ export function ProductDetailModal({ product, onClose, onAddToBudget }: ProductD
   const discountedPrice = Math.max(0, basePriceNum * (1 - discountPercent / 100));
 
   const handleAdd = () => {
-    onAddToBudget(product, qty, Number(discountedPrice.toFixed(2)));
+    onAddToBudget({ 
+      sku: product.sku, 
+      name: product.name, 
+      qty, 
+      price: Number(discountedPrice.toFixed(2)) 
+    });
     setSuccessMsg(true);
     setTimeout(() => {
       setSuccessMsg(false);
