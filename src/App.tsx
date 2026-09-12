@@ -159,18 +159,45 @@ export default function App() {
     }
   };
   
-  const handleUpdateProduct = async (updatedProduct: Product) => {
-    setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  const handleUpdateProduct = async (sku: string, updatedPayload: Partial<Product>) => {
+    setProducts(prev =>
+      prev.map(p => (p && p.sku === sku ? { ...p, ...updatedPayload } : p))
+    );
+
+    try {
+      const res = await fetch(`/api/products/${encodeURIComponent(sku)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedPayload)
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        if (updated && updated.sku) {
+          setProducts(prev => prev.map(p => (p && p.sku === sku ? { ...p, ...updated } : p)));
+        }
+      }
+    } catch (err) {
+      console.error("Error al actualizar producto en backend:", err);
+    }
   };
-  
-  const handleUpdateQuoteStatus = async (id: string, status: "pending" | "approved" | "rejected" | "billed") => {
-    setQuotes(quotes.map(q => q.id === id ? { ...q, status } : q));
-  };
-  
-  const handleAddProduct = async (product: Omit<Product, 'id'>) => {
-    // In a real app, this would be a POST. We simulate by re-fetching or updating store
-    const newProduct: Product = { ...product, id: `PROD-${Date.now()}` };
-    setProducts([...products, newProduct]);
+
+  const handleAddProduct = async (product: Product) => {
+    setProducts(prev => [...prev.filter(p => p && p.sku !== product.sku), product]);
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        if (created && created.sku) {
+          setProducts(prev => prev.map(p => (p && p.sku === created.sku ? created : p)));
+        }
+      }
+    } catch (err) {
+      console.error("Error al registrar producto en backend:", err);
+    }
   };
   
   const handleUpdateCartQty = (sku: string, qty: number) => {

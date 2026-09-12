@@ -262,25 +262,28 @@ export function InventoryManager({
 
         <div className="space-y-3">
           {filteredProducts.map((p) => {
-            const isOutOfStock = p.stock === 0;
-            const isLowStock = p.stock > 0 && p.stock < 10;
+            if (!p || typeof p !== "object") return null;
+            const stockVal = Number(p.stock) || 0;
+            const priceVal = Number(p.basePrice) || 0;
+            const isOutOfStock = stockVal === 0;
+            const isLowStock = stockVal > 0 && stockVal < 10;
             const photoCount = p.images?.length || (p.img ? 1 : 0);
 
             return (
               <div
-                key={p.sku}
+                key={p.sku || Math.random().toString()}
                 className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 hover:border-blue-500/20 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.03)]"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ProtectedImage
                     src={p.img}
-                    alt={p.name}
+                    alt={p.name || ""}
                     className="max-h-full max-w-full object-contain"
                     containerClassName="w-10 h-10 rounded-xl bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] shrink-0 overflow-hidden"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{p.name}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{p.name || "Sin Nombre"}</span>
                       <span className="text-[9.5px] font-mono font-bold bg-[#E6E6FA] dark:bg-[#F2ECDE] text-[#4D4DFF] dark:text-[#4D4DFF] px-2 py-0.5 rounded border border-[#DCD0FF]/50">
                         {p.sku}
                       </span>
@@ -291,7 +294,7 @@ export function InventoryManager({
                       )}
                     </div>
                     <span className="text-[10px] text-slate-400 block mt-0.5 truncate font-medium">
-                      Categoría: {p.category} • {p.description ? p.description.slice(0, 60) + "..." : "Sin descripción adicional"}
+                      Categoría: {p.category || "General"} • {p.description ? p.description.slice(0, 60) + "..." : "Sin descripción adicional"}
                     </span>
                   </div>
                 </div>
@@ -301,7 +304,7 @@ export function InventoryManager({
                   <div className="text-right">
                     <span className="text-[9px] text-slate-400 block font-mono uppercase font-medium">PRECIO BASE</span>
                     <span className="text-xs font-bold font-mono text-[#4D4DFF] dark:text-blue-500">
-                      S/ {p.basePrice.toFixed(2)}
+                      S/ {priceVal.toFixed(2)}
                     </span>
                   </div>
 
@@ -310,9 +313,9 @@ export function InventoryManager({
                     {isOutOfStock ? (
                       <span className="text-xs font-bold text-red-500 font-mono">SIN STOCK (0)</span>
                     ) : isLowStock ? (
-                      <span className="text-xs font-bold text-amber-500 font-mono">BAJO ({p.stock})</span>
+                      <span className="text-xs font-bold text-amber-500 font-mono">BAJO ({stockVal})</span>
                     ) : (
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">{p.stock} Unidades</span>
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">{stockVal} Unidades</span>
                     )}
                   </div>
 
