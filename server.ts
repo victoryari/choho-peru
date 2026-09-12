@@ -904,6 +904,32 @@ app.post("/api/telemetry", async (req, res) => {
   res.status(201).json(visit);
 });
 
+// Live GPS Tracking Store
+const inMemoryLiveLocations: Record<string, any> = {};
+
+app.get("/api/telemetry/live", (req, res) => {
+  res.json(Object.values(inMemoryLiveLocations));
+});
+
+app.post("/api/telemetry/live", (req, res) => {
+  const { advisor, lat, lng, speed, accuracy } = req.body;
+  if (!advisor || lat == null || lng == null) {
+    return res.status(400).json({ error: "advisor, lat, lng required" });
+  }
+
+  const locationData = {
+    advisor,
+    lat: Number(lat),
+    lng: Number(lng),
+    speed: speed != null ? Number(speed) : 0,
+    accuracy: accuracy != null ? Number(accuracy) : 0,
+    updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  };
+
+  inMemoryLiveLocations[advisor] = locationData;
+  res.json({ success: true, location: locationData });
+});
+
 // 8. BRANCHES API (Persistent CRUD)
 app.get("/api/branches", async (req, res) => {
   try {

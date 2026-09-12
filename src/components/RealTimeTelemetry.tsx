@@ -1,6 +1,16 @@
-import React, { useState } from "react";
-import { Navigation, MapPin, Compass, CheckCircle2, Circle, Clock, Plus, ShieldCheck, Map as MapIcon, User, Filter, Eye, Layers } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Navigation, MapPin, Compass, CheckCircle2, Circle, Clock, Plus, ShieldCheck, Map as MapIcon, Filter, Layers, Activity, Radio, Signal, RefreshCw } from "lucide-react";
+import L from "leaflet";
 import { Telemetry } from "../types";
+
+interface LiveLocation {
+  advisor: string;
+  lat: number;
+  lng: number;
+  speed: number;
+  accuracy: number;
+  updatedAt: string;
+}
 
 interface RealTimeTelemetryProps {
   telemetryList: Telemetry[];
@@ -17,14 +27,200 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
   const [selectedPin, setSelectedPin] = useState<Telemetry | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Live Tracking state
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number; speed: number; accuracy: number } | null>(null);
+  const [liveLocations, setLiveLocations] = useState<LiveLocation[]>([]);
+  const watchIdRef = useRef<number | null>(null);
+
+  // Leaflet Map Ref
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+
   const safeTelemetry = Array.isArray(telemetryList) ? telemetryList : [];
-  // Filter list by selected advisor
   const filteredList = selectedAdvisor === "all"
     ? safeTelemetry
     : safeTelemetry.filter(t => t && (t.advisor || "").toLowerCase().includes((selectedAdvisor || "").toLowerCase()));
 
-  // Available advisors for filter
   const advisors = Array.from(new Set(safeTelemetry.map(t => t && t.advisor).filter(Boolean)));
+
+  // Fetch Live Locations from server periodically
+  const fetchLiveLocations = async () => {
+    try {
+      const res = await fetch("/api/telemetry/live");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setLiveLocations(data);
+      }
+    } catch (e) {
+      console.error("Error fetching live locations:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveLocations();
+    const interval = setInterval(fetchLiveLocations, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle Continuous Live GPS Tracking (watchPosition)
+  useEffect(() => {
+    if (isLiveTracking) {
+      if (!navigator.geolocation) {
+        alert("Geolocalización no es soportada por este dispositivo.");
+        setIsLiveTracking(false);
+        return;
+      }
+
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        async (pos) => {
+          const lat = Number(pos.coords.latitude.toFixed(6));
+          const lng = Number(pos.coords.longitude.toFixed(6));
+          const speed = pos.coords.speed ? Number((pos.coords.speed * 3.6).toFixed(1)) : 0; // m/s to km/h
+          const accuracy = Number(pos.coords.accuracy.toFixed(0));
+
+          setCurrentPosition({ lat, lng, speed, accuracy });
+
+          // Send live location update to server
+          try {
+            await fetch("/api/telemetry/live", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                advisor: currentUserName,
+                lat,
+                lng,
+                speed,
+                accuracy
+              })
+            });
+            fetchLiveLocations();
+          } catch (err) {
+            console.error("Error transmitiendo GPS:", err);
+          }
+        },
+        (err) => {
+          console.error("Live GPS Watch Error:", err);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
+      );
+    } else {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    }
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, [isLiveTracking, currentUserName]);
+
+  // Leaflet Map Initialization and Layer Rendering
+  useEffect(() => {
+    if (activeViewMode !== "map" || !mapContainerRef.current) return;
+
+    if (!mapInstanceRef.current) {
+      // Default center: Peru (Lima / Trujillo center or first telemetry point)
+      const defaultLat = filteredList.length > 0 ? filteredList[0].lat : -12.046374;
+      const defaultLng = filteredList.length > 0 ? filteredList[0].lng : -77.042793;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [defaultLat, defaultLng],
+        zoom: 12,
+        zoomControl: true
+      });
+
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 19
+      }).addTo(map);
+
+      markersLayerRef.current = L.layerGroup().addTo(map);
+      mapInstanceRef.current = map;
+    }
+
+    const map = mapInstanceRef.current;
+    const markersGroup = markersLayerRef.current;
+
+    if (markersGroup) markersGroup.clearLayers();
+
+    const points: [number, number][] = [];
+
+    // Render Visited Route Pins
+    filteredList.forEach((pin, idx) => {
+      if (pin.lat && pin.lng) {
+        points.push([pin.lat, pin.lng]);
+
+        const customIcon = L.divIcon({
+          className: "custom-leaflet-marker",
+          html: `<div style="background-color: #4D4DFF; color: white; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${idx + 1}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+
+        const marker = L.marker([pin.lat, pin.lng], { icon: customIcon });
+        marker.bindPopup(`
+          <div style="font-family: sans-serif; padding: 2px;">
+            <strong style="color: #4D4DFF; font-size: 13px;">${pin.client}</strong><br/>
+            <span style="font-size: 11px; color: #555;">📍 ${pin.address || 'Ubicación GPS'}</span><br/>
+            <span style="font-size: 10px; color: #888;">👤 Asesor: ${pin.advisor} • ⏰ ${pin.time}</span>
+          </div>
+        `);
+        marker.on("click", () => setSelectedPin(pin));
+        markersGroup?.addLayer(marker);
+      }
+    });
+
+    // Draw Commercial Route Polyline
+    if (points.length > 1) {
+      const polyline = L.polyline(points, {
+        color: "#4D4DFF",
+        weight: 4,
+        dashArray: "8, 6",
+        opacity: 0.85
+      });
+      markersGroup?.addLayer(polyline);
+    }
+
+    // Render LIVE Active Advisor GPS Positions
+    liveLocations.forEach((live) => {
+      if (selectedAdvisor !== "all" && live.advisor.toLowerCase() !== selectedAdvisor.toLowerCase()) return;
+      if (live.lat && live.lng) {
+        const liveIcon = L.divIcon({
+          className: "live-radar-marker",
+          html: `
+            <div style="position: relative; width: 36px; height: 36px;">
+              <div style="position: absolute; inset: 0; background-color: #10B981; opacity: 0.4; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="position: relative; background-color: #10B981; color: white; border: 3px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 4px 14px rgba(16,185,129,0.5); font-weight: bold;">🚗</div>
+            </div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        const liveMarker = L.marker([live.lat, live.lng], { icon: liveIcon });
+        liveMarker.bindPopup(`
+          <div style="font-family: sans-serif; padding: 2px;">
+            <span style="background: #10B981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold;">LIVE GPS</span>
+            <h4 style="margin: 4px 0 2px; font-size: 13px;">Asesor: ${live.advisor}</h4>
+            <span style="font-size: 11px; color: #555;">⚡ Velocidad: ${live.speed || 0} km/h</span><br/>
+            <span style="font-size: 10px; color: #888;">🎯 Precisión: ±${live.accuracy || 5}m • Último ping: ${live.updatedAt}</span>
+          </div>
+        `);
+        markersGroup?.addLayer(liveMarker);
+      }
+    });
+
+    // Auto fit bounds if points exist
+    if (points.length > 0) {
+      map.fitBounds(points, { padding: [50, 50], maxZoom: 15 });
+    }
+  }, [activeViewMode, filteredList, liveLocations, selectedAdvisor]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,14 +265,27 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
         <div>
           <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
             <Navigation className="w-5 h-5 text-[#4D4DFF]" />
-            Panel de Telemetría & Geolocalización de Rutas GPS
+            Panel de Telemetría & Geolocalización de Rutas GPS (Tiempo Real)
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Visualiza en tiempo real el itinerario físico, ruta comercial y check-in de visitas del equipo comercial CHOHO PERÚ.
+            Rastreo continuo del equipo comercial CHOHO PERÚ con mapas cartográficos interactivos y posicionamiento directo.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {/* Live Tracking Toggle Button */}
+          <button
+            onClick={() => setIsLiveTracking(!isLiveTracking)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm ${
+              isLiveTracking
+                ? "bg-emerald-500 text-white animate-pulse shadow-emerald-500/30"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+            }`}
+          >
+            <Radio className={`w-4 h-4 ${isLiveTracking ? "animate-spin" : ""}`} />
+            <span>{isLiveTracking ? "TRANSMITIENDO GPS EN VIVO" : "Activar Rastreo GPS Continuo"}</span>
+          </button>
+
           {/* Advisor selector */}
           <div className="flex items-center gap-2 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none px-3 py-1.5 rounded-xl text-xs">
             <Filter className="w-3.5 h-3.5 text-slate-400" />
@@ -104,7 +313,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
               }`}
             >
               <MapIcon className="w-3.5 h-3.5" />
-              <span>Mapa GPS</span>
+              <span>Mapa Cartográfico Real</span>
             </button>
             <button
               onClick={() => setActiveViewMode("timeline")}
@@ -118,121 +327,55 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
               <span>Línea de Tiempo</span>
             </button>
           </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-[#7F735F] bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none px-3 py-2 rounded-xl">
-            <Compass className="w-4 h-4 text-emerald-500 animate-spin" />
-            <span>GPS: En Línea</span>
-          </div>
         </div>
       </div>
 
+      {/* Live Status Indicators Banner */}
+      {currentPosition && isLiveTracking && (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-emerald-800 dark:text-emerald-300 shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2 font-bold">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+            <span>GPS ACTIVO ({currentUserName}): {currentPosition.lat}, {currentPosition.lng}</span>
+          </div>
+          <div className="flex items-center gap-4 text-[11px]">
+            <span>⚡ Velocidad: <strong>{currentPosition.speed} km/h</strong></span>
+            <span>🎯 Precisión: <strong>±{currentPosition.accuracy}m</strong></span>
+            <span className="text-slate-400">Emisores activos: {liveLocations.length}</span>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content Area: Interactive GPS Map or Timeline */}
+        {/* Main Content Area: Interactive Leaflet Map or Timeline */}
         <div className="lg:col-span-2 space-y-4">
           {activeViewMode === "map" ? (
             <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
                 <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#4D4DFF]" />
-                  Mapa Interactivo de Ruta Comercial ({filteredList.length} Puntos)
+                  Mapa Cartográfico Interactivo (OpenStreetMap Real) - {filteredList.length} Puntos
                 </h4>
-                <span className="text-[10px] font-mono text-slate-400">Lima Centro • Trujillo • Arequipa</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchLiveLocations}
+                    className="p-1 text-slate-400 hover:text-[#4D4DFF] transition-colors cursor-pointer"
+                    title="Actualizar Posiciones"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[10px] font-mono text-slate-400">Lima • Trujillo • Arequipa</span>
+                </div>
               </div>
 
-              {/* Interactive Vector Route Map Canvas Simulation */}
-              <div className="relative w-full h-[380px] bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-inner flex flex-col justify-between p-4 group">
-                {/* Map Grid Pattern background */}
-                <div 
-                  className="absolute inset-0 opacity-20 pointer-events-none"
-                  style={{
-                    backgroundImage: "radial-gradient(#4D4DFF 1px, transparent 1px), radial-gradient(#38bdf8 1px, transparent 1px)",
-                    backgroundSize: "24px 24px",
-                    backgroundPosition: "0 0, 12px 12px"
-                  }}
-                />
+              {/* Leaflet Map Canvas Container */}
+              <div className="relative w-full h-[420px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-100 shadow-inner z-0">
+                <div ref={mapContainerRef} id="leaflet-map-container" className="w-full h-full z-0" />
 
-                {/* Simulated GPS Polyline path */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                  <polyline
-                    fill="none"
-                    stroke="#4D4DFF"
-                    strokeWidth="3"
-                    strokeDasharray="6 4"
-                    points="60,80 140,160 260,110 380,220 500,180"
-                    className="animate-pulse"
-                  />
-                </svg>
-
-                {/* Map Control Info Overlay */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 p-2.5 rounded-xl text-[10px] text-white font-mono space-y-0.5 shadow-lg">
-                    <div className="text-[#4D4DFF] font-bold">CHOHO FLEET GPS TRACKER v2.4</div>
-                    <div className="text-slate-400">Asesor: {selectedAdvisor === "all" ? "Todos" : selectedAdvisor}</div>
-                  </div>
-
-                  <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 p-2 rounded-xl text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1.5 shadow-lg">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    <span>SEGUIMIENTO EN TIEMPO REAL</span>
-                  </div>
+                {/* Live Tracking overlay badge */}
+                <div className="absolute top-3 right-3 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 shadow-lg">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>TRANSMISIÓN LIVE: {liveLocations.length} ASESOR(ES)</span>
                 </div>
-
-                {/* Map Markers & Pins */}
-                <div className="relative z-10 flex-1 grid grid-cols-5 items-center justify-items-center my-4">
-                  {filteredList.slice(0, 5).map((pin, idx) => (
-                    <div key={pin.id} className="relative group/pin flex flex-col items-center">
-                      <button
-                        onClick={() => setSelectedPin(pin)}
-                        className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs transition-all shadow-xl cursor-pointer ${
-                          selectedPin?.id === pin.id
-                            ? "bg-[#4D4DFF] text-white scale-125 ring-4 ring-red-500/40 z-20"
-                            : pin.status === "Visited"
-                            ? "bg-emerald-500 text-slate-950 hover:scale-110"
-                            : "bg-slate-800 text-slate-300 hover:scale-110"
-                        }`}
-                        title={`${pin.client} (${pin.time})`}
-                      >
-                        {idx + 1}
-                      </button>
-
-                      <div className="mt-1 bg-slate-900/90 backdrop-blur-md text-white text-[9px] px-2 py-0.5 rounded-md font-mono truncate max-w-[90px] border border-slate-800 shadow-md">
-                        {pin.client}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Selected Pin Details Bar */}
-                {selectedPin ? (
-                  <div className="relative z-10 bg-slate-900/95 backdrop-blur-md border border-red-500/40 p-3 rounded-xl flex items-center justify-between text-xs text-white shadow-xl animate-fade-in">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#4D4DFF] flex items-center justify-center font-bold text-white shrink-0">
-                        <MapPin className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="font-extrabold text-white">{selectedPin.client}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          Asesor: <span className="text-blue-500 font-bold">{selectedPin.advisor}</span> • Hora: {selectedPin.time}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-[9px] font-mono text-emerald-400 font-bold block">
-                        GPS: {selectedPin.lat}, {selectedPin.lng}
-                      </span>
-                      <button
-                        onClick={() => setSelectedPin(null)}
-                        className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
-                      >
-                        Cerrar Detalle
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative z-10 text-[10px] text-slate-400 font-mono text-center bg-slate-900/60 p-1.5 rounded-lg border border-slate-800/60">
-                    Haz clic en los marcadores numéricos (1, 2, 3...) para inspeccionar la ubicación y hora exacta del check-in.
-                  </div>
-                )}
               </div>
             </div>
           ) : (
@@ -344,4 +487,3 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
     </div>
   );
 }
-
