@@ -18,14 +18,12 @@ import { RealTimeTelemetry } from "./components/RealTimeTelemetry";
 import { ExpensesManager } from "./components/ExpensesManager";
 import { SyncCenter } from "./components/SyncCenter";
 import { AdminPanel } from "./components/AdminPanel";
-import { PurchasingManager } from "./components/PurchasingManager";
 import { AccountsReceivable } from "./components/AccountsReceivable";
-import { Maintenance } from "./components/Maintenance";
 import { TravelBudgets } from "./components/TravelBudgets";
 import { DiscountManager } from "./components/DiscountManager";
 import { Commissions } from "./components/Commissions";
 
-import { User, QuoteItem, Quote, Product, TravelExpense, PurchaseOrder } from "./types";
+import { User, QuoteItem, Quote, Product, TravelExpense } from "./types";
 
 export default function App() {
   const {
@@ -52,14 +50,10 @@ export default function App() {
     telemetry,
     rolesList,
     offlinePendingQuotes,
-    purchases,
     receivables,
-    setPurchases,
     setReceivables,
     setIsOfflineMode,
     setOfflinePendingQuotes,
-    maintenanceOrders,
-    setMaintenanceOrders,
     travelBudgets,
     setTravelBudgets,
     discountRules,
@@ -88,14 +82,13 @@ export default function App() {
   // Fetch initial baseline data
   const fetchBaselineData = async () => {
     try {
-      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resPurchases, resReceivables, resCommissions, resDiscounts] = await Promise.all([
+      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resReceivables, resCommissions, resDiscounts] = await Promise.all([
         fetch("/api/products"),
         fetch("/api/quotes"),
         fetch("/api/users"),
         fetch("/api/telemetry"),
         fetch("/api/expenses"),
         fetch("/api/roles"),
-        fetch("/api/purchases"),
         fetch("/api/receivables"),
         fetch("/api/commissions"),
         fetch("/api/discounts")
@@ -124,10 +117,6 @@ export default function App() {
       if (resExpenses.ok) {
         const expensesData = await resExpenses.json();
         if (Array.isArray(expensesData)) setExpenses(expensesData);
-      }
-      if (resPurchases.ok) {
-        const purchasesData = await resPurchases.json();
-        if (Array.isArray(purchasesData)) setPurchases(purchasesData);
       }
       if (resReceivables.ok) {
         const receivablesData = await resReceivables.json();
@@ -293,10 +282,6 @@ export default function App() {
     return count;
   };
 
-  const handleAddMaintenance = (order: import('./types').MaintenanceOrder) => {
-    setMaintenanceOrders([order, ...maintenanceOrders]);
-  };
-
   const handleAddTravelBudget = (budget: import('./types').TravelBudget) => {
     setTravelBudgets([budget, ...travelBudgets]);
   };
@@ -395,45 +380,6 @@ export default function App() {
       if (res.ok) {
         const created = await res.json();
         setQuotes([created, ...quotes]);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleCreatePurchase = async (po: Omit<PurchaseOrder, "id" | "status">) => {
-    try {
-      const res = await fetch("/api/purchases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...po, status: "Pendiente" })
-      });
-      if (res.ok) {
-        const created = await res.json();
-        setPurchases([created, ...purchases]);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleReceivePurchase = async (id: string, location: string, receiver: string) => {
-    try {
-      const res = await fetch(`/api/purchases/${id}/receive`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          receivedBy: receiver,
-          receiveDate: new Date().toISOString().split("T")[0],
-          location
-        })
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setPurchases(purchases.map(p => p.id === id ? updated : p));
-        // Actualizar stock de productos recibidos re-haciendo fetch
-        const resProd = await fetch("/api/products");
-        if (resProd.ok) setProducts(await resProd.json());
       }
     } catch (e) {
       console.error(e);
@@ -567,7 +513,6 @@ export default function App() {
           <Route path="/inventory" element={<InventoryManager products={products} onAddProduct={handleAddProduct} onUpdateProduct={handleUpdateProduct} />} />
           <Route path="/cart" element={<BudgetGenerator budgetItems={budgetItems} onUpdateQty={handleUpdateCartQty} onRemoveItem={handleRemoveCartItem} onClearBudget={handleClearBudget} onSaveQuote={handleSaveQuote} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/quotes" element={<QuotesList quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} />} />
-          <Route path="/maintenance" element={<Maintenance orders={maintenanceOrders} onAddOrder={handleAddMaintenance} />} />
           <Route path="/travel-budgets" element={<TravelBudgets budgets={travelBudgets} onAddBudget={handleAddTravelBudget} expenses={expenses} />} />
           <Route 
             path="/discounts" 
@@ -584,7 +529,6 @@ export default function App() {
           <Route path="/commissions" element={<Commissions commissions={commissions} onAddCommission={handleAddCommission} onUpdateCommissionStatus={handleUpdateCommissionStatus} onDeleteCommission={handleDeleteCommission} quotes={quotes} users={users} />} />
           <Route path="/telemetry" element={<RealTimeTelemetry telemetryList={telemetry} onAddVisit={handleAddVisit} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} travelBudgets={travelBudgets} />} />
-          <Route path="/purchases" element={<PurchasingManager purchases={purchases} products={products} currentUserName={currentUser?.name || "Admin"} onReceivePurchase={handleReceivePurchase} onCreatePurchase={handleCreatePurchase} />} />
           <Route path="/receivables" element={<AccountsReceivable receivables={receivables} currentUserName={currentUser?.name || "Admin"} onRegisterPayment={handleRegisterPayment} />} />
           <Route path="/sync" element={<SyncCenter isOfflineMode={isOfflineMode} onToggleOffline={() => setIsOfflineMode(!isOfflineMode)} onSyncNow={handleSyncNow} localOfflineCount={offlinePendingQuotes.length} />} />
           <Route path="/admin" element={<AdminPanel currentUser={currentUser} users={users} products={products} onAddUser={handleAddUser} onUpdateUser={handleUpdateUser} onUpdateProduct={handleUpdateProduct} onRolesUpdated={(roles) => setRolesList(roles)} />} />

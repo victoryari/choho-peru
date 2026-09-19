@@ -16,9 +16,7 @@ import {
   Sun,
   Moon,
   Boxes,
-  Truck,
   DollarSign,
-  Wrench,
   Wallet,
   Tags,
   TrendingUp
@@ -145,11 +143,6 @@ export function Layout({ children }: LayoutProps) {
                     </Link>
                   </>
                 )}
-                {userPermissions.maintenance && (
-                  <Link to="/maintenance" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/maintenance") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
-                    <Wrench className="w-4 h-4" /><span>Mantenimiento</span>
-                  </Link>
-                )}
                 {userPermissions.telemetry && (
                   <Link to="/telemetry" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/telemetry") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Compass className="w-4 h-4" /><span>Check-ins de Campo</span>
@@ -163,11 +156,6 @@ export function Layout({ children }: LayoutProps) {
                 {userPermissions.expenses && (
                   <Link to="/expenses" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/expenses") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
                     <Receipt className="w-4 h-4" /><span>Sustento de Viáticos</span>
-                  </Link>
-                )}
-                {userPermissions.purchases && (
-                  <Link to="/purchases" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/purchases") ? "bg-[#87CEEB] text-[#333333] shadow-sm shadow-[#87CEEB]/40" : "text-slate-700 dark:text-[#7F735F] hover:bg-white/50 dark:hover:bg-[#FFFDF9] hover:text-[#333333]"}`}>
-                    <Truck className="w-4 h-4" /><span>Compras y Recepción</span>
                   </Link>
                 )}
                 {userPermissions.receivables && (
@@ -306,11 +294,6 @@ export function Layout({ children }: LayoutProps) {
                   {userPermissions.expenses && (
                     <Link to="/expenses" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
                       <Receipt className="w-5 h-5" /> <span className="text-sm font-semibold">Viáticos</span>
-                    </Link>
-                  )}
-                  {userPermissions.purchases && (
-                    <Link to="/purchases" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
-                      <Truck className="w-5 h-5" /> <span className="text-sm font-semibold">Compras</span>
                     </Link>
                   )}
                   {userPermissions.receivables && (
