@@ -1,24 +1,32 @@
 CREATE DATABASE IF NOT EXISTS choho_peru;
 USE choho_peru;
 
+CREATE TABLE IF NOT EXISTS roles (
+  id VARCHAR(50) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  permissions JSON NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(50) PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(50) NOT NULL,
-  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-  branch VARCHAR(100),
-  department VARCHAR(100)
+  role VARCHAR(100) NOT NULL,
+  status VARCHAR(20) DEFAULT 'ACTIVE',
+  branch VARCHAR(100) DEFAULT 'Sede Lima',
+  department VARCHAR(100) DEFAULT 'Ventas',
+  sales_zone VARCHAR(100) DEFAULT 'Zona - Lima'
 );
 
 CREATE TABLE IF NOT EXISTS products (
   sku VARCHAR(50) PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   category VARCHAR(100) NOT NULL,
   basePrice DECIMAL(10,2) NOT NULL,
-  stock INT NOT NULL,
-  description LONGTEXT,
+  stock INT DEFAULT 0,
+  description TEXT,
   tags JSON,
   img LONGTEXT,
   images JSON
@@ -26,70 +34,152 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TABLE IF NOT EXISTS quotes (
   id VARCHAR(50) PRIMARY KEY,
-  clientName VARCHAR(150) NOT NULL,
-  clientDoc VARCHAR(20) NOT NULL,
-  advisor VARCHAR(100) NOT NULL,
+  clientName VARCHAR(255) NOT NULL,
+  clientDoc VARCHAR(50),
+  advisor VARCHAR(150) NOT NULL,
   total DECIMAL(10,2) NOT NULL,
   subtotal DECIMAL(10,2) NOT NULL,
   igv DECIMAL(10,2) NOT NULL,
-  date DATE NOT NULL,
-  status ENUM('Pendiente', 'Aceptada', 'Rechazada') DEFAULT 'Pendiente'
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'Pendiente'
 );
 
 CREATE TABLE IF NOT EXISTS quote_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   quote_id VARCHAR(50) NOT NULL,
   sku VARCHAR(50) NOT NULL,
-  name VARCHAR(150) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   qty INT NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE,
-  FOREIGN KEY (sku) REFERENCES products(sku) ON DELETE RESTRICT
+  price DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id VARCHAR(50) PRIMARY KEY,
+  advisor VARCHAR(150) NOT NULL,
+  date VARCHAR(50) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  docType VARCHAR(50) NOT NULL,
+  rucIssuer VARCHAR(20) NOT NULL,
+  companyName VARCHAR(255) NOT NULL,
+  series VARCHAR(20) NOT NULL,
+  number VARCHAR(50) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  receiptImage LONGTEXT,
+  sunatStatus VARCHAR(50) DEFAULT 'ACEPTADO',
+  approvalStatus VARCHAR(50) DEFAULT 'Pendiente',
+  notes TEXT
 );
 
 CREATE TABLE IF NOT EXISTS telemetry (
   id VARCHAR(50) PRIMARY KEY,
-  advisor VARCHAR(100) NOT NULL,
-  client VARCHAR(150) NOT NULL,
-  time DATETIME NOT NULL,
-  status ENUM('Visited', 'Pending', 'Offline') NOT NULL,
-  quote_id VARCHAR(50) NULL,
-  lat DECIMAL(10,8) NOT NULL,
-  lng DECIMAL(11,8) NOT NULL,
-  FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE SET NULL
+  advisor VARCHAR(150) NOT NULL,
+  client VARCHAR(255) NOT NULL,
+  time VARCHAR(100) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Visited',
+  quote_id VARCHAR(50),
+  lat DOUBLE NOT NULL,
+  lng DOUBLE NOT NULL,
+  address VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS branches (
   id VARCHAR(50) PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
-  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE'
+  status VARCHAR(20) DEFAULT 'ACTIVE'
 );
 
 CREATE TABLE IF NOT EXISTS departments (
   id VARCHAR(50) PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
-  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE'
+  status VARCHAR(20) DEFAULT 'ACTIVE'
 );
 
--- Insert default branches
-INSERT IGNORE INTO branches (id, name, status) VALUES
-('BR-1', 'Sede Trujillo', 'ACTIVE'),
-('BR-2', 'Sede Lima', 'ACTIVE'),
-('BR-3', 'Sede Lima Centro', 'ACTIVE'),
-('BR-4', 'Sede Arequipa', 'ACTIVE');
+CREATE TABLE IF NOT EXISTS invoices (
+  id VARCHAR(50) PRIMARY KEY,
+  doc_type VARCHAR(20) NOT NULL,
+  quote_id VARCHAR(50),
+  reference_id VARCHAR(50),
+  clientName VARCHAR(255) NOT NULL,
+  clientDoc VARCHAR(50) NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  currency VARCHAR(10) DEFAULT 'PEN',
+  payment_type VARCHAR(50) DEFAULT 'Contado',
+  subtotal DECIMAL(10,2) NOT NULL,
+  igv DECIMAL(10,2) NOT NULL,
+  total DECIMAL(10,2) NOT NULL,
+  free_total DECIMAL(10,2) DEFAULT 0,
+  credit_quotas JSON,
+  items JSON,
+  xml_data LONGTEXT,
+  cdr_data LONGTEXT,
+  hash VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'ACEPTADO',
+  creditStatus VARCHAR(50) DEFAULT 'Pendiente',
+  creditPaidAmount DECIMAL(10,2) DEFAULT 0,
+  creditDueAmount DECIMAL(10,2) DEFAULT 0
+);
 
--- Insert default departments
-INSERT IGNORE INTO departments (id, name, status) VALUES
-('DEP-1', 'Ventas', 'ACTIVE'),
-('DEP-2', 'Facturación', 'ACTIVE'),
-('DEP-3', 'Almacén', 'ACTIVE'),
-('DEP-4', 'Gerencia', 'ACTIVE'),
-('DEP-5', 'Marketing', 'ACTIVE');
+CREATE TABLE IF NOT EXISTS purchases (
+  id VARCHAR(50) PRIMARY KEY,
+  supplierRuc VARCHAR(20) NOT NULL,
+  supplierName VARCHAR(255) NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  total DECIMAL(10,2) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Pendiente',
+  receivedBy VARCHAR(150),
+  receiveDate DATETIME,
+  location VARCHAR(255)
+);
 
--- Insert demo products
-INSERT IGNORE INTO products (sku, name, category, basePrice, stock, description, tags, img) VALUES
-('CAT-SPROCKET-001', 'Catalina 45T Acero Templado', 'Transmisión', 125.50, 45, 'Catalina de alta resistencia para uso extremo', '["enduro", "cross"]', NULL),
-('CH-CHAIN-520', 'Cadena 520H Reforzada O-Ring', 'Transmisión', 85.00, 120, 'Cadena sellada O-Ring dorada', '["calle", "dorada"]', NULL),
-('BRK-PAD-F01', 'Pastillas de Freno Sinterizadas', 'Frenos', 45.00, 200, 'Pastillas delanteras cerámicas', '["scooter", "friccion"]', NULL);
+CREATE TABLE IF NOT EXISTS purchase_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  purchase_id VARCHAR(50) NOT NULL,
+  sku VARCHAR(50) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  qty INT NOT NULL,
+  unitCost DECIMAL(10,2) NOT NULL
+);
 
--- Las contraseñas (123) serán insertadas mediante un script de inicialización o migradas directamente
+CREATE TABLE IF NOT EXISTS payments (
+  id VARCHAR(50) PRIMARY KEY,
+  quoteId VARCHAR(50) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  registeredBy VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS commissions (
+  id VARCHAR(50) PRIMARY KEY,
+  seller VARCHAR(150) NOT NULL,
+  zone VARCHAR(100) NOT NULL,
+  salesTotal DECIMAL(10,2) NOT NULL,
+  rate DECIMAL(5,2) NOT NULL,
+  commission DECIMAL(10,2) NOT NULL,
+  month VARCHAR(100) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Pendiente',
+  calculationType VARCHAR(100),
+  condition_name VARCHAR(100),
+  product_category VARCHAR(100),
+  is_diferenciada TINYINT(1) DEFAULT 0,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS discount_rules (
+  id VARCHAR(50) PRIMARY KEY,
+  role VARCHAR(100),
+  sku VARCHAR(50),
+  productName VARCHAR(255),
+  category VARCHAR(100) NOT NULL,
+  maxDiscount DECIMAL(5,2),
+  minAmount DECIMAL(10,2),
+  maxAmount DECIMAL(10,2),
+  minQty INT,
+  discountCash DECIMAL(10,2),
+  discountCredit DECIMAL(10,2),
+  priceOfferCash DECIMAL(10,2),
+  priceOfferCredit DECIMAL(10,2),
+  discountType VARCHAR(50) DEFAULT 'PORCENTAJE',
+  notes TEXT,
+  status VARCHAR(20) DEFAULT 'Activo'
+);
