@@ -88,7 +88,7 @@ export default function App() {
   // Fetch initial baseline data
   const fetchBaselineData = async () => {
     try {
-      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resPurchases, resReceivables] = await Promise.all([
+      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resPurchases, resReceivables, resCommissions, resDiscounts] = await Promise.all([
         fetch("/api/products"),
         fetch("/api/quotes"),
         fetch("/api/users"),
@@ -96,7 +96,9 @@ export default function App() {
         fetch("/api/expenses"),
         fetch("/api/roles"),
         fetch("/api/purchases"),
-        fetch("/api/receivables")
+        fetch("/api/receivables"),
+        fetch("/api/commissions"),
+        fetch("/api/discounts")
       ]);
 
       if (resProducts.ok) {
@@ -130,6 +132,14 @@ export default function App() {
       if (resReceivables.ok) {
         const receivablesData = await resReceivables.json();
         if (Array.isArray(receivablesData)) setReceivables(receivablesData);
+      }
+      if (resCommissions.ok) {
+        const commissionsData = await resCommissions.json();
+        if (Array.isArray(commissionsData)) setCommissions(commissionsData);
+      }
+      if (resDiscounts.ok) {
+        const discountsData = await resDiscounts.json();
+        if (Array.isArray(discountsData)) setDiscountRules(discountsData);
       }
     } catch (err) {
       console.error("Error loading baseline fullstack data, entering offline grace mode:", err);
@@ -181,9 +191,7 @@ export default function App() {
   };
   
   const handleUpdateProduct = async (sku: string, updatedPayload: Partial<Product>) => {
-    setProducts(prev =>
-      prev.map(p => (p && p.sku === sku ? { ...p, ...updatedPayload } : p))
-    );
+    setProducts(products.map(p => (p && p.sku === sku ? { ...p, ...updatedPayload } : p)));
 
     try {
       const res = await fetch(`/api/products/${encodeURIComponent(sku)}`, {
@@ -194,7 +202,7 @@ export default function App() {
       if (res.ok) {
         const updated = await res.json();
         if (updated && updated.sku) {
-          setProducts(prev => prev.map(p => (p && p.sku === sku ? { ...p, ...updated } : p)));
+          setProducts(products.map(p => (p && p.sku === sku ? { ...p, ...updated } : p)));
         }
       }
     } catch (err) {
@@ -203,7 +211,7 @@ export default function App() {
   };
 
   const handleUpdateQuoteStatus = async (id: string, status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string) => {
-    setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: status as any } : q));
+    setQuotes(quotes.map(q => q.id === id ? { ...q, status: status as any } : q));
     try {
       await fetch(`/api/quotes/${id}`, {
         method: "PUT",
@@ -216,7 +224,7 @@ export default function App() {
   };
 
   const handleAddProduct = async (product: Product) => {
-    setProducts(prev => [...prev.filter(p => p && p.sku !== product.sku), product]);
+    setProducts([...products.filter(p => p && p.sku !== product.sku), product]);
     try {
       const res = await fetch("/api/products", {
         method: "POST",
@@ -226,7 +234,7 @@ export default function App() {
       if (res.ok) {
         const created = await res.json();
         if (created && created.sku) {
-          setProducts(prev => prev.map(p => (p && p.sku === created.sku ? created : p)));
+          setProducts(products.map(p => (p && p.sku === created.sku ? created : p)));
         }
       }
     } catch (err) {
@@ -259,8 +267,8 @@ export default function App() {
     setExpenses([newExpense, ...expenses]);
   };
 
-  const handleUpdateExpenseStatus = async (id: string, status: "Aprobado" | "Rechazado") => {
-    setExpenses(expenses.map(e => e.id === id ? { ...e, approvalStatus: status } : e));
+  const handleUpdateExpenseStatus = async (id: string, approvalStatus: "Pendiente" | "Aprobado" | "Observado") => {
+    setExpenses(expenses.map(e => e.id === id ? { ...e, approvalStatus } : e));
   };
 
   const handleAddUser = async (user: Omit<User, "id">) => {
@@ -273,14 +281,16 @@ export default function App() {
   };
 
   const handleSyncNow = async () => {
-    if (offlinePendingQuotes.length === 0) return;
+    if (offlinePendingQuotes.length === 0) return 0;
     
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 2000));
     
+    const count = offlinePendingQuotes.length;
     // Move all offline quotes to main quotes and clear offline queue
     setQuotes([...offlinePendingQuotes, ...quotes]);
     setOfflinePendingQuotes([]);
+    return count;
   };
 
   const handleAddMaintenance = (order: import('./types').MaintenanceOrder) => {
@@ -291,12 +301,88 @@ export default function App() {
     setTravelBudgets([budget, ...travelBudgets]);
   };
 
-  const handleAddDiscountRule = (rule: import('./types').DiscountRule) => {
+  const handleAddDiscountRule = async (rule: import('./types').DiscountRule) => {
     setDiscountRules([rule, ...discountRules]);
+    try {
+      const res = await fetch("/api/discounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rule)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setDiscountRules([created, ...discountRules.filter(r => r.id !== rule.id)]);
+      }
+    } catch (err) {
+      console.error("Error guardando regla de descuento:", err);
+    }
   };
 
-  const handleAddCommission = (comm: import('./types').Commission) => {
+  const handleUpdateDiscountRule = async (id: string, updates: Partial<import('./types').DiscountRule>) => {
+    setDiscountRules(discountRules.map(r => r.id === id ? { ...r, ...updates } : r));
+    try {
+      await fetch(`/api/discounts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates)
+      });
+    } catch (err) {
+      console.error("Error actualizando regla de descuento:", err);
+    }
+  };
+
+  const handleDeleteDiscountRule = async (id: string) => {
+    setDiscountRules(discountRules.filter(r => r.id !== id));
+    try {
+      await fetch(`/api/discounts/${id}`, {
+        method: "DELETE"
+      });
+    } catch (err) {
+      console.error("Error eliminando regla de descuento:", err);
+    }
+  };
+
+  const handleAddCommission = async (comm: import('./types').Commission) => {
     setCommissions([comm, ...commissions]);
+    try {
+      const res = await fetch("/api/commissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(comm)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setCommissions([created, ...commissions]);
+      }
+    } catch (err) {
+      console.error("Error guardando comisión en API:", err);
+    }
+  };
+
+  const handleUpdateCommissionStatus = async (id: string, status: 'Pagado' | 'Pendiente') => {
+    const updatedList = commissions.map(c => c.id === id ? { ...c, status } : c);
+    setCommissions(updatedList);
+    try {
+      await fetch(`/api/commissions/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+    } catch (err) {
+      console.error("Error actualizando estado de comisión:", err);
+    }
+  };
+
+  const handleDeleteCommission = async (id: string) => {
+    const updatedList = commissions.filter(c => c.id !== id);
+    setCommissions(updatedList);
+    try {
+      await fetch(`/api/commissions/${id}`, {
+        method: "DELETE"
+      });
+    } catch (err) {
+      console.error("Error eliminando comisión:", err);
+    }
   };
   
   const handleSaveQuote = async (quotePayload: Omit<Quote, "id" | "date">) => {
@@ -483,8 +569,19 @@ export default function App() {
           <Route path="/quotes" element={<QuotesList quotes={quotes} onUpdateQuoteStatus={handleUpdateQuoteStatus} />} />
           <Route path="/maintenance" element={<Maintenance orders={maintenanceOrders} onAddOrder={handleAddMaintenance} />} />
           <Route path="/travel-budgets" element={<TravelBudgets budgets={travelBudgets} onAddBudget={handleAddTravelBudget} expenses={expenses} />} />
-          <Route path="/discounts" element={<DiscountManager rules={discountRules} onAddRule={handleAddDiscountRule} />} />
-          <Route path="/commissions" element={<Commissions commissions={commissions} onAddCommission={handleAddCommission} quotes={quotes} />} />
+          <Route 
+            path="/discounts" 
+            element={
+              <DiscountManager 
+                rules={discountRules} 
+                products={products}
+                onAddRule={handleAddDiscountRule} 
+                onUpdateRule={handleUpdateDiscountRule}
+                onDeleteRule={handleDeleteDiscountRule}
+              />
+            } 
+          />
+          <Route path="/commissions" element={<Commissions commissions={commissions} onAddCommission={handleAddCommission} onUpdateCommissionStatus={handleUpdateCommissionStatus} onDeleteCommission={handleDeleteCommission} quotes={quotes} users={users} />} />
           <Route path="/telemetry" element={<RealTimeTelemetry telemetryList={telemetry} onAddVisit={handleAddVisit} currentUserName={currentUser?.name || "Asesor"} />} />
           <Route path="/expenses" element={<ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} travelBudgets={travelBudgets} />} />
           <Route path="/purchases" element={<PurchasingManager purchases={purchases} products={products} currentUserName={currentUser?.name || "Admin"} onReceivePurchase={handleReceivePurchase} onCreatePurchase={handleCreatePurchase} />} />

@@ -6,6 +6,7 @@ export interface User {
   status: 'ACTIVE' | 'INACTIVE';
   branch: string;
   department: string;
+  salesZone?: 'Zona - Lima' | 'Provincia - Con Metas' | 'Provincia - Desde 1era Venta';
 }
 
 export interface RolePermission {
@@ -26,6 +27,7 @@ export interface RolePermission {
     commissions: boolean;
     admin: boolean;
     dashboard?: boolean;
+    billing?: boolean;
   };
 }
 
@@ -65,6 +67,7 @@ export interface Quote {
   clientName: string;
   clientDoc: string; // RUC or DNI
   advisor: string;
+  assignedTo?: string;
   total: number;
   subtotal: number;
   igv: number;
@@ -155,18 +158,40 @@ export interface TravelBudget {
 
 export interface DiscountRule {
   id: string;
-  role: string;
-  maxDiscount: number;
+  role?: string;
+  sku?: string;
+  productName?: string;
   category: string;
+  maxDiscount?: number;
+  minAmount?: number;
+  maxAmount?: number;
+  minQty?: number;
+  discountCash?: number; // % o S/ contado
+  discountCredit?: number; // % o S/ crédito
+  priceOfferCash?: number; // Precio oferta contado
+  priceOfferCredit?: number; // Precio oferta crédito
+  discountType?: 'PORCENTAJE' | 'MONTO_FIJO' | 'PRECIO_ESPECIAL';
+  notes?: string;
   status: 'Activo' | 'Inactivo';
 }
+
+export type SalesZone = 'Zona - Lima' | 'Provincia - Con Metas' | 'Provincia - Desde 1era Venta';
+export type CalculationType = 'Por Condición' | 'Por Producto' | 'Periodo Vacacional';
 
 export interface Commission {
   id: string;
   seller: string;
+  zone: SalesZone;
   salesTotal: number;
   rate: number;
   commission: number;
   month: string;
   status: 'Pagado' | 'Pendiente';
+  calculationType?: CalculationType;
+  condition?: string;
+  productCategory?: string;
+  isDiferenciada?: boolean;
+  notes?: string;
+  createdAt?: string;
 }
+

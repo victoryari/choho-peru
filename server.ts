@@ -36,9 +36,9 @@ const pool = mysql.createPool({
 // --- IN-MEMORY BACKUP ARRAYS (For Offline / Fallback Sync) ---
 
 import {
-  SEED_ROLES, SEED_USERS, SEED_PRODUCTS, SEED_EXPENSES, SEED_BRANCHES, SEED_DEPARTMENTS, SEED_PURCHASES,
+  SEED_ROLES, SEED_USERS, SEED_PRODUCTS, SEED_EXPENSES, SEED_BRANCHES, SEED_DEPARTMENTS, SEED_PURCHASES, SEED_COMMISSIONS, SEED_DISCOUNTS,
   inMemoryRoles, inMemoryUsers, inMemoryProducts, inMemoryExpenses, inMemoryTelemetry,
-  inMemoryBranches, inMemoryDepartments, inMemoryInvoices, inMemoryPurchases, inMemoryPayments
+  inMemoryBranches, inMemoryDepartments, inMemoryInvoices, inMemoryPurchases, inMemoryPayments, inMemoryCommissions, inMemoryDiscounts
 } from "./state.js";
 
 // --- SMTP CONFIGURATION (IN-MEMORY) ---
@@ -267,6 +267,51 @@ async function initDatabase() {
       )
     `);
 
+    // 14. Commissions Table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS commissions (
+        id VARCHAR(50) PRIMARY KEY,
+        seller VARCHAR(150) NOT NULL,
+        zone VARCHAR(100) NOT NULL,
+        salesTotal DECIMAL(10, 2) NOT NULL,
+        rate DECIMAL(5, 2) NOT NULL,
+        commission DECIMAL(10, 2) NOT NULL,
+        month VARCHAR(100) NOT NULL,
+        status VARCHAR(50) DEFAULT 'Pendiente',
+        calculationType VARCHAR(100),
+        condition_name VARCHAR(100),
+        product_category VARCHAR(100),
+        is_diferenciada TINYINT(1) DEFAULT 0,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 15. Discount Rules Table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS discount_rules (
+        id VARCHAR(50) PRIMARY KEY,
+        role VARCHAR(100),
+        sku VARCHAR(50),
+        productName VARCHAR(255),
+        category VARCHAR(100) NOT NULL,
+        maxDiscount DECIMAL(5, 2),
+        minAmount DECIMAL(10, 2),
+        maxAmount DECIMAL(10, 2),
+        minQty INT,
+        discountCash DECIMAL(10, 2),
+        discountCredit DECIMAL(10, 2),
+        priceOfferCash DECIMAL(10, 2),
+        priceOfferCredit DECIMAL(10, 2),
+        discountType VARCHAR(50) DEFAULT 'PORCENTAJE',
+        notes TEXT,
+        status VARCHAR(20) DEFAULT 'Activo'
+      )
+    `);
+
+    // Alter table patches
+    try { await conn.query("ALTER TABLE users ADD COLUMN sales_zone VARCHAR(100) DEFAULT 'Zona - Lima'"); } catch(e){}
+
     // --- SEED SEED DATA ON INITIAL SETUP ---
 
     const [rolesCount]: any = await conn.query("SELECT COUNT(*) as count FROM roles");
@@ -488,7 +533,7 @@ app.put("/api/roles/:id", async (req, res) => {
 // 3. USERS API (Persistent CRUD)
 app.get("/api/users", async (req, res) => {
   try {
-    const [rows]: any = await pool.query("SELECT id, name, email, role, status, branch, department FROM users ORDER BY name ASC");
+    const [rows]: any = await pool.query("SELECT id, name, email, role, status, branch, department, sales_zone AS salesZone FROM users ORDER BY name ASC");
     if (rows && rows.length > 0) {
       inMemoryUsers.length = 0;
       inMemoryUsers.push(...rows.map((u: any) => ({ ...u, password: "123" })));
@@ -508,8 +553,8 @@ app.post("/api/users", async (req, res) => {
   try {
     const passwordHash = await bcrypt.hash(user.password || "123", 10);
     await pool.query(
-      "INSERT INTO users (id, name, email, password_hash, role, status, branch, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [user.id, user.name, user.email, passwordHash, user.role, user.status || "ACTIVE", user.branch || "Sede Lima", user.department || "Ventas"]
+      "INSERT INTO users (id, name, email, password_hash, role, status, branch, department, sales_zone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [user.id, user.name, user.email, passwordHash, user.role, user.status || "ACTIVE", user.branch || "Sede Lima", user.department || "Ventas", user.salesZone || "Zona - Lima"]
     );
   } catch (error: any) {
     console.warn("[USERS] Error guardando usuario en MySQL, guardando en memoria:", error?.message);
@@ -533,6 +578,7 @@ app.put("/api/users/:id", async (req, res) => {
     if (u.status) { updates.push("status = ?"); values.push(u.status); }
     if (u.branch) { updates.push("branch = ?"); values.push(u.branch); }
     if (u.department) { updates.push("department = ?"); values.push(u.department); }
+    if (u.salesZone) { updates.push("sales_zone = ?"); values.push(u.salesZone); }
 
     if (updates.length > 0) {
       values.push(id);
@@ -548,6 +594,234 @@ app.put("/api/users/:id", async (req, res) => {
   }
 
   res.json({ id, ...u });
+});
+
+// --- COMMISSIONS API (Persistent CRUD) ---
+app.get("/api/commissions", async (req, res) => {
+  try {
+    const [rows]: any = await pool.query("SELECT * FROM commissions ORDER BY created_at DESC");
+    if (rows && rows.length > 0) {
+      const mapped = rows.map((c: any) => ({
+        id: c.id,
+        seller: c.seller,
+        zone: c.zone,
+        salesTotal: Number(c.salesTotal),
+        rate: Number(c.rate),
+        commission: Number(c.commission),
+        month: c.month,
+        status: c.status,
+        calculationType: c.calculationType,
+        condition: c.condition_name,
+        productCategory: c.product_category,
+        isDiferenciada: Boolean(c.is_diferenciada),
+        notes: c.notes,
+        createdAt: c.created_at
+      }));
+      inMemoryCommissions.length = 0;
+      inMemoryCommissions.push(...mapped);
+      return res.json(mapped);
+    }
+  } catch (error) {
+    console.warn("[COMMISSIONS] Error leyendo MySQL, sirviendo memoria:", error);
+  }
+  res.json(inMemoryCommissions);
+});
+
+app.post("/api/commissions", async (req, res) => {
+  const comm = req.body;
+  if (!comm.id) comm.id = `COM-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    await pool.query(
+      `INSERT INTO commissions 
+        (id, seller, zone, salesTotal, rate, commission, month, status, calculationType, condition_name, product_category, is_diferenciada, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        comm.id,
+        comm.seller,
+        comm.zone || "Zona - Lima",
+        comm.salesTotal || 0,
+        comm.rate || 0,
+        comm.commission || 0,
+        comm.month || "Mes Actual",
+        comm.status || "Pendiente",
+        comm.calculationType || "Por Condición",
+        comm.condition || "",
+        comm.productCategory || "",
+        comm.isDiferenciada ? 1 : 0,
+        comm.notes || ""
+      ]
+    );
+  } catch (error: any) {
+    console.warn("[COMMISSIONS] Error insertando en MySQL, guardando en memoria:", error?.message);
+  }
+
+  inMemoryCommissions.unshift(comm);
+  res.status(201).json(comm);
+});
+
+app.put("/api/commissions/:id", async (req, res) => {
+  const { id } = req.params;
+  const updatesPayload = req.body;
+
+  try {
+    if (updatesPayload.status) {
+      await pool.query("UPDATE commissions SET status = ? WHERE id = ?", [updatesPayload.status, id]);
+    }
+  } catch (error: any) {
+    console.warn("[COMMISSIONS] Error actualizando en MySQL:", error?.message);
+  }
+
+  const idx = inMemoryCommissions.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    inMemoryCommissions[idx] = { ...inMemoryCommissions[idx], ...updatesPayload };
+  }
+
+  res.json({ id, ...updatesPayload });
+});
+
+app.delete("/api/commissions/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM commissions WHERE id = ?", [id]);
+  } catch (error: any) {
+    console.warn("[COMMISSIONS] Error eliminando en MySQL:", error?.message);
+  }
+
+  const idx = inMemoryCommissions.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    inMemoryCommissions.splice(idx, 1);
+  }
+
+  res.json({ success: true, id });
+});
+
+// Dynamic Commission Table Config Endpoint
+let inMemoryCommissionTables: any = null;
+
+app.get("/api/commission-tables", async (req, res) => {
+  res.json(inMemoryCommissionTables || null);
+});
+
+app.post("/api/commission-tables", async (req, res) => {
+  inMemoryCommissionTables = req.body;
+  res.json({ success: true, data: inMemoryCommissionTables });
+});
+
+// --- DISCOUNTS API (Persistent CRUD) ---
+app.get("/api/discounts", async (req, res) => {
+  try {
+    const [rows]: any = await pool.query("SELECT * FROM discount_rules ORDER BY id DESC");
+    if (rows && rows.length > 0) {
+      const mapped = rows.map((r: any) => ({
+        id: r.id,
+        role: r.role,
+        sku: r.sku,
+        productName: r.productName,
+        category: r.category,
+        maxDiscount: r.maxDiscount ? Number(r.maxDiscount) : undefined,
+        minAmount: r.minAmount ? Number(r.minAmount) : undefined,
+        maxAmount: r.maxAmount ? Number(r.maxAmount) : undefined,
+        minQty: r.minQty ? Number(r.minQty) : undefined,
+        discountCash: r.discountCash ? Number(r.discountCash) : undefined,
+        discountCredit: r.discountCredit ? Number(r.discountCredit) : undefined,
+        priceOfferCash: r.priceOfferCash ? Number(r.priceOfferCash) : undefined,
+        priceOfferCredit: r.priceOfferCredit ? Number(r.priceOfferCredit) : undefined,
+        discountType: r.discountType || 'PORCENTAJE',
+        notes: r.notes,
+        status: r.status || 'Activo'
+      }));
+      inMemoryDiscounts.length = 0;
+      inMemoryDiscounts.push(...mapped);
+      return res.json(mapped);
+    }
+  } catch (error) {
+    console.warn("[DISCOUNTS] Error leyendo MySQL, sirviendo memoria:", error);
+  }
+  res.json(inMemoryDiscounts);
+});
+
+app.post("/api/discounts", async (req, res) => {
+  const rule = req.body;
+  if (!rule.id) rule.id = `DR-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    await pool.query(
+      `INSERT INTO discount_rules 
+        (id, role, sku, productName, category, maxDiscount, minAmount, maxAmount, minQty, discountCash, discountCredit, priceOfferCash, priceOfferCredit, discountType, notes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        rule.id,
+        rule.role || null,
+        rule.sku || null,
+        rule.productName || null,
+        rule.category || 'General',
+        rule.maxDiscount || null,
+        rule.minAmount || null,
+        rule.maxAmount || null,
+        rule.minQty || null,
+        rule.discountCash || null,
+        rule.discountCredit || null,
+        rule.priceOfferCash || null,
+        rule.priceOfferCredit || null,
+        rule.discountType || 'PORCENTAJE',
+        rule.notes || null,
+        rule.status || 'Activo'
+      ]
+    );
+  } catch (error: any) {
+    console.warn("[DISCOUNTS] Error insertando en MySQL:", error?.message);
+  }
+
+  inMemoryDiscounts.unshift(rule);
+  res.status(201).json(rule);
+});
+
+app.put("/api/discounts/:id", async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (updates.status !== undefined) { fields.push("status = ?"); values.push(updates.status); }
+    if (updates.discountCash !== undefined) { fields.push("discountCash = ?"); values.push(updates.discountCash); }
+    if (updates.discountCredit !== undefined) { fields.push("discountCredit = ?"); values.push(updates.discountCredit); }
+    if (updates.priceOfferCash !== undefined) { fields.push("priceOfferCash = ?"); values.push(updates.priceOfferCash); }
+    if (updates.priceOfferCredit !== undefined) { fields.push("priceOfferCredit = ?"); values.push(updates.priceOfferCredit); }
+    if (updates.notes !== undefined) { fields.push("notes = ?"); values.push(updates.notes); }
+
+    if (fields.length > 0) {
+      values.push(id);
+      await pool.query(`UPDATE discount_rules SET ${fields.join(", ")} WHERE id = ?`, values);
+    }
+  } catch (error: any) {
+    console.warn("[DISCOUNTS] Error actualizando en MySQL:", error?.message);
+  }
+
+  const idx = inMemoryDiscounts.findIndex(d => d.id === id);
+  if (idx !== -1) {
+    inMemoryDiscounts[idx] = { ...inMemoryDiscounts[idx], ...updates };
+  }
+
+  res.json({ id, ...updates });
+});
+
+app.delete("/api/discounts/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM discount_rules WHERE id = ?", [id]);
+  } catch (error: any) {
+    console.warn("[DISCOUNTS] Error eliminando en MySQL:", error?.message);
+  }
+
+  const idx = inMemoryDiscounts.findIndex(d => d.id === id);
+  if (idx !== -1) {
+    inMemoryDiscounts.splice(idx, 1);
+  }
+
+  res.json({ success: true, id });
 });
 
 app.post("/api/users/:id/reset-password", async (req, res) => {

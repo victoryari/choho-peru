@@ -67,6 +67,7 @@ export function AdminPanel({
   const [newUserRole, setNewUserRole] = useState("Asesor Comercial");
   const [newUserBranch, setNewUserBranch] = useState("Sede Trujillo");
   const [newUserDept, setNewUserDept] = useState("Ventas");
+  const [newUserSalesZone, setNewUserSalesZone] = useState<import("../types").SalesZone>("Zona - Lima");
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [userMsg, setUserMsg] = useState("");
 
@@ -77,6 +78,7 @@ export function AdminPanel({
   const [editUserRole, setEditUserRole] = useState("");
   const [editUserBranch, setEditUserBranch] = useState("");
   const [editUserDept, setEditUserDept] = useState("");
+  const [editUserSalesZone, setEditUserSalesZone] = useState<import("../types").SalesZone>("Zona - Lima");
   const [editUserStatus, setEditUserStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
   const [isSavingUserEdit, setIsSavingUserEdit] = useState(false);
 
@@ -177,6 +179,7 @@ export function AdminPanel({
         role: newUserRole,
         branch: newUserBranch,
         department: newUserDept,
+        salesZone: newUserSalesZone,
         status: "ACTIVE"
       });
       setNewUserName("");
@@ -198,6 +201,7 @@ export function AdminPanel({
     setEditUserRole(u.role);
     setEditUserBranch(u.branch);
     setEditUserDept(u.department);
+    setEditUserSalesZone(u.salesZone || "Zona - Lima");
     setEditUserStatus(u.status);
   };
 
@@ -213,6 +217,7 @@ export function AdminPanel({
         role: editUserRole,
         branch: editUserBranch,
         department: editUserDept,
+        salesZone: editUserSalesZone,
         status: editUserStatus
       });
       setEditingUser(null);
@@ -687,6 +692,19 @@ export function AdminPanel({
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-[#4D4DFF] dark:text-blue-500 uppercase font-bold block">Zona de Ventas (Comisiones)</label>
+                <select
+                  value={newUserSalesZone}
+                  onChange={(e) => setNewUserSalesZone(e.target.value as any)}
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-[#3D3528] focus:outline-none"
+                >
+                  <option value="Zona - Lima">Zona - Lima</option>
+                  <option value="Provincia - Con Metas">Provincia - Con Metas</option>
+                  <option value="Provincia - Desde 1era Venta">Provincia - Desde 1era Venta</option>
+                </select>
               </div>
 
               {userMsg && (
@@ -1388,6 +1406,19 @@ export function AdminPanel({
                       {d.name} {d.status === 'INACTIVE' ? '(Desactivado)' : ''}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] text-[#4D4DFF] dark:text-blue-500 uppercase font-bold block">Zona de Ventas / Esquema de Comisión</label>
+                <select
+                  value={editUserSalesZone}
+                  onChange={(e) => setEditUserSalesZone(e.target.value as any)}
+                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-[#3D3528] focus:outline-none"
+                >
+                  <option value="Zona - Lima">Zona - Lima</option>
+                  <option value="Provincia - Con Metas">Provincia - Con Metas</option>
+                  <option value="Provincia - Desde 1era Venta">Provincia - Desde 1era Venta</option>
                 </select>
               </div>
 

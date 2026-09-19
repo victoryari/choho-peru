@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermission } from '../types';
+import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermission, PurchaseOrder } from '../types';
 
 export const getUserPermissions = (user: User | null, rolesList: RolePermission[] = []) => {
   if (!user) {

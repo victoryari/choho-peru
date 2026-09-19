@@ -122,7 +122,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           {/* Módulos Comerciales */}
-          {(userPermissions.inventory || userPermissions.quotes || userPermissions.billing || userPermissions.telemetry || userPermissions.expenses || userPermissions.purchases || userPermissions.receivables) && (
+          {(userPermissions.inventory || userPermissions.quotes || (userPermissions as any).billing || userPermissions.telemetry || userPermissions.expenses || userPermissions.purchases || userPermissions.receivables) && (
             <div className="space-y-1.5 text-left pt-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3">Módulos Comerciales</div>
               <nav className="space-y-1">
@@ -263,7 +263,7 @@ export function Layout({ children }: LayoutProps) {
             <span className="text-[10px] mt-0.5 font-sans font-medium">Cotizar</span>
           </Link>
         )}
-        {userPermissions.billing && (
+        {(userPermissions as any).billing && (
           <Link to="/billing" className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all relative cursor-pointer ${isActive("/billing") ? "text-cyan-400 font-bold scale-105" : "text-slate-400 hover:text-slate-200"}`}>
             <Receipt className="w-5 h-5" />
             <span className="text-[10px] mt-0.5 font-sans font-medium">Facturas</span>
