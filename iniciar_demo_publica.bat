@@ -19,7 +19,7 @@ if not exist dist\server.cjs (
 )
 
 echo [2/3] Levantando Servidor Node.js...
-start "CHOHO PERU - Backend Node.js" cmd /k "title CHOHO Backend && npm start"
+start "CHOHO PERU - Backend Node.js" cmd /k "title CHOHO Backend && set NODE_ENV=production && npm start"
 
 timeout /t 3 /nobreak >nul
 
