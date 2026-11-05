@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Receipt, Plus, ShieldCheck, ShieldAlert, CheckCircle2, Clock, Image as ImageIcon, Search, Download, Eye, FileText, Check, X, RefreshCw, Filter, DollarSign } from "lucide-react";
+import { Receipt, Plus, ShieldCheck, ShieldAlert, CheckCircle2, Clock, Image as ImageIcon, Search, Download, Eye, FileText, Check, X, RefreshCw, Filter, DollarSign, Sparkles, UploadCloud } from "lucide-react";
 import { TravelExpense } from "../types";
+import { parseSunatInvoiceXml } from "../utils/sunatXmlParser";
 
 interface ExpensesManagerProps {
   expensesList: TravelExpense[];
@@ -29,6 +30,8 @@ export function ExpensesManager({
   const [amount, setAmount] = useState<number | "">("");
   const [notes, setNotes] = useState("");
   const [receiptImage, setReceiptImage] = useState<string | undefined>(undefined);
+  const [xmlFileName, setXmlFileName] = useState<string | null>(null);
+  const [isDraggingXml, setIsDraggingXml] = useState(false);
 
   // Verification & Loader states
   const [isValidatingSunat, setIsValidatingSunat] = useState(false);
@@ -37,6 +40,10 @@ export function ExpensesManager({
     sunatStatus: 'ACEPTADO' | 'RECHAZADO' | 'PENDIENTE';
     message: string;
     companyName?: string;
+    condition?: string;
+    state?: string;
+    isDuplicate?: boolean;
+    duplicateDetails?: string;
   } | null>(null);
 
   // Modal / Filter states
@@ -48,6 +55,61 @@ export function ExpensesManager({
   const [formSuccess, setFormSuccess] = useState("");
 
   const isFinanceOrAdmin = currentUserRole === "Admin General" || currentUserRole === "Jefe de Finanzas" || (currentUserRole || "").toLowerCase().includes("admin");
+
+  // Handle XML File from electronic invoice
+  const handleXmlFileUpload = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".xml")) {
+      alert("Por favor selecciona un archivo con formato .xml correspondiente a la factura electrónica.");
+      return;
+    }
+    try {
+      const xmlContent = await file.text();
+      const parsed = parseSunatInvoiceXml(xmlContent);
+
+      setDocType(parsed.docType as any);
+      setSeries(parsed.series);
+      setNumber(parsed.number);
+      setRucIssuer(parsed.rucIssuer);
+      setCompanyName(parsed.companyName);
+      setAmount(parsed.totalAmount);
+      setNotes(parsed.description);
+      setXmlFileName(file.name);
+
+      if (parsed.suggestedCategory === "Combustible" || parsed.suggestedCategory === "Movilidad") {
+        setCategory("Transporte");
+      } else if (parsed.suggestedCategory === "Alimentación") {
+        setCategory("Alimentación");
+      } else if (parsed.suggestedCategory === "Peaje") {
+        setCategory("Peaje");
+      } else if (parsed.suggestedCategory === "Mantenimiento") {
+        setCategory("Mantenimiento");
+      }
+
+      // Auto validate SUNAT
+      setIsValidatingSunat(true);
+      try {
+        const res = await fetch("/api/expenses/validate-sunat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ruc: parsed.rucIssuer,
+            series: parsed.series,
+            number: parsed.number,
+            amount: parsed.totalAmount,
+            docType: parsed.docType
+          })
+        });
+        const data = await res.json();
+        setSunatValidationResult(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsValidatingSunat(false);
+      }
+    } catch (err: any) {
+      alert(err?.message || "No se pudo leer el archivo XML.");
+    }
+  };
 
   // Handle Receipt photo selection
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +126,7 @@ export function ExpensesManager({
   // SUNAT Receipt Online Verification
   const handleValidateSunat = async () => {
     if (!rucIssuer.trim() || rucIssuer.length < 11) {
-      alert("Por favor ingrese un número de RUC emisor válido de 11 dígitos.");
+      alert("Por favor ingrese un número de RUC emisor válido 11 dígitos.");
       return;
     }
 
@@ -94,7 +156,7 @@ export function ExpensesManager({
       setSunatValidationResult({
         valid: false,
         sunatStatus: 'RECHAZADO',
-        message: "Error de conexión con el servicio de validación SUNAT. Por favor intente más tarde."
+        message: "Error de conexión con el servicio validación SUNAT. Por favor intente más tarde."
       });
     } finally {
       setIsValidatingSunat(false);
@@ -115,7 +177,7 @@ export function ExpensesManager({
         const balance = myBudget.assigned - spent;
         
         if (Number(amount) > balance) {
-          alert(`Presupuesto excedido. Su saldo disponible es S/ ${balance.toFixed(2)}.`);
+          alert(`Presupuesto excedido. Su saldo disponible es S/${balance.toFixed(2)}.`);
           return;
         }
       }
@@ -183,18 +245,18 @@ export function ExpensesManager({
   return (
     <div className="space-y-6 text-left">
       {/* Title Header */}
-      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
-            <Receipt className="w-5 h-5 text-[#4D4DFF]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-ink">
+            <Receipt className="w-5 h-5 text-brand-fg" />
             Módulo de Sustento y Rendición de Viáticos SUNAT
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-ink-subtle mt-1">
             Registro de comprobantes de pago de campo con comprobación de validez en tiempo real frente al portal SUNAT.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-2.5 rounded-xl font-bold">
+        <div className="flex items-center gap-2 text-xs font-mono text-success-fg bg-success-soft border border-success/30 dark:border-success/border p-2.5 rounded-xl font-bold">
           <ShieldCheck className="w-4 h-4" />
           <span>Validación SUNAT Integrada</span>
         </div>
@@ -203,56 +265,100 @@ export function ExpensesManager({
       {/* KPI Cards (Only for Finance and Management roles) */}
       {isFinanceOrAdmin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">TOTAL RENDIDO</span>
-            <span className="text-lg font-extrabold font-mono text-slate-900 dark:text-[#3D3528] mt-1 block">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
+            <span className="text-xs text-ink-subtle font-bold uppercase block">TOTAL RENDIDO</span>
+            <span className="text-lg font-extrabold font-mono text-ink mt-1 block">
               S/ {totalRendido.toFixed(2)}
             </span>
-            <span className="text-[10px] text-slate-400 mt-1 block font-mono">{expensesList.length} Comprobantes</span>
+            <span className="text-xs text-ink-subtle mt-1 block font-mono">{expensesList.length} Comprobantes</span>
           </div>
 
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
-            <span className="text-[10px] text-amber-500 font-bold uppercase block">PENDIENTE DE APROBACIÓN</span>
-            <span className="text-lg font-extrabold font-mono text-amber-600 dark:text-amber-400 mt-1 block">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
+            <span className="text-xs text-warning-fg font-bold uppercase block">PENDIENTE DE APROBACIÓN</span>
+            <span className="text-lg font-extrabold font-mono text-warning-fg mt-1 block">
               S/ {totalPendiente.toFixed(2)}
             </span>
-            <span className="text-[10px] text-amber-500/80 mt-1 block font-mono">En revisión por finanzas</span>
+            <span className="text-xs text-warning-fg/80 mt-1 block font-mono">En revisión por finanzas</span>
           </div>
 
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
-            <span className="text-[10px] text-emerald-500 font-bold uppercase block">APROBADO POR FINANZAS</span>
-            <span className="text-lg font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
+            <span className="text-xs text-success-fg font-bold uppercase block">APROBADO POR FINANZAS</span>
+            <span className="text-lg font-extrabold font-mono text-success-fg mt-1 block">
               S/ {totalAprobado.toFixed(2)}
             </span>
-            <span className="text-[10px] text-emerald-500/80 mt-1 block font-mono">Fondos validados</span>
+            <span className="text-xs text-success-fg/80 mt-1 block font-mono">Fondos validados</span>
           </div>
 
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
-            <span className="text-[10px] text-[#4D4DFF] dark:text-blue-500 font-bold uppercase block">VALIDEZ SUNAT</span>
-            <span className="text-lg font-extrabold font-mono text-[#4D4DFF] dark:text-blue-500 mt-1 block">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs">
+            <span className="text-xs text-brand-fg font-bold uppercase block">VALIDEZ SUNAT</span>
+            <span className="text-lg font-extrabold font-mono text-brand-fg mt-1 block">
               {expensesList.length > 0 ? Math.round((validadosCount / expensesList.length) * 100) : 100}%
             </span>
-            <span className="text-[10px] text-slate-400 mt-1 block font-mono">{validadosCount} de {expensesList.length} Validados</span>
+            <span className="text-xs text-ink-subtle mt-1 block font-mono">{validadosCount} de {expensesList.length} Validados</span>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Panel: Register new expense */}
-        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit space-y-4">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#4D4DFF]" />
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit space-y-4">
+          <h4 className="font-extrabold text-sm text-ink font-display pb-3 border-b border-line flex items-center gap-2">
+            <Plus className="w-4 h-4 text-brand-fg" />
             Registrar Comprobante de Viático
           </h4>
+
+          {/* Quick XML Upload Zone */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDraggingXml(true);
+            }}
+            onDragLeave={() => setIsDraggingXml(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDraggingXml(false);
+              const files = e.dataTransfer.files;
+              if (files && files[0]) {
+                handleXmlFileUpload(files[0]);
+              }
+            }}
+            className={`p-3 border border-dashed rounded-xl flex items-center justify-between gap-2 text-xs transition-colors cursor-pointer ${
+              isDraggingXml ? "border-brand bg-brand-soft/40" : "border-brand/40 bg-brand-soft/10 hover:bg-brand-soft/20"
+            }`}
+          >
+            <label htmlFor="sales-xml-input" className="cursor-pointer flex items-center gap-2 w-full">
+              <Sparkles className="w-4 h-4 text-brand-fg shrink-0" />
+              <div className="flex-1 text-left">
+                <div className="font-bold text-ink">
+                  {xmlFileName ? `XML: ${xmlFileName}` : "Rellenar con Factura XML (UBL 2.1)"}
+                </div>
+                <div className="text-micro text-ink-subtle">
+                  Arrastra tu factura electrónica para autocompletar
+                </div>
+              </div>
+              <input
+                type="file"
+                id="sales-xml-input"
+                accept=".xml"
+                className="hidden"
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files[0]) {
+                    handleXmlFileUpload(files[0]);
+                  }
+                }}
+              />
+            </label>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Categoría</label>
+                <label className="text-xs text-ink-muted font-semibold uppercase block">Categoría</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-semibold focus:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none"
                 >
                   <option value="Alimentación">🍔 Alimentación</option>
                   <option value="Hospedaje">🏨 Hospedaje</option>
@@ -264,11 +370,11 @@ export function ExpensesManager({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Tipo Comprobante</label>
+                <label className="text-xs text-ink-muted font-semibold uppercase block">Tipo Comprobante</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as any)}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-semibold focus:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none"
                 >
                   <option value="Factura">Factura Electrónica</option>
                   <option value="Boleta">Boleta de Venta</option>
@@ -279,7 +385,7 @@ export function ExpensesManager({
 
             {/* RUC Issuer & SUNAT Lookup */}
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">RUC Emisor Comprobante</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">RUC Emisor Comprobante</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -287,14 +393,14 @@ export function ExpensesManager({
                   placeholder="Ej. 20124567891"
                   value={rucIssuer}
                   onChange={(e) => setRucIssuer(e.target.value.replace(/\D/g, ""))}
-                  className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
+                  className="flex-1 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink font-mono focus-visible:outline-none"
                   required
                 />
                 <button
                   type="button"
                   onClick={handleValidateSunat}
                   disabled={isValidatingSunat || !rucIssuer}
-                  className="bg-slate-800 hover:bg-slate-900 text-white font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                  className="bg-ink-muted hover:bg-ink text-ink-inverse font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
                   title="Comprobar en el portal SUNAT"
                 >
                   {isValidatingSunat ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
@@ -305,13 +411,13 @@ export function ExpensesManager({
 
             {/* Razón Social */}
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Razón Social Emisor</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Razón Social Emisor</label>
               <input
                 type="text"
                 placeholder="Ej. Hotel Real Trujillo S.A.C."
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink focus-visible:outline-none"
                 required
               />
             </div>
@@ -319,38 +425,38 @@ export function ExpensesManager({
             {/* Serie & Número */}
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Serie</label>
+                <label className="text-xs text-ink-muted font-semibold uppercase block">Serie</label>
                 <input
                   type="text"
                   placeholder="F001"
                   value={series}
                   onChange={(e) => setSeries(e.target.value.toUpperCase())}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none uppercase"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none uppercase"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Número</label>
+                <label className="text-xs text-ink-muted font-semibold uppercase block">Número</label>
                 <input
                   type="text"
                   placeholder="0004521"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono focus:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-500 font-semibold uppercase block">Monto (S/)</label>
+                <label className="text-xs text-ink-muted font-semibold uppercase block">Monto (S/)</label>
                 <input
                   type="number"
                   step="0.1"
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-[#3D3528] font-mono font-bold focus:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono font-bold focus-visible:outline-none"
                   required
                 />
               </div>
@@ -360,8 +466,8 @@ export function ExpensesManager({
             {sunatValidationResult && (
               <div className={`p-3 rounded-xl border text-xs font-mono space-y-1 ${
                 sunatValidationResult.valid
-                  ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                  : "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/40 dark:text-blue-500 border-red-200 dark:border-red-800"
+                  ? "bg-success-soft/30 text-success-fg dark:bg-success-soft border-success/30"
+ : "bg-danger-soft/40 text-danger-fg dark:bg-danger-soft border-danger/30"
               }`}>
                 <div className="flex items-center gap-1.5 font-bold">
                   {sunatValidationResult.valid ? <ShieldCheck className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
@@ -372,11 +478,11 @@ export function ExpensesManager({
 
             {/* Receipt Photo Upload */}
             <div className="space-y-1.5">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Foto o Imagen del Comprobante</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Foto o Imagen del Comprobante</label>
               <div className="flex items-center gap-3">
-                <label className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-dashed border-slate-300 dark:border-[#E5DEC9] hover:border-[#4D4DFF] rounded-xl p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1">
-                  <ImageIcon className="w-5 h-5 text-slate-400" />
-                  <span className="text-[11px] text-slate-600 dark:text-[#7F735F] font-semibold">
+                <label className="flex-1 bg-surface-2 dark:bg-surface-2/60 border border-dashed border-line-strong dark:border-line hover:border-brand rounded-xl p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1">
+                  <ImageIcon className="w-5 h-5 text-ink-subtle" />
+                  <span className="text-xs text-ink-muted font-semibold">
                     {receiptImage ? "✓ Imagen Cargada (Cambiar)" : "Subir Foto / Escaneo"}
                   </span>
                   <input
@@ -387,7 +493,7 @@ export function ExpensesManager({
                   />
                 </label>
                 {receiptImage && (
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-[#E5DEC9] shrink-0 group">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-line shrink-0 group">
                     <img src={receiptImage} alt="Comprobante" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -403,18 +509,18 @@ export function ExpensesManager({
 
             {/* Notes */}
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Sustento / Observación</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Sustento / Observación</label>
               <textarea
                 rows={2}
                 placeholder="Ej. Almuerzo corporativo con cliente de la zona..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none resize-none"
+                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink focus-visible:outline-none resize-none"
               />
             </div>
 
             {formSuccess && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs text-center font-bold">
+              <div className="p-3 bg-success-soft border border-success/30 text-success-fg rounded-xl text-xs text-center font-bold">
                 {formSuccess}
               </div>
             )}
@@ -422,7 +528,7 @@ export function ExpensesManager({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30 disabled:opacity-50"
+              className="btn-primary w-full gap-1.5 disabled:opacity-50"
             >
               <Receipt className="w-4 h-4" />
               <span>Registrar y Sustentar Viático</span>
@@ -432,24 +538,24 @@ export function ExpensesManager({
 
         {/* Expenses List & Approval Table */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
             {/* List Header & Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#4D4DFF]" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+              <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+                <FileText className="w-4 h-4 text-brand-fg" />
                 Historial Comprobantes Sustentados ({filteredExpenses.length})
               </h4>
 
               <div className="flex flex-wrap items-center gap-2">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-subtle" />
                   <input
                     type="text"
                     placeholder="Buscar RUC, emisor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl pl-8 pr-3 py-1.5 text-xs focus:outline-none"
+                    className="bg-surface-2 border-none rounded-xl pl-8 pr-3 py-1.5 text-xs focus-visible:outline-none"
                   />
                 </div>
 
@@ -457,7 +563,7 @@ export function ExpensesManager({
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
+                  className="bg-surface-2 border-none rounded-xl px-2.5 py-1.5 text-xs font-semibold focus-visible:outline-none cursor-pointer"
                 >
                   <option value="all">Todos los Estados</option>
                   <option value="Pendiente">Pendiente</option>
@@ -469,7 +575,7 @@ export function ExpensesManager({
 
             {/* Expense Cards */}
             {filteredExpenses.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs font-medium">
+              <div className="py-12 text-center text-ink-subtle text-xs font-medium">
                 No hay comprobantes de viáticos registrados que coincidan con los filtros.
               </div>
             ) : (
@@ -477,84 +583,84 @@ export function ExpensesManager({
                 {filteredExpenses.map((exp) => (
                   <div
                     key={exp.id}
-                    className="p-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-500/40 transition-all text-left"
+                    className="p-4 bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-brand/border transition-all text-left"
                   >
                     <div className="space-y-1 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold font-mono text-[#4D4DFF] dark:text-blue-500">{exp.id}</span>
-                        <span className="text-[10px] bg-slate-200/60 dark:bg-[#F2ECDE] text-slate-700 dark:text-[#7F735F] font-semibold px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-bold font-mono text-brand-fg">{exp.id}</span>
+                        <span className="text-xs bg-line/60 dark:bg-surface-2 text-ink dark:text-ink-muted font-semibold px-2 py-0.5 rounded-md">
                           {exp.category}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">{exp.date}</span>
+                        <span className="text-xs font-mono text-ink-subtle">{exp.date}</span>
 
                         {/* SUNAT Badge */}
-                        <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                        <span className={`text-micro font-mono font-bold px-2 py-0.5 rounded-full border ${
                           exp.sunatStatus === "ACEPTADO"
-                            ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                            : "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/60 dark:text-blue-500 border-red-200 dark:border-red-800"
+                            ? "bg-success-soft/30 text-success-fg dark:bg-success/60 border-success/30"
+ : "bg-danger-soft/40 text-danger-fg dark:bg-danger-soft border-danger/30"
                         }`}>
                           SUNAT: {exp.sunatStatus}
                         </span>
                       </div>
 
-                      <h5 className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{exp.companyName}</h5>
+                      <h5 className="text-xs font-bold text-ink truncate">{exp.companyName}</h5>
                       
-                      <div className="text-[11px] text-slate-500 dark:text-[#7F735F] font-mono flex flex-wrap gap-2">
+                      <div className="text-xs text-ink-muted font-mono flex flex-wrap gap-2">
                         <span>RUC: {exp.rucIssuer}</span>
                         <span>•</span>
                         <span>{exp.docType}: {exp.series}-{exp.number}</span>
                         <span>•</span>
-                        <span>Asesor: <strong className="text-slate-700 dark:text-[#7F735F]">{exp.advisor}</strong></span>
+                        <span>Asesor: <strong className="text-ink dark:text-ink-muted">{exp.advisor}</strong></span>
                       </div>
 
                       {exp.notes && (
-                        <p className="text-[10px] text-slate-400 italic">"{exp.notes}"</p>
+                        <p className="text-xs text-ink-subtle italic">"{exp.notes}"</p>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100 dark:border-[#E5DEC9] shrink-0">
+                    <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 border-line shrink-0">
                       <div className="text-right">
-                        <span className="text-[9px] text-slate-400 block font-medium uppercase">MONTO</span>
-                        <span className="text-sm font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
+                        <span className="text-micro text-ink-subtle block font-medium uppercase">MONTO</span>
+                        <span className="text-sm font-extrabold font-mono text-ink">
                           S/ {exp.amount.toFixed(2)}
                         </span>
                       </div>
 
                       {/* Photo Button */}
                       {exp.receiptImage && (
-                        <button
+                        <button type="button"
                           onClick={() => setViewingImage(exp.receiptImage!)}
-                          className="p-2 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-[#7F735F] rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
+                          className="p-2 bg-surface-2 hover:bg-field-hover text-ink-muted rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 font-semibold"
                           title="Ver Foto del Comprobante"
                         >
-                          <Eye className="w-3.5 h-3.5 text-[#4D4DFF]" />
+                          <Eye className="w-3.5 h-3.5 text-brand-fg" />
                           <span>Foto</span>
                         </button>
                       )}
 
                       {/* Approval Status Badge & Actions */}
                       <div className="flex flex-col items-end gap-1">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                           exp.approvalStatus === "Aprobado"
-                            ? "bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200"
+                            ? "bg-success-soft/30 text-success-fg dark:bg-success/60 border border-success/30"
                             : exp.approvalStatus === "Observado"
-                            ? "bg-[#FFB6C1]/40 text-rose-700 dark:bg-red-950/60 dark:text-blue-500 border border-red-200"
-                            : "bg-[#FFD7A0]/40 text-[#D97706] dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200"
+ ? "bg-danger-soft/40 text-danger-fg dark:bg-danger-soft border border-danger/30"
+                            : "bg-warning-soft/40 text-warning-fg dark:bg-warning/60 border border-warning/30"
                         }`}>
                           {exp.approvalStatus}
                         </span>
 
                         {isFinanceOrAdmin && exp.approvalStatus === "Pendiente" && (
                           <div className="flex gap-1 pt-1">
-                            <button
+                            <button type="button"
                               onClick={() => onUpdateExpenseStatus(exp.id, "Aprobado")}
-                              className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-all"
+                              className="px-2 py-0.5 bg-success hover:bg-success text-white rounded-lg text-xs font-bold cursor-pointer transition-all"
                             >
                               Aprobar
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => onUpdateExpenseStatus(exp.id, "Observado")}
-                              className="px-2 py-0.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-all"
+                              className="px-2 py-0.5 bg-danger hover:bg-danger text-white rounded-lg text-xs font-bold cursor-pointer transition-all"
                             >
                               Observar
                             </button>
@@ -572,29 +678,29 @@ export function ExpensesManager({
 
       {/* FULLSCREEN RECEIPT IMAGE MODAL */}
       {viewingImage && (
-        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] flex items-center gap-2 font-display">
-                <ImageIcon className="w-4 h-4 text-[#4D4DFF]" />
+        <div className="fixed inset-0 z-50 bg-ink/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h4 className="font-extrabold text-sm text-ink flex items-center gap-2 font-display">
+                <ImageIcon className="w-4 h-4 text-brand-fg" />
                 Foto Adjunta del Comprobante
               </h4>
-              <button
+              <button type="button"
                 onClick={() => setViewingImage(null)}
-                className="p-1.5 text-slate-400 hover:text-white bg-slate-100 dark:bg-[#F2ECDE] rounded-xl"
+                className="p-1.5 text-ink-subtle hover:text-ink bg-surface-2 rounded-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-[#E5DEC9] flex items-center justify-center bg-black">
+            <div className="max-h-[70vh] overflow-hidden rounded-2xl border border-line flex items-center justify-center bg-black">
               <img src={viewingImage} alt="Comprobante de Pago" className="max-h-[65vh] w-auto object-contain" />
             </div>
 
             <div className="flex justify-end">
-              <button
+              <button type="button"
                 onClick={() => setViewingImage(null)}
-                className="bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 text-slate-700 dark:text-[#7F735F] font-bold py-2 px-5 rounded-xl text-xs cursor-pointer"
+                className="bg-surface-2 hover:bg-field-hover text-ink dark:text-ink-muted font-bold py-2 px-5 rounded-xl text-xs cursor-pointer"
               >
                 Cerrar Visor
               </button>

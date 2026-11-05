@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { BarChart3, TrendingUp, DollarSign, Award, Users, Download, ArrowUpRight, Calendar, PieChart, Receipt, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
-import { Product, Quote, TravelExpense } from "../types";
+import { Product, Quote, TravelExpense, User, Telemetry, Commission } from "../types";
+import { SellerDashboard } from "./SellerDashboard";
 import { jsPDF } from "jspdf";
 import { downloadCSV } from "../utils/exportCsv";
 
@@ -8,9 +9,52 @@ interface AnalyticsDashboardProps {
   products: Product[];
   quotes: Quote[];
   expenses?: TravelExpense[];
+  currentUser?: User | null;
+  telemetryList?: Telemetry[];
+  commissions?: Commission[];
+  receivables?: any[];
+  users?: User[];
 }
 
-export function AnalyticsDashboard({ products, quotes, expenses = [] }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({
+  products,
+  quotes,
+  expenses = [],
+  currentUser = null,
+  telemetryList = [],
+  commissions = [],
+  receivables = [],
+  users = []
+}: AnalyticsDashboardProps) {
+  const userRole = (currentUser?.role || "").toLowerCase();
+  const isSeller =
+    userRole.includes("asesor") ||
+    userRole.includes("venta") ||
+    userRole.includes("comercial") ||
+    userRole.includes("promotor");
+  const isAdminOrManager =
+    userRole.includes("admin") ||
+    userRole.includes("geren") ||
+    userRole.includes("jefe") ||
+    userRole.includes("finan");
+
+  const [activeView, setActiveView] = useState<"executive" | "seller">(
+    isSeller && !isAdminOrManager ? "seller" : "executive"
+  );
+
+  if (isSeller && !isAdminOrManager) {
+    return (
+      <SellerDashboard
+        currentUser={currentUser}
+        quotes={quotes}
+        telemetryList={telemetryList}
+        commissions={commissions}
+        receivables={receivables}
+        products={products}
+        users={users}
+      />
+    );
+  }
   // Analytical computations for Sales
   const totalInvoicedSales = quotes
     .filter((q) => q.status === "Aceptada")
@@ -51,26 +95,18 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 4);
 
-  // Sales category counts
-  const categorySales: { [cat: string]: number } = {
-    Cadenas: 0,
-    Piñones: 0,
-    "Kits de Arrastre": 0,
-    Frenos: 0,
-    Motor: 0,
-    Accesorios: 0
-  };
+  // Ventas por familia. Los cubos se derivan de la taxonomía real de cada
+  // producto, no de una lista fija: antes el 72% caía en "Accesorios" porque
+  // cualquier categoría desconocida se sumaba ahí.
+  const categorySales: { [cat: string]: number } = {};
 
   quotes
     .filter((q) => q.status === "Aceptada")
     .forEach((q) => {
       q.items?.forEach((item) => {
         const matchingProd = products.find((p) => p.sku === item.sku);
-        if (matchingProd && categorySales[matchingProd.category] !== undefined) {
-          categorySales[matchingProd.category] += item.qty * item.price;
-        } else {
-          categorySales["Accesorios"] += item.qty * item.price;
-        }
+        const familia = matchingProd?.familia?.nombre || "Sin clasificar";
+        categorySales[familia] = (categorySales[familia] || 0) + item.qty * item.price;
       });
     });
   // REAL FUNCTIONAL PDF MONTHLY REPORT EXPORTER
@@ -93,7 +129,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     
     doc.setFontSize(11);
     doc.setFont("Helvetica", "normal");
-    doc.text("SISTEMA DE GESTIÓN DE COMPROBANTES Y CONTROL DE ASESORES", 15, 33);
+    doc.text("SISTEMA DE GESTIÓN COMPROBANTES Y CONTROL ASESORES", 15, 33);
     doc.setFont("Helvetica", "bold");
     doc.text("CHOHO PERÚ S.A.C. - MEJOR QUE EL ORIGINAL", 15, 43);
 
@@ -116,10 +152,10 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont("Helvetica", "normal");
-    doc.text(`Total Facturado Recaudado: S/ ${totalInvoicedSales.toLocaleString('es-PE', { minimumFractionDigits: 2 })} PEN`, 18, 80);
-    doc.text(`Total en Cartera de Cotizaciones (Pendientes): S/ ${pendingSales.toLocaleString('es-PE', { minimumFractionDigits: 2 })} PEN`, 18, 86);
-    doc.text(`Número de Cotizaciones Aprobadas/Facturadas: ${acceptedQuotesCount} comprobantes`, 18, 92);
-    doc.text(`Ticket Medio de Compra Comercial: S/ ${averageTicket.toLocaleString('es-PE', { minimumFractionDigits: 2 })} PEN`, 18, 98);
+    doc.text(`Total Facturado Recaudado: S/${totalInvoicedSales.toLocaleString('es-PE', { minimumFractionDigits: 2 })}PEN`, 18, 80);
+    doc.text(`Total en Cartera de Cotizaciones (Pendientes): S/${pendingSales.toLocaleString('es-PE', { minimumFractionDigits: 2 })}PEN`, 18, 86);
+    doc.text(`Número de Cotizaciones Aprobadas/Facturadas:${acceptedQuotesCount}comprobantes`, 18, 92);
+    doc.text(`Ticket Medio de Compra Comercial: S/${averageTicket.toLocaleString('es-PE', { minimumFractionDigits: 2 })}PEN`, 18, 98);
 
     // Section 2: Best sellers table
     doc.setFontSize(13);
@@ -143,8 +179,8 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         doc.setFont("Helvetica", "normal");
         doc.text(item.sku, 18, currentY);
         doc.text(item.name.substring(0, 32), 55, currentY);
-        doc.text(`${item.qty} und`, 140, currentY);
-        doc.text(`S/ ${item.total.toFixed(2)}`, 170, currentY);
+        doc.text(`${item.qty}und`, 140, currentY);
+        doc.text(`S/${item.total.toFixed(2)}`, 170, currentY);
         currentY += 8;
       });
     } else {
@@ -167,7 +203,7 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     Object.keys(categorySales).forEach((cat) => {
       const salesVal = categorySales[cat];
       const pct = totalInvoicedSales > 0 ? (salesVal / totalInvoicedSales) * 100 : 0;
-      doc.text(`• ${cat}: S/ ${salesVal.toFixed(2)} (${pct.toFixed(1)}%)`, 18, categoryY);
+      doc.text(`•${cat}: S/${salesVal.toFixed(2)}(${pct.toFixed(1)}%)`, 18, categoryY);
       categoryY += 6;
     });
 
@@ -177,9 +213,9 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
     doc.setFontSize(8.5);
     doc.setFont("Helvetica", "normal");
     doc.setTextColor(120, 120, 120);
-    doc.text("Documento oficial encriptado con clave de seguridad y firma digital de auditoría.", 18, 246);
+    doc.text("Documento oficial encriptado con clave de seguridad y firma digital auditoría.", 18, 246);
     doc.text("CHOHO PERÚ S.A.C. - Sistema de Facturación Integrado.", 18, 252);
-    doc.text("Respaldo de Base de Datos: TiDB Server, Lima.", 18, 258);
+    doc.text("Respaldo de Base Datos: TiDB Server, Lima.", 18, 258);
 
     doc.save("informe_mensual_ventas_choho.pdf");
   };
@@ -202,115 +238,168 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
 
   return (
     <div className="space-y-6">
-      {/* Dashboard Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5">
+      {/* Dashboard Header with View Switcher */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface border border-line shadow-xs rounded-3xl p-5">
         <div>
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-[#3D3528] font-display">Dashboard Analítico</h2>
-          <p className="text-xs text-slate-500">Métricas y rendimiento de ventas</p>
+          <h2 className="text-lg font-extrabold text-ink font-display">
+            {activeView === "seller" ? "Panel Comercial de Asesores" : "Dashboard Analítico Ejecutivo"}
+          </h2>
+          <p className="text-xs text-ink-muted">
+            {activeView === "seller" ? "Supervisión de métricas individuales, cartera y clientes en riesgo" : "Métricas globales y rendimiento consolidado de ventas"}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleExportCSV} className="px-4 py-2 bg-slate-100 dark:bg-[#F2ECDE] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-[#7F735F] rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-            <Download className="w-3.5 h-3.5" /> Exportar CSV
-          </button>
-          <button onClick={handleExportPDFReport} className="px-4 py-2 bg-[#4D4DFF] hover:bg-blue-600 text-white shadow-md shadow-[#4D4DFF]/30 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-            <Download className="w-3.5 h-3.5" /> PDF Resumen
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* View Switcher for Admins/Managers */}
+          {isAdminOrManager && (
+            <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-xl border border-line">
+              <button
+                type="button"
+                onClick={() => setActiveView("executive")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeView === "executive"
+                    ? "bg-surface text-ink shadow-2xs font-extrabold"
+                    : "text-ink-subtle hover:text-ink"
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-brand-fg" />
+                <span>Visión Global</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveView("seller")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeView === "seller"
+                    ? "bg-surface text-ink shadow-2xs font-extrabold text-brand-fg"
+                    : "text-ink-subtle hover:text-ink"
+                }`}
+              >
+                <Users className="w-3.5 h-3.5 text-brand-fg" />
+                <span>Por Asesor</span>
+              </button>
+            </div>
+          )}
+
+          {activeView === "executive" && (
+            <>
+              <button type="button" onClick={handleExportCSV} className="btn-secondary px-3.5 py-2 text-xs flex items-center gap-2">
+                <Download className="w-3.5 h-3.5" /> Exportar CSV
+              </button>
+              <button type="button" onClick={handleExportPDFReport} className="btn-primary px-3.5 py-2 text-xs flex items-center gap-2">
+                <Download className="w-3.5 h-3.5" /> PDF Resumen
+              </button>
+            </>
+          )}
         </div>
       </div>
 
+      {activeView === "seller" && (
+        <SellerDashboard
+          currentUser={currentUser}
+          quotes={quotes}
+          telemetryList={telemetryList}
+          commissions={commissions}
+          receivables={receivables}
+          products={products}
+          users={users}
+        />
+      )}
+
+      {activeView === "executive" && (
+        <div className="space-y-6">
+
       {/* Top 4 KPI Metric Cards (DealDeck Style with CHOHO Red branding) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Hero Total Sales (Gradient CHOHO Red Card) */}
-        <div className="bg-[#4D4DFF] text-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(77,77,255,0.3)] relative overflow-hidden flex flex-col justify-between space-y-4">
+        {/* Card 1: Hero Total Sales */}
+        <div className="bg-brand text-brand-contrast rounded-2xl p-5 shadow-sm shadow-brand/20 relative overflow-hidden flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
               <DollarSign className="w-5 h-5" />
             </div>
-            <span className="bg-emerald-400/20 border border-emerald-300/30 text-emerald-200 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-white/20 text-white font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               +2.08%
             </span>
           </div>
           <div className="space-y-1 text-left">
-            <span className="text-[11px] text-red-100 font-semibold uppercase tracking-wider block">
+            <span className="text-xs text-white/90 font-semibold uppercase tracking-wider block">
               Ventas Facturadas
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-extrabold font-mono text-white">
                 S/ {totalInvoicedSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-red-100 font-medium">vs mes anterior</span>
+              <span className="text-xs text-white/75 font-medium">vs mes anterior</span>
             </div>
           </div>
         </div>
 
         {/* Card 2: Cartera en Cotización (Total Orders) */}
-        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-[#87CEEB]/30 dark:bg-[#87CEEB]/30 text-[#4D4DFF] rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-info-soft/30 text-brand-fg rounded-xl flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
-            <span className="bg-[#98FB98]/30 dark:bg-[#98FB98]/30 text-emerald-700 dark:text-emerald-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-success-soft/30 text-success-fg font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               +12.4%
             </span>
           </div>
           <div className="space-y-1 text-left">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+            <span className="text-xs text-ink-subtle font-semibold uppercase tracking-wider block">
               Cartera en Cotización
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
+              <span className="text-2xl font-extrabold font-mono text-ink">
                 S/ {pendingSales.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">Pendientes</span>
+              <span className="text-xs text-ink-subtle font-medium">Pendientes</span>
             </div>
           </div>
         </div>
 
         {/* Card 3: Facturas Emitidas (Visitors) */}
-        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-[#FFD7A0]/50 dark:bg-[#FFD7A0]/40 text-[#D97706] rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-warning-soft/50 dark:bg-warning-soft/40 text-warning-fg rounded-xl flex items-center justify-center">
               <Award className="w-5 h-5" />
             </div>
-            <span className="bg-[#FFB6C1]/40 dark:bg-[#FFB6C1]/30 text-rose-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-danger-soft/40 dark:bg-danger-soft/30 text-danger-fg font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
               -2.08%
             </span>
           </div>
           <div className="space-y-1 text-left">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+            <span className="text-xs text-ink-subtle font-semibold uppercase tracking-wider block">
               Comprobantes Emitidos
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
+              <span className="text-2xl font-extrabold font-mono text-ink">
                 {acceptedQuotesCount}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">Facturas aprobadas</span>
+              <span className="text-xs text-ink-subtle font-medium">Facturas aprobadas</span>
             </div>
           </div>
         </div>
 
         {/* Card 4: Ticket Medio (Total Sold Products) */}
-        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <div className="w-9 h-9 bg-[#DCD0FF]/60 dark:bg-[#DCD0FF]/50 text-[#4D4DFF] rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-brand-soft/60 dark:bg-brand-soft/50 text-brand-fg rounded-xl flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
-            <span className="bg-[#98FB98]/30 dark:bg-[#98FB98]/30 text-emerald-700 dark:text-emerald-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+            <span className="bg-success-soft/30 text-success-fg font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               +12.1%
             </span>
           </div>
           <div className="space-y-1 text-left">
-            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+            <span className="text-xs text-ink-subtle font-semibold uppercase tracking-wider block">
               Ticket Medio de Venta
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528]">
+              <span className="text-2xl font-extrabold font-mono text-ink">
                 S/ {averageTicket.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">Por cliente</span>
+              <span className="text-xs text-ink-subtle font-medium">Por cliente</span>
             </div>
           </div>
         </div>
@@ -321,22 +410,22 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         {/* Left Column (2 Cols): Customer Habbits Bar Chart & Top SKUs */}
         <div className="lg:col-span-2 space-y-6">
           {/* Dual Bar Chart (Customer Habbits - DealDeck Style) */}
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-left">
               <div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-[#3D3528] font-display">
+                <h3 className="font-extrabold text-base text-ink font-display">
                   Comportamiento de Ventas & Productos
                 </h3>
-                <p className="text-xs text-slate-400">Rendimiento mensual comparativo de repuestos facturados</p>
+                <p className="text-xs text-ink-subtle">Rendimiento mensual comparativo de repuestos facturados</p>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#4D4DFF]" />
+                <div className="flex items-center gap-1.5 text-xs text-ink-muted font-medium">
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand" />
                   <span>Ventas (Soles)</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                <div className="flex items-center gap-1.5 text-xs text-ink-muted font-medium">
+                  <span className="w-2.5 h-2.5 rounded-full bg-line-strong dark:bg-ink" />
                   <span>Unidades</span>
                 </div>
               </div>
@@ -345,12 +434,12 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
             {/* Bar Chart Graphics */}
             <div className="relative pt-6 pb-2">
               {/* Tooltip Overlay Mock */}
-              <div className="absolute top-2 left-[48%] -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-xl px-3 py-1.5 text-[11px] font-semibold flex items-center gap-2 z-10 border border-slate-800">
-                <span className="w-2 h-2 rounded-full bg-[#4D4DFF]" />
+              <div className="absolute top-2 left-[48%] -translate-x-1/2 bg-ink text-ink-inverse rounded-xl shadow-xl px-3 py-1.5 text-xs font-semibold flex items-center gap-2 z-10 border border-line-strong">
+                <span className="w-2 h-2 rounded-full bg-brand" />
                 <span>S/ 43,787 Productos</span>
               </div>
 
-              <div className="h-52 flex items-end justify-between px-2 pt-6 border-b border-slate-100 dark:border-[#E5DEC9]">
+              <div className="h-52 flex items-end justify-between px-2 pt-6 border-b border-line">
                 {[
                   { name: "Ene", val1: 45, val2: 70 },
                   { name: "Feb", val1: 65, val2: 85 },
@@ -363,15 +452,15 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   <div key={i} className="flex flex-col items-center gap-2 flex-1 group">
                     <div className="flex items-end gap-1.5 h-40">
                       <div
-                        className="w-3.5 sm:w-4 rounded-t-lg bg-[#4D4DFF] group-hover:bg-blue-600 transition-all duration-300 shadow-xs"
+                        className="w-3.5 sm:w-4 rounded-t-lg bg-brand group-hover:bg-brand transition-all duration-300 shadow-xs"
                         style={{ height: `${m.val1}%` }}
                       />
                       <div
-                        className="w-3.5 sm:w-4 rounded-t-lg bg-slate-200 dark:bg-slate-700 group-hover:bg-slate-300 transition-all duration-300"
+                        className="w-3.5 sm:w-4 rounded-t-lg bg-line dark:bg-ink group-hover:bg-line-strong transition-all duration-300"
                         style={{ height: `${m.val2}%` }}
                       />
                     </div>
-                    <span className="text-[11px] font-semibold text-slate-500 font-sans">
+                    <span className="text-xs font-semibold text-ink-muted font-sans">
                       {m.name}
                     </span>
                   </div>
@@ -381,18 +470,18 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
           </div>
 
           {/* Top Selling Products List */}
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 text-left space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#4D4DFF]" />
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 text-left space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+                <Award className="w-4 h-4 text-brand-fg" />
                 Productos Más Vendidos (Top SKUs CHOHO)
               </h4>
-              <span className="text-[11px] text-slate-400 font-medium">Actualizado en tiempo real</span>
+              <span className="text-xs text-ink-subtle font-medium">Actualizado en tiempo real</span>
             </div>
 
             <div className="space-y-4">
               {bestSellers.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs font-medium">
+                <div className="py-8 text-center text-ink-subtle text-xs font-medium">
                   No se registran transacciones facturadas este periodo.
                 </div>
               ) : (
@@ -401,25 +490,25 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   const percentage = (item.total / maxTotal) * 100;
                   return (
                     <div key={item.sku} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs text-slate-700 dark:text-[#3D3528]">
+                      <div className="flex items-center justify-between text-xs text-ink">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-6 h-6 bg-[#F7F8FC] dark:bg-[#F2ECDE] text-[#4D4DFF] font-extrabold rounded-lg flex items-center justify-center text-[10px]">
+                          <span className="w-6 h-6 bg-surface-2 text-brand-fg font-extrabold rounded-lg flex items-center justify-center text-xs">
                             0{idx + 1}
                           </span>
-                          <span className="font-mono text-[#4D4DFF] dark:text-blue-500 font-bold">{item.sku}</span>
-                          <span className="text-slate-600 dark:text-[#7F735F] truncate font-medium">{item.name}</span>
+                          <span className="font-mono text-brand-fg font-bold">{item.sku}</span>
+                          <span className="text-ink-muted truncate font-medium">{item.name}</span>
                         </div>
-                        <span className="font-mono font-bold text-slate-900 dark:text-[#3D3528]">
+                        <span className="font-mono font-bold text-ink">
                           S/ {item.total.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-[#F2ECDE] h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-surface-2 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-[#4D4DFF] h-full rounded-full transition-all duration-500 shadow-xs"
+                          className="bg-brand h-full rounded-full transition-all duration-500 shadow-xs"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                      <div className="flex justify-between text-xs text-ink-subtle font-medium">
                         <span>{item.qty} Unidades despachadas</span>
                         <span>{percentage.toFixed(0)}% del total</span>
                       </div>
@@ -434,38 +523,37 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
         {/* Right Column (1 Col): Product Statistic Ring & Customer Growth */}
         <div className="space-y-6 text-left">
           {/* Concentric Ring Radial Chart (Product Statistic - DealDeck Style) */}
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display">
+                <h4 className="font-extrabold text-sm text-ink font-display">
                   Estadísticas de Productos
                 </h4>
-                <p className="text-[11px] text-slate-400">Distribución de volumen por categoría</p>
+                <p className="text-xs text-ink-subtle">Distribución de volumen por categoría</p>
               </div>
-              <span className="text-[11px] bg-slate-100 dark:bg-[#F2ECDE] text-slate-600 dark:text-[#7F735F] px-2.5 py-1 rounded-xl font-semibold">
+              <span className="text-xs bg-surface-2 text-ink-muted px-2.5 py-1 rounded-xl font-semibold">
                 Hoy
               </span>
             </div>
 
             {/* SVG Concentric Gauge */}
             <div className="relative flex items-center justify-center py-4">
-              <svg className="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
-                {/* Outer Ring - CHOHO Red */}
+              <svg className="w-44 h-44 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+                {/* Outer Ring */}
                 <circle
                   cx="60"
                   cy="60"
                   r="50"
                   fill="none"
-                  stroke="#E2E8F0"
+                  stroke="var(--line-strong)"
                   strokeWidth="8"
-                  className="dark:stroke-slate-800"
                 />
                 <circle
                   cx="60"
                   cy="60"
                   r="50"
                   fill="none"
-                  stroke="#4D4DFF"
+                  stroke="var(--brand)"
                   strokeWidth="8"
                   strokeDasharray="314"
                   strokeDashoffset="75"
@@ -477,16 +565,16 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   cy="60"
                   r="38"
                   fill="none"
-                  stroke="#E2E8F0"
+                  stroke="var(--line)"
                   strokeWidth="8"
-                  className="dark:stroke-slate-800"
+                  className="dark:stroke-line-strong"
                 />
                 <circle
                   cx="60"
                   cy="60"
                   r="38"
                   fill="none"
-                  stroke="#F59E0B"
+                  stroke="var(--warning)"
                   strokeWidth="8"
                   strokeDasharray="238"
                   strokeDashoffset="90"
@@ -498,78 +586,78 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
                   cy="60"
                   r="26"
                   fill="none"
-                  stroke="#CBD5E1"
+                  stroke="var(--line-strong)"
                   strokeWidth="8"
                   strokeDasharray="163"
                   strokeDashoffset="60"
                   strokeLinecap="round"
-                  className="dark:stroke-slate-700"
+                  className="dark:stroke-line-strong"
                 />
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-xl font-extrabold text-slate-900 dark:text-[#3D3528] font-mono">
+                <span className="text-xl font-extrabold text-ink font-mono">
                   9,829
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">Ventas Totales</span>
-                <span className="mt-0.5 bg-[#98FB98]/30 text-emerald-700 text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                <span className="text-xs text-ink-subtle font-medium">Ventas Totales</span>
+                <span className="mt-0.5 bg-success-soft/30 text-success-fg text-micro font-bold px-1.5 py-0.2 rounded-full">
                   +5.34%
                 </span>
               </div>
             </div>
 
             {/* Category Breakdown list */}
-            <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-[#E5DEC9] text-xs font-semibold">
+            <div className="space-y-3 pt-2 border-t border-line text-xs font-semibold">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#4D4DFF]" />
+                <div className="flex items-center gap-2 text-ink dark:text-ink-muted">
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand" />
                   <span>Cadenas de Transmisión</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">2,487</span>
-                  <span className="text-[10px] bg-[#98FB98]/30 text-emerald-700 px-1.5 py-0.2 rounded-full">+1.8%</span>
+                  <span className="text-ink font-mono font-bold">2,487</span>
+                  <span className="text-xs bg-success-soft/30 text-success-fg px-1.5 py-0.2 rounded-full">+1.8%</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <div className="flex items-center gap-2 text-ink dark:text-ink-muted">
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning" />
                   <span>Kits de Arrastre</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">1,828</span>
-                  <span className="text-[10px] bg-[#98FB98]/30 text-emerald-700 px-1.5 py-0.2 rounded-full">+2.3%</span>
+                  <span className="text-ink font-mono font-bold">1,828</span>
+                  <span className="text-xs bg-success-soft/30 text-success-fg px-1.5 py-0.2 rounded-full">+2.3%</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-[#7F735F]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                <div className="flex items-center gap-2 text-ink dark:text-ink-muted">
+                  <span className="w-2.5 h-2.5 rounded-full bg-ink-muted" />
                   <span>Piñones & Catalina</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">1,463</span>
-                  <span className="text-[10px] bg-red-50 dark:bg-red-100 text-rose-500 px-1.5 py-0.2 rounded-full">-1.04%</span>
+                  <span className="text-ink font-mono font-bold">1,463</span>
+                  <span className="text-xs bg-danger-soft text-danger-fg px-1.5 py-0.2 rounded-full">-1.04%</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Export Report Card & Customer Growth */}
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
             <div className="space-y-1">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#4D4DFF]" />
+              <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-brand-fg" />
                 Informe Consolidado PDF
               </h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-ink-subtle leading-relaxed">
                 Genera el documento analítico completo con firma de auditoría comercial.
               </p>
             </div>
 
-            <button
+            <button type="button"
               onClick={handleExportPDFReport}
-              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30"
+              className="btn-primary w-full gap-2"
             >
               <Download className="w-4 h-4" />
               <span>Exportar Reporte Mensual PDF</span>
@@ -577,30 +665,30 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
           </div>
 
           {/* Predictive Summary: Ingresos vs Cuentas por Cobrar */}
-          <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-50">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+          <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-success-fg" />
                 Predicción de Flujo de Caja
               </h4>
-              <span className="text-[10px] bg-[#87CEEB]/20 text-[#4D4DFF] font-bold px-2 py-0.5 rounded-full">Inteligencia Artificial</span>
+              <span className="text-xs bg-info-soft/20 text-brand-fg font-bold px-2 py-0.5 rounded-full">Inteligencia Artificial</span>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Ingresos Contado Efectivo</span>
-                <span className="text-slate-900 dark:text-[#3D3528] font-mono font-bold">S/ {(totalInvoicedSales * 0.45).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
+                <span className="text-ink-subtle font-medium">Ingresos Contado Efectivo</span>
+                <span className="text-ink font-mono font-bold">S/ {(totalInvoicedSales * 0.45).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Cuentas por Cobrar (Pendiente)</span>
-                <span className="text-[#4D4DFF] font-mono font-bold">S/ {(totalInvoicedSales * 0.55).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
+                <span className="text-ink-subtle font-medium">Cuentas por Cobrar (Pendiente)</span>
+                <span className="text-brand-fg font-mono font-bold">S/ {(totalInvoicedSales * 0.55).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
               </div>
-              <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden flex">
-                <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: '45%' }} />
-                <div className="bg-[#4D4DFF] h-full transition-all duration-500" style={{ width: '55%' }} />
+              <div className="w-full bg-ink h-2 rounded-full overflow-hidden flex">
+                <div className="bg-success h-full transition-all duration-500" style={{ width: '45%' }} />
+                <div className="bg-brand h-full transition-all duration-500" style={{ width: '55%' }} />
               </div>
-              <p className="text-[10px] text-slate-400 leading-relaxed mt-2 pt-2 border-t border-slate-100 dark:border-slate-50">
-                <strong className="text-slate-900 dark:text-[#3D3528]">Alerta de Liquidez:</strong> El 55% de tus ventas actuales están sujetas a cuentas por cobrar. Se recomienda activar el módulo de cobranza para asegurar la liquidez la próxima quincena.
+              <p className="text-xs text-ink-subtle leading-relaxed mt-2 pt-2 border-t border-line">
+                <strong className="text-ink">Alerta de Liquidez:</strong> El 55% de tus ventas actuales están sujetas a cuentas por cobrar. Se recomienda activar el módulo de cobranza para asegurar la liquidez la próxima quincena.
               </p>
             </div>
           </div>
@@ -608,58 +696,60 @@ export function AnalyticsDashboard({ products, quotes, expenses = [] }: Analytic
       </div>
 
       {/* Corporate Travel Expenses & SUNAT Audit Panel (Executive Overview) */}
-      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4 text-left">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
+      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-6 space-y-4 text-left">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
           <div>
-            <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-[#4D4DFF]" />
+            <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-brand-fg" />
               Monitoreo Global de Viáticos Comercial & Rendición SUNAT
             </h4>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-ink-subtle mt-0.5">
               Resumen ejecutivo para la gerencia y jefatura de finanzas sobre fondos asignados vs sustentados.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-xl">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-success-fg bg-success-soft border border-success/30 px-3 py-1.5 rounded-xl">
             <ShieldCheck className="w-4 h-4" />
             <span>Certificación SUNAT: {expenses.length > 0 ? Math.round((sunatValidadosCount / expenses.length) * 100) : 100}% OK</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-[#F7F8FC] dark:bg-[#F7F8FC]/60 border border-slate-200/70 dark:border-[#E5DEC9] rounded-2xl">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">TOTAL RENDIDO</span>
-            <span className="text-xl font-extrabold font-mono text-slate-900 dark:text-[#3D3528] mt-1 block">
+          <div className="p-4 bg-surface-2 dark:bg-surface-2/60 border border-line/70 dark:border-line rounded-2xl">
+            <span className="text-xs text-ink-subtle font-bold uppercase block">TOTAL RENDIDO</span>
+            <span className="text-xl font-extrabold font-mono text-ink mt-1 block">
               S/ {totalExpensesRendido.toFixed(2)}
             </span>
-            <span className="text-[10px] text-slate-400 mt-1 block font-mono">{expenses.length} Comprobantes de Campo</span>
+            <span className="text-xs text-ink-subtle mt-1 block font-mono">{expenses.length} Comprobantes de Campo</span>
           </div>
 
-          <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-2xl">
-            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase block">PENDIENTE APROBACIÓN</span>
-            <span className="text-xl font-extrabold font-mono text-amber-600 dark:text-amber-400 mt-1 block">
+          <div className="p-4 bg-warning-soft/50 dark:bg-warning/20 border border-warning/border dark:border-warning/border rounded-2xl">
+            <span className="text-xs text-warning-fg font-bold uppercase block">PENDIENTE APROBACIÓN</span>
+            <span className="text-xl font-extrabold font-mono text-warning-fg mt-1 block">
               S/ {totalExpensesPendiente.toFixed(2)}
             </span>
-            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 mt-1 block font-mono">En revisión por finanzas</span>
+            <span className="text-xs text-warning-fg/80 mt-1 block font-mono">En revisión por finanzas</span>
           </div>
 
-          <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 rounded-2xl">
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase block">APROBADO FINANZAS</span>
-            <span className="text-xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+          <div className="p-4 bg-success-soft/50 dark:bg-success-soft border border-success/border dark:border-success/border rounded-2xl">
+            <span className="text-xs text-success-fg font-bold uppercase block">APROBADO FINANZAS</span>
+            <span className="text-xl font-extrabold font-mono text-success-fg mt-1 block">
               S/ {totalExpensesAprobado.toFixed(2)}
             </span>
-            <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 block font-mono">Gastos validados</span>
+            <span className="text-xs text-success-fg/80 mt-1 block font-mono">Gastos validados</span>
           </div>
 
-          <div className="p-4 bg-red-50/50 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/40 rounded-2xl">
-            <span className="text-[10px] text-[#4D4DFF] dark:text-blue-500 font-bold uppercase block">COMPROBANTES SUNAT</span>
-            <span className="text-xl font-extrabold font-mono text-[#4D4DFF] dark:text-blue-500 mt-1 block">
+          <div className="p-4 bg-danger-soft/50 dark:bg-danger-soft border border-danger/border dark:border-danger/border rounded-2xl">
+            <span className="text-xs text-brand-fg font-bold uppercase block">COMPROBANTES SUNAT</span>
+            <span className="text-xl font-extrabold font-mono text-brand-fg mt-1 block">
               {sunatValidadosCount} / {expenses.length}
             </span>
-            <span className="text-[10px] text-slate-400 mt-1 block font-mono">Verificados en padrón</span>
+            <span className="text-xs text-ink-subtle mt-1 block font-mono">Verificados en padrón</span>
           </div>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 }

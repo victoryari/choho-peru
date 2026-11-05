@@ -60,7 +60,7 @@ export function NotificationCenter() {
       },
       {
         title: "Alerta de SUNAT",
-        message: "Actualización de catálogo de detracciones SUNAT procesada con éxito.",
+        message: "Actualización de catálogo detracciones SUNAT procesada con éxito.",
         type: "info" as const
       }
     ];
@@ -93,20 +93,22 @@ export function NotificationCenter() {
 
   return (
     <div className="relative z-50">
-      <button
+      <button type="button"
         id="notification-bell-btn"
         onClick={() => {
           setIsOpen(!isOpen);
           setHasNew(false);
         }}
-        className="relative p-2 text-slate-500 dark:text-[#7F735F] hover:text-[#4D4DFF] dark:hover:text-blue-500 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+        aria-label={`Notificaciones ${notifications.length > 0 ? ` (${notifications.length} sin leer)`: ''}`}
+        aria-expanded={isOpen}
+        className="relative p-2 text-ink-muted hover:text-brand-fg rounded-xl hover:bg-field-hover transition-all cursor-pointer"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5" aria-hidden="true" />
         {hasNew && notifications.length > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#4D4DFF] rounded-full animate-ping" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-brand rounded-full animate-ping" />
         )}
         {notifications.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-[#4D4DFF] text-white text-[10px] font-extrabold px-1.5 rounded-full shadow-xs">
+          <span className="absolute -top-0.5 -right-0.5 bg-brand text-brand-contrast text-xs font-extrabold px-1.5 rounded-full shadow-xs">
             {notifications.length}
           </span>
         )}
@@ -118,25 +120,25 @@ export function NotificationCenter() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl shadow-2xl p-4 overflow-hidden text-left"
+            className="absolute right-0 mt-3 w-80 sm:w-96 bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl shadow-2xl p-4 overflow-hidden text-left"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-3">
+            <div className="flex items-center justify-between pb-3 border-b border-line mb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-[#4D4DFF]" />
-                <span className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display">Notificaciones de Red</span>
+                <Bell className="w-4 h-4 text-brand-fg" />
+                <span className="font-extrabold text-sm text-ink font-display">Notificaciones de Red</span>
               </div>
               <div className="flex items-center gap-3">
                 {notifications.length > 0 && (
-                  <button
+                  <button type="button"
                     onClick={clearAll}
-                    className="text-xs font-semibold text-slate-400 hover:text-[#4D4DFF] transition-colors cursor-pointer"
+                    className="text-xs font-semibold text-ink-subtle hover:text-brand-fg transition-colors cursor-pointer"
                   >
                     Limpiar todo
                   </button>
                 )}
-                <button
+                <button type="button"
                   onClick={() => setIsOpen(false)}
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  className="text-ink-subtle hover:text-ink cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -145,33 +147,33 @@ export function NotificationCenter() {
 
             <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
               {notifications.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-ink-subtle text-xs">
                   No tienes notificaciones pendientes.
                 </div>
               ) : (
                 notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className="flex gap-3 p-3 rounded-2xl bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 hover:border-blue-500/20 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-all text-left"
+                    className="flex gap-3 p-3 rounded-2xl bg-surface border border-line hover:border-brand/border shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-all text-left"
                   >
                     <div className="mt-0.5 shrink-0">
-                      {notif.type === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-[#4D4DFF]" />}
-                      {notif.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-[#4D4DFF]" />}
+                      {notif.type === "success" && <CheckCircle2 className="w-4 h-4 text-success-fg" />}
+                      {notif.type === "info" && <RefreshCw className="w-4 h-4 text-brand-fg" />}
+                      {notif.type === "warning" && <AlertTriangle className="w-4 h-4 text-warning-fg" />}
+                      {notif.type === "user" && <UserCheck className="w-4 h-4 text-brand-fg" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-slate-900 dark:text-[#3D3528] truncate">{notif.title}</p>
-                        <span className="text-[9px] text-slate-400 shrink-0 font-medium">{notif.time}</span>
+                        <p className="text-xs font-bold text-ink truncate">{notif.title}</p>
+                        <span className="text-micro text-ink-subtle shrink-0 font-medium">{notif.time}</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-[#7F735F] mt-0.5 leading-relaxed">
+                      <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">
                         {notif.message}
                       </p>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => removeOne(notif.id)}
-                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 shrink-0 self-start cursor-pointer"
+                      className="text-ink-subtle hover:text-ink dark:hover:text-ink shrink-0 self-start cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -180,8 +182,8 @@ export function NotificationCenter() {
               )}
             </div>
 
-            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#E5DEC9] text-center">
-              <span className="text-[10px] text-slate-400 italic">
+            <div className="mt-3 pt-2.5 border-t border-line text-center">
+              <span className="text-xs text-ink-subtle italic">
                 Sincronización multi-dispositivo y push activados en background
               </span>
             </div>

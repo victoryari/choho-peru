@@ -3,7 +3,8 @@ import fs from 'fs';
 import bcrypt from 'bcrypt';
 import path from 'path';
 import dotenv from 'dotenv';
-import { SEED_ROLES, SEED_USERS, SEED_BRANCHES, SEED_DEPARTMENTS } from './state.js';
+import { SEED_ROLES, SEED_USERS, SEED_BRANCHES, SEED_DEPARTMENTS, SEED_CATEGORIAS, SEED_DISCOUNT_POLICIES } from './state.js';
+import { runMigrations } from './migrate.js';
 
 dotenv.config();
 
@@ -44,6 +45,9 @@ async function initDB() {
     const schemaSql = fs.readFileSync(path.join(process.cwd(), 'schema.sql'), 'utf8');
     await connection.query(schemaSql);
 
+    console.log('[MIGRATION ENGINE] Aplicando migraciones idempotentes de esquema...');
+    await runMigrations(connection as any);
+
     console.log('[MIGRATION ENGINE] Inicializando roles por defecto...');
     for (const r of SEED_ROLES) {
       await connection.query(
@@ -76,6 +80,31 @@ async function initDB() {
         `INSERT INTO departments (id, name, status) VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE name = VALUES(name), status = VALUES(status)`,
         [d.id, d.name, d.status]
+      );
+    }
+
+    console.log('[MIGRATION ENGINE] Inicializando taxonomia de catalogo (Familia/Sub-familia/Linea)...');
+    for (const c of SEED_CATEGORIAS) {
+      await connection.query(
+        `INSERT INTO categorias (id, nombre, parentId, nivel, activo) VALUES (?, ?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), parentId = VALUES(parentId), nivel = VALUES(nivel)`,
+        [c.id, c.nombre, c.parentId, c.nivel]
+      );
+    }
+
+    console.log('[MIGRATION ENGINE] Inicializando politicas oficiales de descuento...');
+    for (const p of SEED_DISCOUNT_POLICIES) {
+      await connection.query(
+        `INSERT INTO discount_rules
+           (id, scope, sku, productName, category, region, minQty, minAmount, maxAmount, discountType, discountCash, discountCredit, priceOfferCash, priceOfferCredit, notes, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE scope = VALUES(scope), sku = VALUES(sku), productName = VALUES(productName),
+           category = VALUES(category), region = VALUES(region), minQty = VALUES(minQty),
+           minAmount = VALUES(minAmount), maxAmount = VALUES(maxAmount), discountType = VALUES(discountType),
+           discountCash = VALUES(discountCash), discountCredit = VALUES(discountCredit),
+           priceOfferCash = VALUES(priceOfferCash), priceOfferCredit = VALUES(priceOfferCredit),
+           notes = VALUES(notes), status = VALUES(status)`,
+        [p.id, p.scope, (p as any).sku ?? null, (p as any).productName ?? null, p.category, p.region ?? null, (p as any).minQty ?? null, p.minAmount ?? null, p.maxAmount ?? null, p.discountType, p.discountCash ?? null, p.discountCredit ?? null, (p as any).priceOfferCash ?? null, (p as any).priceOfferCredit ?? null, p.notes, p.status]
       );
     }
 

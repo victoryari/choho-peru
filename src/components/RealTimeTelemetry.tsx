@@ -135,7 +135,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
       });
 
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
         maxZoom: 19
       }).addTo(map);
@@ -158,19 +158,13 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
 
         const customIcon = L.divIcon({
           className: "custom-leaflet-marker",
-          html: `<div style="background-color: #4D4DFF; color: white; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">${idx + 1}</div>`,
+          html: `<div style="background-color: #5A7A68; color: white; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(90,122,104,0.35);">${idx + 1}</div>`,
           iconSize: [28, 28],
           iconAnchor: [14, 14]
         });
 
         const marker = L.marker([pin.lat, pin.lng], { icon: customIcon });
-        marker.bindPopup(`
-          <div style="font-family: sans-serif; padding: 2px;">
-            <strong style="color: #4D4DFF; font-size: 13px;">${pin.client}</strong><br/>
-            <span style="font-size: 11px; color: #555;">📍 ${pin.address || 'Ubicación GPS'}</span><br/>
-            <span style="font-size: 10px; color: #888;">👤 Asesor: ${pin.advisor} • ⏰ ${pin.time}</span>
-          </div>
-        `);
+        marker.bindPopup(`<div style="font-family: sans-serif; padding: 2px;"> <strong style="color: #466754; font-size: 13px;">${pin.client}</strong><br/> <span style="font-size: 11px; color: #555;">📍${pin.address || 'Ubicación GPS'}</span><br/> <span style="font-size: 10px; color: #888;">👤 Asesor: ${pin.advisor} • ⏰ ${pin.time}</span> </div>`);
         marker.on("click", () => setSelectedPin(pin));
         markersGroup?.addLayer(marker);
       }
@@ -179,10 +173,10 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
     // Draw Commercial Route Polyline
     if (points.length > 1) {
       const polyline = L.polyline(points, {
-        color: "#4D4DFF",
-        weight: 4,
+        color: "#5A7A68",
+        weight: 3.5,
         dashArray: "8, 6",
-        opacity: 0.85
+        opacity: 0.9
       });
       markersGroup?.addLayer(polyline);
     }
@@ -193,25 +187,13 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
       if (live.lat && live.lng) {
         const liveIcon = L.divIcon({
           className: "live-radar-marker",
-          html: `
-            <div style="position: relative; width: 36px; height: 36px;">
-              <div style="position: absolute; inset: 0; background-color: #10B981; opacity: 0.4; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-              <div style="position: relative; background-color: #10B981; color: white; border: 3px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 4px 14px rgba(16,185,129,0.5); font-weight: bold;">🚗</div>
-            </div>
-          `,
+          html: `<div style="position: relative; width: 36px; height: 36px;"> absolute; inset: 0; background-color: #10B981; opacity: 0.4; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div> color: white; border: 3px solid 32px; display: flex; align-items: center; justify-content: font-size: 14px; box-shadow: 0 4px 14px rgba(16,185,129,0.5); font-weight: bold;">🚗</div> </div>`,
           iconSize: [36, 36],
           iconAnchor: [18, 18]
         });
 
         const liveMarker = L.marker([live.lat, live.lng], { icon: liveIcon });
-        liveMarker.bindPopup(`
-          <div style="font-family: sans-serif; padding: 2px;">
-            <span style="background: #10B981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold;">LIVE GPS</span>
-            <h4 style="margin: 4px 0 2px; font-size: 13px;">Asesor: ${live.advisor}</h4>
-            <span style="font-size: 11px; color: #555;">⚡ Velocidad: ${live.speed || 0} km/h</span><br/>
-            <span style="font-size: 10px; color: #888;">🎯 Precisión: ±${live.accuracy || 5}m • Último ping: ${live.updatedAt}</span>
-          </div>
-        `);
+        liveMarker.bindPopup(`<div style="font-family: sans-serif; padding: 2px;"> <span style="background: #10B981; color: white; 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold;">LIVE GPS</span> <h4 style="margin: 4px 0 2px; 13px;">Asesor:${live.advisor}</h4> <span style="font-size: 11px; color: #555;">⚡ Velocidad:${live.speed || 0}km/h</span><br/> <span style="font-size: 10px; color: #888;">🎯 Precisión: ±${live.accuracy || 5}m • Último ping:${live.updatedAt}</span> </div>`);
         markersGroup?.addLayer(liveMarker);
       }
     });
@@ -252,7 +234,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
       },
       (error) => {
         console.error("GPS Error:", error);
-        alert("Error obteniendo ubicación GPS. Por favor, permite el acceso a la ubicación en tu navegador.");
+        alert("Error obteniendo ubicación GPS. Por favor, permite el acceso a la en tu navegador.");
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -261,25 +243,25 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
   return (
     <div className="space-y-6 text-left">
       {/* Upper header with stats & controls */}
-      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-slate-900 dark:text-[#3D3528]">
-            <Navigation className="w-5 h-5 text-[#4D4DFF]" />
+          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-ink">
+            <Navigation className="w-5 h-5 text-brand-fg" />
             Panel de Telemetría & Geolocalización de Rutas GPS (Tiempo Real)
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-ink-subtle mt-1">
             Rastreo continuo del equipo comercial CHOHO PERÚ con mapas cartográficos interactivos y posicionamiento directo.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Live Tracking Toggle Button */}
-          <button
+          <button type="button"
             onClick={() => setIsLiveTracking(!isLiveTracking)}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm ${
               isLiveTracking
-                ? "bg-emerald-500 text-white animate-pulse shadow-emerald-500/30"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                ? "bg-success text-white animate-pulse shadow-success/30"
+                : "bg-surface-2 dark:bg-ink-muted text-ink-muted dark:text-ink-subtle hover:bg-field-hover"
             }`}
           >
             <Radio className={`w-4 h-4 ${isLiveTracking ? "animate-spin" : ""}`} />
@@ -287,13 +269,13 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
           </button>
 
           {/* Advisor selector */}
-          <div className="flex items-center gap-2 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none px-3 py-1.5 rounded-xl text-xs">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-400 font-semibold">Asesor:</span>
+          <div className="flex items-center gap-2 bg-surface-2 border-none px-3 py-1.5 rounded-xl text-xs">
+            <Filter className="w-3.5 h-3.5 text-ink-subtle" />
+            <span className="text-ink-subtle font-semibold">Asesor:</span>
             <select
               value={selectedAdvisor}
               onChange={(e) => setSelectedAdvisor(e.target.value)}
-              className="bg-transparent font-bold text-slate-900 dark:text-[#3D3528] focus:outline-none cursor-pointer"
+              className="bg-transparent font-bold text-ink focus-visible:outline-none cursor-pointer"
             >
               <option value="all">Todos los Asesores</option>
               {advisors.map(adv => (
@@ -303,24 +285,24 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex bg-slate-100 dark:bg-[#FDF9F1] p-1 rounded-xl border border-slate-200 dark:border-[#E5DEC9] gap-1">
-            <button
+          <div className="flex bg-surface-2 dark:bg-surface p-1 rounded-xl border border-line gap-1">
+            <button type="button"
               onClick={() => setActiveViewMode("map")}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                 activeViewMode === "map"
-                  ? "bg-[#4D4DFF] text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-brand text-brand-contrast shadow-sm"
+                  : "text-ink-muted hover:text-ink"
               }`}
             >
               <MapIcon className="w-3.5 h-3.5" />
               <span>Mapa Cartográfico Real</span>
             </button>
-            <button
+            <button type="button"
               onClick={() => setActiveViewMode("timeline")}
               className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                 activeViewMode === "timeline"
-                  ? "bg-[#4D4DFF] text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-brand text-brand-contrast shadow-sm"
+                  : "text-ink-muted hover:text-ink"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -332,15 +314,15 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
 
       {/* Live Status Indicators Banner */}
       {currentPosition && isLiveTracking && (
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-emerald-800 dark:text-emerald-300 shadow-sm animate-fade-in">
+        <div className="p-4 bg-success-soft border border-success/30 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-success-fg shadow-sm animate-fade-in">
           <div className="flex items-center gap-2 font-bold">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-success animate-ping" />
             <span>GPS ACTIVO ({currentUserName}): {currentPosition.lat}, {currentPosition.lng}</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-4 text-xs">
             <span>⚡ Velocidad: <strong>{currentPosition.speed} km/h</strong></span>
             <span>🎯 Precisión: <strong>±{currentPosition.accuracy}m</strong></span>
-            <span className="text-slate-400">Emisores activos: {liveLocations.length}</span>
+            <span className="text-ink-subtle">Emisores activos: {liveLocations.length}</span>
           </div>
         </div>
       )}
@@ -349,68 +331,69 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
         {/* Main Content Area: Interactive Leaflet Map or Timeline */}
         <div className="lg:col-span-2 space-y-4">
           {activeViewMode === "map" ? (
-            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#E5DEC9]">
-                <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#4D4DFF]" />
+            <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-line">
+                <h4 className="font-extrabold text-sm text-ink font-display flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-brand-fg" />
                   Mapa Cartográfico Interactivo (OpenStreetMap Real) - {filteredList.length} Puntos
                 </h4>
                 <div className="flex items-center gap-2">
-                  <button
+                  <button type="button"
                     onClick={fetchLiveLocations}
-                    className="p-1 text-slate-400 hover:text-[#4D4DFF] transition-colors cursor-pointer"
+                    aria-label="Actualizar posiciones de la flota"
+                    className="p-1 text-ink-subtle hover:text-brand-fg transition-colors cursor-pointer"
                     title="Actualizar Posiciones"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" />
+                    <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
-                  <span className="text-[10px] font-mono text-slate-400">Lima • Trujillo • Arequipa</span>
+                  <span className="text-xs font-mono text-ink-subtle">Lima • Trujillo • Arequipa</span>
                 </div>
               </div>
 
               {/* Leaflet Map Canvas Container */}
-              <div className="relative w-full h-[420px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-100 shadow-inner z-0">
+              <div className="relative w-full h-[420px] rounded-2xl overflow-hidden border border-line shadow-inner z-0">
                 <div ref={mapContainerRef} id="leaflet-map-container" className="w-full h-full z-0" />
 
                 {/* Live Tracking overlay badge */}
-                <div className="absolute top-3 right-3 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 shadow-lg">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <div className="absolute top-3 right-3 z-[1000] bg-white/90 dark:bg-ink/90 backdrop-blur-md border border-line dark:border-line-strong px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-success-fg flex items-center gap-2 shadow-lg">
+                  <span className="w-2 h-2 rounded-full bg-success animate-ping" />
                   <span>TRANSMISIÓN LIVE: {liveLocations.length} ASESOR(ES)</span>
                 </div>
               </div>
             </div>
           ) : (
             /* Timeline View */
-            <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4">
+            <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs">
+              <h4 className="font-extrabold text-sm text-ink font-display pb-3 border-b border-line mb-4">
                 Línea de Tiempo del Itinerario ({filteredList.length} registros)
               </h4>
 
-              <div className="space-y-4 relative pl-4 before:content-[''] before:absolute before:left-6.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+              <div className="space-y-4 relative pl-4 before:content-[''] before:absolute before:left-6.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-line dark:before:bg-ink">
                 {filteredList.map((node) => (
                   <div key={node.id} className="relative flex items-start gap-4">
-                    <div className="relative z-10 mt-1 shrink-0 bg-white dark:bg-[#FFFFFF] p-1 rounded-full">
+                    <div className="relative z-10 mt-1 shrink-0 bg-surface p-1 rounded-full">
                       {node.status === "Visited" ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        <CheckCircle2 className="w-5 h-5 text-success-fg" />
                       ) : (
-                        <Circle className="w-5 h-5 text-slate-400 fill-white dark:fill-slate-900" />
+                        <Circle className="w-5 h-5 text-ink-subtle fill-white dark:fill-ink" />
                       )}
                     </div>
 
-                    <div className="flex-1 bg-[#F7F8FC] dark:bg-[#F7F8FC]/40 border border-slate-100 dark:border-[#E5DEC9] p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-500/40 transition-all">
+                    <div className="flex-1 bg-surface-2 dark:bg-surface-2/40 border border-line p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-brand/border transition-all">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-[#3D3528]">{node.client}</span>
-                          <span className="text-[9px] bg-slate-200/60 dark:bg-[#F2ECDE] text-slate-600 dark:text-[#7F735F] px-2 py-0.5 rounded-full font-mono">
+                          <span className="text-xs font-bold text-ink">{node.client}</span>
+                          <span className="text-micro bg-line/60 dark:bg-surface-2 text-ink-muted px-2 py-0.5 rounded-full font-mono">
                             {node.time}
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
-                          Asesor: <span className="text-[#4D4DFF] dark:text-blue-500 font-bold">{node.advisor}</span> • Coordenadas: {node.lat}, {node.lng}
+                        <p className="text-xs text-ink-subtle mt-0.5 font-mono">
+                          Asesor: <span className="text-brand-fg font-bold">{node.advisor}</span> • Coordenadas: {node.lat}, {node.lng}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${node.status === 'Visited' ? 'bg-[#98FB98]/30 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60' : 'bg-slate-100 text-slate-500 dark:bg-[#F2ECDE] dark:text-[#7F735F]'}`}>
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${node.status === 'Visited' ? 'bg-success-soft/30 text-success-fg dark:bg-success-soft border border-success/30 dark:border-success/border' : 'bg-surface-2 text-ink-muted'}`}>
                           {node.status === "Visited" ? "Visitado" : "Pendiente"}
                         </span>
                       </div>
@@ -423,52 +406,52 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
         </div>
 
         {/* Advisor check-in generator panel */}
-        <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit">
-          <h4 className="font-extrabold text-sm text-slate-900 dark:text-[#3D3528] font-display pb-3 border-b border-slate-100 dark:border-[#E5DEC9] mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#4D4DFF]" />
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit">
+          <h4 className="font-extrabold text-sm text-ink font-display pb-3 border-b border-line mb-4 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-brand-fg" />
             Registrar Nueva Visita de Campo
           </h4>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Cliente / Punto de Venta</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Cliente / Punto de Venta</label>
               <input
                 type="text"
                 placeholder="Ej. Taller Mecánico Trujillo / Moto Repuestos Lima"
                 value={newClientName}
                 onChange={(e) => setNewClientName(e.target.value)}
-                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-4 py-2 text-xs text-ink focus-visible:outline-none"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Dirección Fiscal / Ubicación Referencial</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Dirección Fiscal / Ubicación Referencial</label>
               <input
                 type="text"
                 placeholder="Ej. Av. Nicolás de Piérola 450, Trujillo"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-4 py-2 text-xs text-ink focus-visible:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 font-semibold uppercase block">Hora de Registro</label>
+              <label className="text-xs text-ink-muted font-semibold uppercase block">Hora de Registro</label>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-subtle" />
                 <input
                   type="text"
                   placeholder="Ej. 16:30"
                   value={newClientTime}
                   onChange={(e) => setNewClientTime(e.target.value)}
-                  className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none font-mono"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl pl-9 pr-4 py-2 text-xs text-ink focus-visible:outline-none font-mono"
                 />
               </div>
             </div>
 
             {success && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center gap-1.5 text-xs font-semibold">
+              <div className="p-3 bg-success-soft border border-success/30 text-success-fg rounded-xl flex items-center gap-1.5 text-xs font-semibold">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Check-in registrado con coordenadas GPS.</span>
               </div>
@@ -476,7 +459,7 @@ export function RealTimeTelemetry({ telemetryList, onAddVisit, currentUserName }
 
             <button
               type="submit"
-              className="w-full bg-[#4D4DFF] hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#4D4DFF]/30"
+              className="btn-primary w-full gap-1.5"
             >
               <Plus className="w-4 h-4" />
               <span>Registrar Visita (Check-in GPS)</span>

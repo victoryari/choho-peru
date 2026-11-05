@@ -59,7 +59,7 @@ export const ProtectedImage: React.FC<ProtectedImageProps> = ({
       />
 
       {/* Subtle Choho Security Watermark Overlay */}
-      <div className="absolute bottom-1 right-1 z-20 opacity-30 group-hover/protect:opacity-60 transition-opacity pointer-events-none select-none text-[8px] font-mono font-black text-amber-400 tracking-tighter bg-slate-950/70 px-1 py-0.5 rounded border border-amber-500/20">
+      <div className="absolute bottom-1 right-1 z-20 opacity-30 group-hover/protect:opacity-60 transition-opacity pointer-events-none select-none text-micro font-mono font-black text-warning-fg tracking-tighter bg-canvas/70 px-1 py-0.5 rounded border border-warning/border">
         CHOHO PERÚ ®
       </div>
     </div>

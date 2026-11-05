@@ -328,39 +328,39 @@ export function Commissions({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-md bg-[#4D4DFF]/10 text-[#4D4DFF] text-xs font-bold uppercase tracking-wider">
+            <span className="px-2.5 py-1 rounded-md bg-brand/10 text-brand-fg text-xs font-bold uppercase tracking-wider">
               Módulo Financiero B2B
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-black font-display text-slate-900 dark:text-[#3D3528] mt-1">
+          <h1 className="text-2xl md:text-3xl font-black font-display text-ink mt-1">
             Gestión y Cálculo de Comisiones
           </h1>
-          <p className="text-sm text-slate-500 dark:text-[#7F735F]">
+          <p className="text-sm text-ink-muted">
             Matriz de parámetros oficial para Zona Lima, Provincia Con Metas y Provincia Desde 1era Venta.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <button type="button"
             onClick={() => setIsEditMatrixModalOpen(true)}
-            className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-amber-800 dark:text-amber-400 px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer hover:bg-amber-100"
+            className="flex items-center gap-2 bg-warning-soft dark:bg-warning/40 border border-warning/30 text-warning-fg px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer hover:bg-warning-soft"
             title="Ajustar tasas de comisiones o topes"
           >
-            <Edit3 className="w-4 h-4 text-amber-600" />
+            <Edit3 className="w-4 h-4 text-warning-fg" />
             Editar Parámetros
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-[#4D4DFF] hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-[#4D4DFF]/30 cursor-pointer"
+            className="flex items-center gap-2 bg-brand hover:bg-brand/90 text-brand-contrast px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-brand/30 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Nueva Liquidación
           </button>
 
-          <button
+          <button type="button"
             onClick={exportToCSV}
-            className="flex items-center gap-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer hidden sm:flex shadow-sm"
+            className="flex items-center gap-2 bg-ink dark:bg-ink-muted hover:bg-ink-muted text-ink-inverse px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer hidden sm:flex shadow-sm"
           >
             <Download className="w-4 h-4" />
             Exportar CSV
@@ -369,81 +369,81 @@ export function Commissions({
       </div>
 
       {saveSuccessMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold rounded-2xl text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="p-4 bg-success-soft border border-success/30 text-success-fg font-bold rounded-2xl text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-success-fg" />
           {saveSuccessMsg}
         </div>
       )}
 
       {/* KPI METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#FFFFFF] p-5 rounded-2xl border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Comisiones Pagadas</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+            <span className="text-xs font-bold uppercase text-ink-muted tracking-wider">Comisiones Pagadas</span>
+            <div className="p-2 bg-success-soft text-success-fg rounded-xl">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-emerald-600">S/ {totalPaid.toFixed(2)}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Liquidaciones procesadas</div>
+          <div className="text-2xl font-black text-success-fg">S/ {totalPaid.toFixed(2)}</div>
+          <div className="text-xs text-ink-subtle mt-1">Liquidaciones procesadas</div>
         </div>
 
-        <div className="bg-white dark:bg-[#FFFFFF] p-5 rounded-2xl border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Por Liquidar (Pendiente)</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+            <span className="text-xs font-bold uppercase text-ink-muted tracking-wider">Por Liquidar (Pendiente)</span>
+            <div className="p-2 bg-warning-soft text-warning-fg rounded-xl">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-amber-600">S/ {totalPending.toFixed(2)}</div>
-          <div className="text-[11px] text-slate-400 mt-1">{commissions.filter(c => c.status === 'Pendiente').length} asesores pendientes</div>
+          <div className="text-2xl font-black text-warning-fg">S/ {totalPending.toFixed(2)}</div>
+          <div className="text-xs text-ink-subtle mt-1">{commissions.filter(c => c.status === 'Pendiente').length} asesores pendientes</div>
         </div>
 
-        <div className="bg-white dark:bg-[#FFFFFF] p-5 rounded-2xl border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Tasa Promedio</span>
-            <div className="p-2 bg-blue-50 text-[#4D4DFF] rounded-xl">
+            <span className="text-xs font-bold uppercase text-ink-muted tracking-wider">Tasa Promedio</span>
+            <div className="p-2 bg-brand-soft text-brand-fg rounded-xl">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-[#4D4DFF]">{avgRate}%</div>
-          <div className="text-[11px] text-slate-400 mt-1">Sobre total de ventas</div>
+          <div className="text-2xl font-black text-brand-fg">{avgRate}%</div>
+          <div className="text-xs text-ink-subtle mt-1">Sobre total de ventas</div>
         </div>
 
-        <div className="bg-white dark:bg-[#FFFFFF] p-5 rounded-2xl border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+        <div className="bg-surface p-5 rounded-2xl border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase text-slate-500 tracking-wider">Ventas Evaluadas</span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
+            <span className="text-xs font-bold uppercase text-ink-muted tracking-wider">Ventas Evaluadas</span>
+            <div className="p-2 bg-brand-soft text-brand-fg rounded-xl">
               <Layers className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-[#3D3528]">S/ {totalSales.toFixed(2)}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Base imponible acumulada</div>
+          <div className="text-2xl font-black text-ink">S/ {totalSales.toFixed(2)}</div>
+          <div className="text-xs text-ink-subtle mt-1">Base imponible acumulada</div>
         </div>
       </div>
 
       {/* OFFICIAL COMMISSION TABLES VISUALIZER */}
-      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-6 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#E5DEC9] pb-4">
+      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-6 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-4">
           <div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-[#3D3528] flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#4D4DFF]" />
+            <h3 className="text-lg font-black text-ink flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-brand-fg" />
               Tablas de Parámetros de Comisiones por Zona
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-muted">
               Consulta las matrices oficiales de porcentaje según zona, plazo de crédito, producto y periodo vacacional.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#F7F8FC] dark:bg-[#F7F8FC] p-1.5 rounded-2xl border border-slate-100 dark:border-[#E5DEC9] overflow-x-auto">
+          <div className="flex items-center gap-2 bg-surface-2 p-1.5 rounded-2xl border border-line overflow-x-auto">
             {(['Zona - Lima', 'Provincia - Con Metas', 'Provincia - Desde 1era Venta'] as SalesZone[]).map((zoneName) => (
-              <button
+              <button type="button"
                 key={zoneName}
                 onClick={() => setActiveTab(zoneName)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === zoneName
-                    ? 'bg-[#4D4DFF] text-white shadow-md shadow-[#4D4DFF]/20'
-                    : 'text-slate-600 dark:text-[#7F735F] hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-brand text-brand-contrast shadow-md shadow-brand/20'
+                    : 'text-ink-muted hover:text-ink'
                 }`}
               >
                 {zoneName}
@@ -456,33 +456,33 @@ export function Commissions({
         {activeTab === 'Zona - Lima' && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#4D4DFF]" />
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-[#3D3528]">COMISIONES VENTAS — ZONA LIMA</h4>
+              <MapPin className="w-4 h-4 text-brand-fg" />
+              <h4 className="text-sm font-extrabold text-ink">COMISIONES VENTAS — ZONA LIMA</h4>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Condition Table */}
-              <div className="lg:col-span-2 overflow-x-auto border border-slate-100 dark:border-[#E5DEC9] rounded-2xl">
+              <div className="lg:col-span-2 overflow-x-auto border border-line rounded-2xl">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-b border-slate-100 dark:border-[#E5DEC9]">
-                      <th className="py-3 px-3 font-bold text-slate-600 uppercase">Condición (Crédito)</th>
-                      <th className="py-3 px-3 font-bold text-[#4D4DFF] text-center uppercase">% General</th>
-                      <th className="py-3 px-3 font-bold text-purple-600 text-center uppercase">% Diferenciada</th>
-                      <th className="py-3 px-3 font-bold text-emerald-600 text-center uppercase">% x Producto</th>
-                      <th className="py-3 px-3 font-bold text-slate-500 text-center uppercase">% Dif. Prod</th>
-                      <th className="py-3 px-3 font-bold text-amber-600 text-center uppercase">% Liquidación</th>
+                    <tr className="bg-surface-2 border-b border-line">
+                      <th className="py-3 px-3 font-bold text-ink-muted uppercase">Condición (Crédito)</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% General</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% Diferenciada</th>
+                      <th className="py-3 px-3 font-bold text-success-fg text-center uppercase">% x Producto</th>
+                      <th className="py-3 px-3 font-bold text-ink-muted text-center uppercase">% Dif. Prod</th>
+                      <th className="py-3 px-3 font-bold text-warning-fg text-center uppercase">% Liquidación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {limaConditions.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-[#3D3528]">{row.condition}</td>
-                        <td className="py-3 px-3 text-center font-bold text-[#4D4DFF] font-mono">{row.general.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-purple-600 font-mono">{row.diferenciada.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-emerald-600 font-mono">{row.xProducto.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-500">{row.xProductoDif.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-amber-600 font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
+                      <tr key={i} className="border-b border-line dark:border-line/50 hover:bg-surface-2/50 transition-colors">
+                        <td className="py-3 px-3 font-bold text-ink">{row.condition}</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.general.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.diferenciada.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-success-fg font-mono">{row.xProducto.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-mono text-ink-muted">{row.xProductoDif.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-warning-fg font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -491,13 +491,13 @@ export function Commissions({
 
               {/* Product Table & Vacation Box */}
               <div className="space-y-4">
-                <div className="border border-slate-100 dark:border-[#E5DEC9] rounded-2xl overflow-hidden">
-                  <div className="bg-[#F7F8FC] dark:bg-[#F7F8FC] px-3 py-2 border-b border-slate-100 dark:border-[#E5DEC9] font-bold text-xs text-slate-700">
+                <div className="border border-line rounded-2xl overflow-hidden">
+                  <div className="bg-surface-2 px-3 py-2 border-b border-line font-bold text-xs text-ink">
                     Por Productos (Lima)
                   </div>
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-[#E5DEC9] text-[10px] uppercase text-slate-400">
+                      <tr className="border-b border-line text-xs uppercase text-ink-subtle">
                         <th className="py-2 px-3">Línea</th>
                         <th className="py-2 px-3 text-right">% General</th>
                         <th className="py-2 px-3 text-right">% Dif.</th>
@@ -505,20 +505,20 @@ export function Commissions({
                     </thead>
                     <tbody>
                       {limaProducts.map((p, i) => (
-                        <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50">
-                          <td className="py-2 px-3 font-medium text-slate-800 text-[11px]">{p.category}</td>
-                          <td className="py-2 px-3 text-right font-bold text-[#4D4DFF] font-mono">{p.general}%</td>
-                          <td className="py-2 px-3 text-right font-bold text-purple-600 font-mono">{p.diferenciada}%</td>
+                        <tr key={i} className="border-b border-line dark:border-line/50">
+                          <td className="py-2 px-3 font-medium text-ink text-xs">{p.category}</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.general}%</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.diferenciada}%</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="bg-blue-50/70 border border-blue-200 p-4 rounded-2xl">
-                  <div className="text-xs font-bold text-[#4D4DFF] uppercase tracking-wider mb-1">Cálculo Vacacional (Lima)</div>
-                  <div className="text-xl font-black text-slate-900">{limaVacationRate}% <span className="text-xs font-semibold text-slate-500">% General</span></div>
-                  <p className="text-[11px] text-slate-500 mt-1">Por ventas realizadas en días de vacaciones. <strong>Sin tope máximo</strong>.</p>
+                <div className="bg-brand-soft/70 border border-brand/30 p-4 rounded-2xl">
+                  <div className="text-xs font-bold text-brand-fg uppercase tracking-wider mb-1">Cálculo Vacacional (Lima)</div>
+                  <div className="text-xl font-black text-ink">{limaVacationRate}% <span className="text-xs font-semibold text-ink-muted">% General</span></div>
+                  <p className="text-xs text-ink-muted mt-1">Por ventas realizadas en días de vacaciones. <strong>Sin tope máximo</strong>.</p>
                 </div>
               </div>
             </div>
@@ -529,33 +529,33 @@ export function Commissions({
         {activeTab === 'Provincia - Con Metas' && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-[#3D3528]">COMISIÓN CON METAS — PROVINCIA</h4>
+              <MapPin className="w-4 h-4 text-success-fg" />
+              <h4 className="text-sm font-extrabold text-ink">COMISIÓN CON METAS — PROVINCIA</h4>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Condition Table */}
-              <div className="lg:col-span-2 overflow-x-auto border border-slate-100 dark:border-[#E5DEC9] rounded-2xl">
+              <div className="lg:col-span-2 overflow-x-auto border border-line rounded-2xl">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-b border-slate-100 dark:border-[#E5DEC9]">
-                      <th className="py-3 px-3 font-bold text-slate-600 uppercase">Condición (Crédito)</th>
-                      <th className="py-3 px-3 font-bold text-[#4D4DFF] text-center uppercase">% General</th>
-                      <th className="py-3 px-3 font-bold text-purple-600 text-center uppercase">% Diferenciada</th>
-                      <th className="py-3 px-3 font-bold text-emerald-600 text-center uppercase">% x Producto</th>
-                      <th className="py-3 px-3 font-bold text-slate-500 text-center uppercase">% Dif. Prod</th>
-                      <th className="py-3 px-3 font-bold text-amber-600 text-center uppercase">% Liquidación</th>
+                    <tr className="bg-surface-2 border-b border-line">
+                      <th className="py-3 px-3 font-bold text-ink-muted uppercase">Condición (Crédito)</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% General</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% Diferenciada</th>
+                      <th className="py-3 px-3 font-bold text-success-fg text-center uppercase">% x Producto</th>
+                      <th className="py-3 px-3 font-bold text-ink-muted text-center uppercase">% Dif. Prod</th>
+                      <th className="py-3 px-3 font-bold text-warning-fg text-center uppercase">% Liquidación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {provMetasConditions.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-[#3D3528]">{row.condition}</td>
-                        <td className="py-3 px-3 text-center font-bold text-[#4D4DFF] font-mono">{row.general.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-purple-600 font-mono">{row.diferenciada.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-emerald-600 font-mono">{row.xProducto.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-500">{row.xProductoDif.toFixed(1)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-amber-600 font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
+                      <tr key={i} className="border-b border-line dark:border-line/50 hover:bg-surface-2/50 transition-colors">
+                        <td className="py-3 px-3 font-bold text-ink">{row.condition}</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.general.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.diferenciada.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-success-fg font-mono">{row.xProducto.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-mono text-ink-muted">{row.xProductoDif.toFixed(1)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-warning-fg font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -564,13 +564,13 @@ export function Commissions({
 
               {/* Product Table & Vacation Box with Cap */}
               <div className="space-y-4">
-                <div className="border border-slate-100 dark:border-[#E5DEC9] rounded-2xl overflow-hidden">
-                  <div className="bg-[#F7F8FC] dark:bg-[#F7F8FC] px-3 py-2 border-b border-slate-100 dark:border-[#E5DEC9] font-bold text-xs text-slate-700">
+                <div className="border border-line rounded-2xl overflow-hidden">
+                  <div className="bg-surface-2 px-3 py-2 border-b border-line font-bold text-xs text-ink">
                     Por Productos (Provincia Metas)
                   </div>
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-[#E5DEC9] text-[10px] uppercase text-slate-400">
+                      <tr className="border-b border-line text-xs uppercase text-ink-subtle">
                         <th className="py-2 px-3">Línea</th>
                         <th className="py-2 px-3 text-right">% General</th>
                         <th className="py-2 px-3 text-right">% Dif.</th>
@@ -578,23 +578,23 @@ export function Commissions({
                     </thead>
                     <tbody>
                       {provMetasProducts.map((p, i) => (
-                        <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50">
-                          <td className="py-2 px-3 font-medium text-slate-800 text-[11px]">{p.category}</td>
-                          <td className="py-2 px-3 text-right font-bold text-[#4D4DFF] font-mono">{p.general}%</td>
-                          <td className="py-2 px-3 text-right font-bold text-purple-600 font-mono">{p.diferenciada}%</td>
+                        <tr key={i} className="border-b border-line dark:border-line/50">
+                          <td className="py-2 px-3 font-medium text-ink text-xs">{p.category}</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.general}%</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.diferenciada}%</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="bg-amber-50/70 border border-amber-300 p-4 rounded-2xl">
+                <div className="bg-warning-soft/70 border border-warning/30 p-4 rounded-2xl">
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">Cálculo Vacacional (Provincia Metas)</div>
-                    <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">TOPE APLICADO</span>
+                    <div className="text-xs font-bold text-warning-fg uppercase tracking-wider">Cálculo Vacacional (Provincia Metas)</div>
+                    <span className="text-xs bg-warning-soft text-warning-fg font-bold px-1.5 py-0.5 rounded">TOPE APLICADO</span>
                   </div>
-                  <div className="text-xl font-black text-slate-900">{provMetasVacationRate}% <span className="text-xs font-normal text-slate-500">(Tope S/ {provMetasVacationCap.toLocaleString('es-PE')} de venta)</span></div>
-                  <p className="text-[11px] text-slate-600 mt-1">Comisión máxima a pagar en vacaciones: <strong>S/ {(provMetasVacationCap * (provMetasVacationRate / 100)).toFixed(2)}</strong>.</p>
+                  <div className="text-xl font-black text-ink">{provMetasVacationRate}% <span className="text-xs font-normal text-ink-muted">(Tope S/ {provMetasVacationCap.toLocaleString('es-PE')} de venta)</span></div>
+                  <p className="text-xs text-ink-muted mt-1">Comisión máxima a pagar en vacaciones: <strong>S/ {(provMetasVacationCap * (provMetasVacationRate / 100)).toFixed(2)}</strong>.</p>
                 </div>
               </div>
             </div>
@@ -605,33 +605,33 @@ export function Commissions({
         {activeTab === 'Provincia - Desde 1era Venta' && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-purple-600" />
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-[#3D3528]">COMISIÓN DESDE 1ERA. VENTA — PROVINCIA</h4>
+              <MapPin className="w-4 h-4 text-brand-fg" />
+              <h4 className="text-sm font-extrabold text-ink">COMISIÓN DESDE 1ERA. VENTA — PROVINCIA</h4>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Condition Table */}
-              <div className="lg:col-span-2 overflow-x-auto border border-slate-100 dark:border-[#E5DEC9] rounded-2xl">
+              <div className="lg:col-span-2 overflow-x-auto border border-line rounded-2xl">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-b border-slate-100 dark:border-[#E5DEC9]">
-                      <th className="py-3 px-3 font-bold text-slate-600 uppercase">Condición (Crédito)</th>
-                      <th className="py-3 px-3 font-bold text-[#4D4DFF] text-center uppercase">% General</th>
-                      <th className="py-3 px-3 font-bold text-purple-600 text-center uppercase">% Diferenciada</th>
-                      <th className="py-3 px-3 font-bold text-emerald-600 text-center uppercase">% x Producto</th>
-                      <th className="py-3 px-3 font-bold text-slate-500 text-center uppercase">% Dif. Prod</th>
-                      <th className="py-3 px-3 font-bold text-amber-600 text-center uppercase">% Liquidación</th>
+                    <tr className="bg-surface-2 border-b border-line">
+                      <th className="py-3 px-3 font-bold text-ink-muted uppercase">Condición (Crédito)</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% General</th>
+                      <th className="py-3 px-3 font-bold text-brand-fg text-center uppercase">% Diferenciada</th>
+                      <th className="py-3 px-3 font-bold text-success-fg text-center uppercase">% x Producto</th>
+                      <th className="py-3 px-3 font-bold text-ink-muted text-center uppercase">% Dif. Prod</th>
+                      <th className="py-3 px-3 font-bold text-warning-fg text-center uppercase">% Liquidación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {provFirstConditions.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-[#3D3528]">{row.condition}</td>
-                        <td className="py-3 px-3 text-center font-bold text-[#4D4DFF] font-mono">{row.general.toFixed(2)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-purple-600 font-mono">{row.diferenciada.toFixed(2)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-emerald-600 font-mono">{row.xProducto.toFixed(2)}%</td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-500">{row.xProductoDif.toFixed(2)}%</td>
-                        <td className="py-3 px-3 text-center font-bold text-amber-600 font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
+                      <tr key={i} className="border-b border-line dark:border-line/50 hover:bg-surface-2/50 transition-colors">
+                        <td className="py-3 px-3 font-bold text-ink">{row.condition}</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.general.toFixed(2)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-brand-fg font-mono">{row.diferenciada.toFixed(2)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-success-fg font-mono">{row.xProducto.toFixed(2)}%</td>
+                        <td className="py-3 px-3 text-center font-mono text-ink-muted">{row.xProductoDif.toFixed(2)}%</td>
+                        <td className="py-3 px-3 text-center font-bold text-warning-fg font-mono">{row.liquidacionXProd > 0 ? `${row.liquidacionXProd}%` : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -640,13 +640,13 @@ export function Commissions({
 
               {/* Product Table & Vacation Box */}
               <div className="space-y-4">
-                <div className="border border-slate-100 dark:border-[#E5DEC9] rounded-2xl overflow-hidden">
-                  <div className="bg-[#F7F8FC] dark:bg-[#F7F8FC] px-3 py-2 border-b border-slate-100 dark:border-[#E5DEC9] font-bold text-xs text-slate-700">
+                <div className="border border-line rounded-2xl overflow-hidden">
+                  <div className="bg-surface-2 px-3 py-2 border-b border-line font-bold text-xs text-ink">
                     Por Productos (1era Venta)
                   </div>
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-[#E5DEC9] text-[10px] uppercase text-slate-400">
+                      <tr className="border-b border-line text-xs uppercase text-ink-subtle">
                         <th className="py-2 px-3">Línea</th>
                         <th className="py-2 px-3 text-right">% General</th>
                         <th className="py-2 px-3 text-right">% Dif.</th>
@@ -654,20 +654,20 @@ export function Commissions({
                     </thead>
                     <tbody>
                       {provFirstProducts.map((p, i) => (
-                        <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50">
-                          <td className="py-2 px-3 font-medium text-slate-800 text-[11px]">{p.category}</td>
-                          <td className="py-2 px-3 text-right font-bold text-[#4D4DFF] font-mono">{p.general}%</td>
-                          <td className="py-2 px-3 text-right font-bold text-purple-600 font-mono">{p.diferenciada}%</td>
+                        <tr key={i} className="border-b border-line dark:border-line/50">
+                          <td className="py-2 px-3 font-medium text-ink text-xs">{p.category}</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.general}%</td>
+                          <td className="py-2 px-3 text-right font-bold text-brand-fg font-mono">{p.diferenciada}%</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="bg-purple-50/70 border border-purple-200 p-4 rounded-2xl">
-                  <div className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-1">Cálculo Vacacional (1era Venta)</div>
-                  <div className="text-xl font-black text-slate-900">{provFirstVacationRate}% <span className="text-xs font-semibold text-slate-500">% General</span></div>
-                  <p className="text-[11px] text-slate-500 mt-1">Por ventas realizadas en días de vacaciones. <strong>Sin tope máximo</strong>.</p>
+                <div className="bg-brand-soft/70 border border-brand/30 p-4 rounded-2xl">
+                  <div className="text-xs font-bold text-brand-fg uppercase tracking-wider mb-1">Cálculo Vacacional (1era Venta)</div>
+                  <div className="text-xl font-black text-ink">{provFirstVacationRate}% <span className="text-xs font-semibold text-ink-muted">% General</span></div>
+                  <p className="text-xs text-ink-muted mt-1">Por ventas realizadas en días de vacaciones. <strong>Sin tope máximo</strong>.</p>
                 </div>
               </div>
             </div>
@@ -676,26 +676,26 @@ export function Commissions({
       </div>
 
       {/* SETTLEMENTS HISTORICAL LIST */}
-      <div className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-6 space-y-6">
+      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-[#3D3528] flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#4D4DFF]" />
+            <h3 className="text-lg font-black text-ink flex items-center gap-2">
+              <FileText className="w-5 h-5 text-brand-fg" />
               Historial de Liquidaciones Registradas
             </h3>
-            <p className="text-xs text-slate-500">Resumen y control de pago de comisiones procesadas.</p>
+            <p className="text-xs text-ink-muted">Resumen y control de pago de comisiones procesadas.</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Search Input */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-ink-subtle" />
               <input
                 type="text"
                 placeholder="Buscar por asesor..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-2 bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl text-xs text-slate-800 dark:text-[#3D3528] focus:ring-2 focus:ring-[#4D4DFF]/20 focus:outline-none"
+                className="pl-9 pr-3 py-2 bg-surface-2 border-none rounded-xl text-xs text-ink focus-visible:ring-2 focus-visible:ring-brand/20 focus-visible:outline-none"
               />
             </div>
 
@@ -703,7 +703,7 @@ export function Commissions({
             <select
               value={filterZone}
               onChange={e => setFilterZone(e.target.value)}
-              className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#3D3528] focus:outline-none"
+              className="bg-surface-2 border-none rounded-xl px-3 py-2 text-xs font-semibold text-ink focus-visible:outline-none"
             >
               <option value="TODAS">Todas las Zonas</option>
               <option value="Zona - Lima">Zona - Lima</option>
@@ -715,75 +715,84 @@ export function Commissions({
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#3D3528] focus:outline-none"
+              className="bg-surface-2 border-none rounded-xl px-3 py-2 text-xs font-semibold text-ink focus-visible:outline-none"
             >
               <option value="TODOS">Todos los Estados</option>
               <option value="Pagado">Pagado</option>
               <option value="Pendiente">Pendiente</option>
+              <option value="Perdida">Perdida (&gt;60 días)</option>
             </select>
           </div>
         </div>
 
-        <div className="overflow-x-auto border border-slate-100 dark:border-[#E5DEC9] rounded-2xl">
+        <div className="overflow-x-auto border border-line rounded-2xl">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#F7F8FC] dark:bg-[#F7F8FC] border-b border-slate-100 dark:border-[#E5DEC9]">
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Asesor Comercial</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Zona</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Periodo</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Regla / Modalidad</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ventas Evaluadas</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Tasa (%)</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Comisión</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Estado</th>
-                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Acción</th>
+              <tr className="bg-surface-2 border-b border-line">
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider">Asesor Comercial</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider">Zona</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider">Periodo</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider">Regla / Modalidad</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider text-right">Ventas Evaluadas</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider text-right">Tasa (%)</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider text-right">Comisión</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider text-center">Estado</th>
+                <th className="py-4 px-4 text-xs font-bold text-ink-muted uppercase tracking-wider text-center">Acción</th>
               </tr>
             </thead>
             <tbody>
               {filteredCommissions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400 text-xs font-medium">
+                  <td colSpan={9} className="py-8 text-center text-ink-subtle text-xs font-medium">
                     No se encontraron liquidaciones registradas.
                   </td>
                 </tr>
               ) : (
                 filteredCommissions.map((c, i) => (
-                  <tr key={i} className="border-b border-slate-50 dark:border-slate-100/50 hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-4 text-sm font-bold text-slate-900 dark:text-[#3D3528]">
+                  <tr key={i} className="border-b border-line dark:border-line/50 hover:bg-surface-2/60 transition-colors">
+                    <td className="py-4 px-4 text-sm font-bold text-ink">
                       {c.seller}
-                      {c.notes && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{c.notes}</div>}
+                      {c.notes && <div className="text-xs text-ink-subtle font-normal mt-0.5">{c.notes}</div>}
                     </td>
-                    <td className="py-4 px-4 text-xs text-slate-600 font-medium">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-bold text-[10px]">
-                        <MapPin className="w-3 h-3 text-[#4D4DFF]" />
+                    <td className="py-4 px-4 text-xs text-ink-muted font-medium">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-2 text-ink font-bold text-xs">
+                        <MapPin className="w-3 h-3 text-brand-fg" />
                         {c.zone}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-xs text-slate-500">{c.month}</td>
-                    <td className="py-4 px-4 text-xs text-slate-700">
+                    <td className="py-4 px-4 text-xs text-ink-muted">{c.month}</td>
+                    <td className="py-4 px-4 text-xs text-ink">
                       <span className="font-semibold block">{c.calculationType || 'Por Condición'}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{c.condition} {c.isDiferenciada ? '(Diferenciada)' : ''}</span>
+                      <span className="text-xs text-ink-subtle font-mono">{c.condition} {c.isDiferenciada ? '(Diferenciada)' : ''}</span>
                     </td>
-                    <td className="py-4 px-4 text-sm font-mono text-slate-700 text-right">S/ {c.salesTotal.toFixed(2)}</td>
-                    <td className="py-4 px-4 text-sm font-mono text-slate-800 font-bold text-right">{c.rate.toFixed(2)}%</td>
-                    <td className="py-4 px-4 text-sm font-mono font-black text-emerald-600 text-right">S/ {c.commission.toFixed(2)}</td>
+                    <td className="py-4 px-4 text-sm font-mono text-ink text-right">S/ {c.salesTotal.toFixed(2)}</td>
+                    <td className="py-4 px-4 text-sm font-mono text-ink font-bold text-right">{c.rate.toFixed(2)}%</td>
+                    <td className="py-4 px-4 text-sm font-mono font-black text-right">
+                      <span className={c.status === 'Perdida' ? 'text-danger-fg line-through opacity-70' : 'text-success-fg'}>
+                        S/ {c.commission.toFixed(2)}
+                      </span>
+                    </td>
                     <td className="py-4 px-4 text-center">
-                      <button
+                      <button type="button"
                         onClick={() => onUpdateCommissionStatus && onUpdateCommissionStatus(c.id, c.status === 'Pagado' ? 'Pendiente' : 'Pagado')}
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide cursor-pointer transition-all ${
-                          c.status === 'Pagado' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide cursor-pointer transition-all ${
+                          c.status === 'Pagado' 
+                            ? 'bg-success-soft text-success-fg hover:bg-success-soft' 
+                            : c.status === 'Perdida'
+                              ? 'bg-danger-soft text-danger-fg hover:bg-danger-soft border border-danger/30'
+                              : 'bg-warning-soft text-warning-fg hover:bg-warning-soft'
                         }`}
                         title="Hacer clic para cambiar estado"
                       >
-                        {c.status === 'Pagado' ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        {c.status === 'Pagado' ? <CheckCircle2 className="w-3 h-3" /> : c.status === 'Perdida' ? <X className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                         {c.status}
                       </button>
                     </td>
                     <td className="py-4 px-4 text-center">
                       {onDeleteCommission && (
-                        <button
+                        <button type="button"
                           onClick={() => onDeleteCommission(c.id)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+                          className="p-1.5 text-ink-subtle hover:text-danger-fg hover:bg-danger-soft rounded-lg transition-all cursor-pointer"
                           title="Eliminar liquidación"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -801,29 +810,29 @@ export function Commissions({
       {/* MODAL: NUEVA LIQUIDACIÓN CON CALCULADORA */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-2xl rounded-3xl w-full max-w-xl p-6 md:p-8 relative overflow-hidden"
+              className="bg-surface border border-line shadow-2xl rounded-3xl w-full max-w-xl p-6 md:p-8 relative overflow-hidden"
             >
-              <button
+              <button type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                className="absolute top-4 right-4 text-ink-subtle hover:text-ink cursor-pointer p-1 rounded-lg hover:bg-field-hover transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-[#E5DEC9] pb-4">
-                <div className="p-3 bg-[#4D4DFF]/10 text-[#4D4DFF] rounded-2xl">
+              <div className="flex items-center gap-3 mb-6 border-b border-line pb-4">
+                <div className="p-3 bg-brand/10 text-brand-fg rounded-2xl">
                   <Calculator className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-[#3D3528]">
+                  <h3 className="font-extrabold text-lg text-ink">
                     Generar Nueva Liquidación
                   </h3>
-                  <p className="text-xs text-slate-500">Calculadora automatizada basada en la matriz de comisiones.</p>
+                  <p className="text-xs text-ink-muted">Calculadora automatizada basada en la matriz de comisiones.</p>
                 </div>
               </div>
 
@@ -831,12 +840,12 @@ export function Commissions({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Seller Selection */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Asesor Comercial</label>
+                    <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Asesor Comercial</label>
                     <select
                       required
                       value={seller}
                       onChange={(e) => handleSellerChange(e.target.value)}
-                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-[#3D3528] font-bold focus:outline-none"
+                      className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs text-ink font-bold focus-visible:outline-none"
                     >
                       <option value="">Seleccionar Asesor...</option>
                       {users.length > 0 ? (
@@ -857,11 +866,11 @@ export function Commissions({
 
                   {/* Zone Selection */}
                   <div>
-                    <label className="text-[11px] font-bold text-[#4D4DFF] uppercase block mb-1">Zona de Ventas / Esquema</label>
+                    <label className="text-xs font-bold text-brand-fg uppercase block mb-1">Zona de Ventas / Esquema</label>
                     <select
                       value={zone}
                       onChange={(e) => setZone(e.target.value as SalesZone)}
-                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2.5 text-xs font-extrabold text-slate-800 dark:text-[#3D3528] focus:outline-none"
+                      className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs font-extrabold text-ink focus-visible:outline-none"
                     >
                       <option value="Zona - Lima">Zona - Lima</option>
                       <option value="Provincia - Con Metas">Provincia - Con Metas</option>
@@ -873,11 +882,11 @@ export function Commissions({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Calculation Mode */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Modalidad de Regla</label>
+                    <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Modalidad de Regla</label>
                     <select
                       value={calculationType}
                       onChange={(e) => setCalculationType(e.target.value as CalculationType)}
-                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                      className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs font-bold text-ink focus-visible:outline-none"
                     >
                       <option value="Por Condición">Por Condición de Pago (Crédito)</option>
                       <option value="Por Producto">Por Categoría de Producto</option>
@@ -888,11 +897,11 @@ export function Commissions({
                   {/* Dynamic Rule Option */}
                   {calculationType === 'Por Condición' && (
                     <div>
-                      <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Plazo de Cobro (Días)</label>
+                      <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Plazo de Cobro (Días)</label>
                       <select
                         value={condition}
                         onChange={(e) => setCondition(e.target.value)}
-                        className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                        className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs text-ink focus-visible:outline-none"
                       >
                         <option value="CONTADO">CONTADO</option>
                         {zone === 'Zona - Lima' && <option value="A 30 DIAS">A 30 DIAS</option>}
@@ -906,11 +915,11 @@ export function Commissions({
 
                   {calculationType === 'Por Producto' && (
                     <div>
-                      <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Línea de Producto</label>
+                      <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Línea de Producto</label>
                       <select
                         value={productCategory}
                         onChange={(e) => setProductCategory(e.target.value)}
-                        className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-[#3D3528] focus:outline-none"
+                        className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs text-ink focus-visible:outline-none"
                       >
                         <option value="LLANTAS, CAMARAS">LLANTAS, CAMARAS</option>
                         <option value="KIT, CADENAS, CATALINAS">KIT, CADENAS, CATALINAS</option>
@@ -922,7 +931,7 @@ export function Commissions({
 
                   {calculationType === 'Periodo Vacacional' && (
                     <div className="flex items-center">
-                      <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-xs text-amber-800 font-medium">
+                      <div className="bg-warning-soft border border-warning/30 p-2.5 rounded-xl text-xs text-warning-fg font-medium">
                         {zone === 'Provincia - Con Metas' ? (
                           <span>Se aplicará tope máximo de venta de <strong>S/ {provMetasVacationCap.toLocaleString('es-PE')}</strong> (Tasa: {provMetasVacationRate}%).</span>
                         ) : zone === 'Zona - Lima' ? (
@@ -943,9 +952,9 @@ export function Commissions({
                       id="diferenciadaCheck"
                       checked={isDiferenciada}
                       onChange={(e) => setIsDiferenciada(e.target.checked)}
-                      className="w-4 h-4 text-[#4D4DFF] rounded focus:ring-[#4D4DFF]"
+                      className="w-4 h-4 text-brand-fg rounded focus-visible:ring-brand"
                     />
-                    <label htmlFor="diferenciadaCheck" className="text-xs font-semibold text-purple-700 cursor-pointer">
+                    <label htmlFor="diferenciadaCheck" className="text-xs font-semibold text-brand-fg cursor-pointer">
                       Aplicar Tarifa Diferenciada (Ventas con descuento o precio preferencial)
                     </label>
                   </div>
@@ -955,7 +964,7 @@ export function Commissions({
                   {/* Sales Amount */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase block">Monto de Ventas (S/)</label>
+                      <label className="text-xs font-bold text-ink-muted uppercase block">Monto de Ventas (S/)</label>
                       {seller && quotes && quotes.some(q => q.advisor === seller) && (
                         <button
                           type="button"
@@ -964,7 +973,7 @@ export function Commissions({
                             const total = sellerQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
                             if (total > 0) setSalesTotalInput(total);
                           }}
-                          className="text-[10px] text-[#4D4DFF] font-bold hover:underline cursor-pointer flex items-center gap-1"
+                          className="text-xs text-brand-fg font-bold hover:underline cursor-pointer flex items-center gap-1"
                           title="Auto-calcular de cotizaciones registradas del asesor"
                         >
                           <RotateCcw className="w-3 h-3" />
@@ -980,44 +989,44 @@ export function Commissions({
                       placeholder="Ej. 15000.00"
                       value={salesTotalInput}
                       onChange={(e) => setSalesTotalInput(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2.5 text-sm font-mono font-bold focus:outline-none"
+                      className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-4 py-2.5 text-sm font-mono font-bold focus-visible:outline-none"
                     />
                   </div>
 
                   {/* Period */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Periodo a Liquidar</label>
+                    <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Periodo a Liquidar</label>
                     <input
                       type="text"
                       required
                       value={month}
                       onChange={(e) => setMonth(e.target.value)}
                       placeholder="Ej. Septiembre 2026"
-                      className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none"
+                      className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-4 py-2.5 text-xs font-medium focus-visible:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* LIVE CALCULATION PREVIEW BOX */}
-                <div className="bg-slate-900 text-white p-4 rounded-2xl space-y-2 relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs text-slate-300 border-b border-slate-800 pb-2">
-                    <span className="font-bold uppercase tracking-wider flex items-center gap-1.5 text-blue-400">
+                <div className="bg-ink text-ink-inverse p-4 rounded-2xl space-y-2 relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs text-ink-subtle border-b border-line-strong pb-2">
+                    <span className="font-bold uppercase tracking-wider flex items-center gap-1.5 text-brand-fg">
                       <Sparkles className="w-3.5 h-3.5" />
                       Vista Previa del Cálculo
                     </span>
-                    <span className="font-mono text-emerald-400 font-bold">Tasa: {currentCalculation.rate.toFixed(2)}%</span>
+                    <span className="font-mono text-success-fg font-bold">Tasa: {currentCalculation.rate.toFixed(2)}%</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
                     <div>
-                      <div className="text-[11px] text-slate-400">Comisión Estimada a Pagar:</div>
+                      <div className="text-xs text-ink-subtle">Comisión Estimada a Pagar:</div>
                       {currentCalculation.isCapped && (
-                        <div className="text-[10px] text-amber-400 font-semibold mt-0.5">
+                        <div className="text-xs text-warning-fg font-semibold mt-0.5">
                           *Tope de venta aplicado: S/ {provMetasVacationCap.toLocaleString('es-PE')}
                         </div>
                       )}
                     </div>
-                    <div className="text-2xl font-black font-mono text-emerald-400">
+                    <div className="text-2xl font-black font-mono text-success-fg">
                       S/ {currentCalculation.commissionAmt.toFixed(2)}
                     </div>
                   </div>
@@ -1025,19 +1034,19 @@ export function Commissions({
 
                 {/* Notes */}
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Observaciones / Notas</label>
+                  <label className="text-xs font-bold text-ink-muted uppercase block mb-1">Observaciones / Notas</label>
                   <input
                     type="text"
                     placeholder="Ej. Cobranza realizada dentro del plazo pactado"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full bg-[#F7F8FC] dark:bg-[#F7F8FC] border-none focus:ring-2 focus:ring-[#4D4DFF]/20 rounded-xl px-4 py-2 text-xs focus:outline-none"
+                    className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-4 py-2 text-xs focus-visible:outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full mt-4 bg-[#4D4DFF] hover:bg-blue-600 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-[#4D4DFF]/30 cursor-pointer text-sm"
+                  className="btn-primary w-full mt-4"
                 >
                   Generar Liquidación Oficial
                 </button>
@@ -1050,36 +1059,36 @@ export function Commissions({
       {/* MODAL: EDIT MATRIX PARAMETERS */}
       <AnimatePresence>
         {isEditMatrixModalOpen && (
-          <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-[#FFFFFF] border border-slate-100 dark:border-slate-50 shadow-2xl rounded-3xl w-full max-w-4xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto text-left space-y-6"
+              className="bg-surface border border-line shadow-2xl rounded-3xl w-full max-w-4xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto text-left space-y-6"
             >
-              <button
+              <button type="button"
                 onClick={() => setIsEditMatrixModalOpen(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                className="absolute top-4 right-4 text-ink-subtle hover:text-ink cursor-pointer p-1 rounded-lg hover:bg-field-hover transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between border-b border-line pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-amber-100 text-amber-700 rounded-2xl">
+                  <div className="p-3 bg-warning-soft text-warning-fg rounded-2xl">
                     <Edit3 className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-lg text-slate-900 dark:text-[#3D3528]">
+                    <h3 className="font-extrabold text-lg text-ink">
                       Editar Parámetros y Porcentajes de Comisiones
                     </h3>
-                    <p className="text-xs text-slate-500">Modifica libremente las tasas para cada zona, condición o categoría.</p>
+                    <p className="text-xs text-ink-muted">Modifica libremente las tasas para cada zona, condición o categoría.</p>
                   </div>
                 </div>
 
-                <button
+                <button type="button"
                   onClick={handleResetMatrixDefaults}
-                  className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
+                  className="btn-danger-ghost gap-1"
                   title="Restablecer valores originales de fábrica"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -1090,15 +1099,15 @@ export function Commissions({
               {/* SECTIONS BY ZONE */}
               <div className="space-y-6">
                 {/* ZONA LIMA */}
-                <div className="space-y-3 bg-[#F7F8FC] p-4 rounded-2xl border border-slate-200">
-                  <h4 className="font-extrabold text-sm text-[#4D4DFF]">1. ZONA LIMA</h4>
+                <div className="space-y-3 bg-surface-2 p-4 rounded-2xl border border-line">
+                  <h4 className="font-extrabold text-sm text-brand-fg">1. ZONA LIMA</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {limaConditions.map((condRow, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
-                        <div className="font-bold text-xs text-slate-800">{condRow.condition}</div>
+                      <div key={idx} className="bg-surface p-3 rounded-xl border border-line space-y-2">
+                        <div className="font-bold text-xs text-ink">{condRow.condition}</div>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% General</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% General</label>
                             <input
                               type="number"
                               step="0.1"
@@ -1107,11 +1116,11 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setLimaConditions(prev => prev.map((item, i) => i === idx ? { ...item, general: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-[#4D4DFF]"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% Diferenciada</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% Diferenciada</label>
                             <input
                               type="number"
                               step="0.1"
@@ -1120,7 +1129,7 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setLimaConditions(prev => prev.map((item, i) => i === idx ? { ...item, diferenciada: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-purple-600"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                         </div>
@@ -1135,21 +1144,21 @@ export function Commissions({
                       step="0.1"
                       value={limaVacationRate}
                       onChange={(e) => setLimaVacationRate(Number(e.target.value))}
-                      className="w-24 border rounded px-2 py-1 font-mono font-bold text-blue-600"
+                      className="w-24 border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                     />
                   </div>
                 </div>
 
                 {/* PROVINCIA CON METAS */}
-                <div className="space-y-3 bg-emerald-50/40 p-4 rounded-2xl border border-emerald-200">
-                  <h4 className="font-extrabold text-sm text-emerald-700">2. PROVINCIA (CON METAS)</h4>
+                <div className="space-y-3 bg-success-soft/40 p-4 rounded-2xl border border-success/30">
+                  <h4 className="font-extrabold text-sm text-success-fg">2. PROVINCIA (CON METAS)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {provMetasConditions.map((condRow, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
-                        <div className="font-bold text-xs text-slate-800">{condRow.condition}</div>
+                      <div key={idx} className="bg-surface p-3 rounded-xl border border-line space-y-2">
+                        <div className="font-bold text-xs text-ink">{condRow.condition}</div>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% General</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% General</label>
                             <input
                               type="number"
                               step="0.1"
@@ -1158,11 +1167,11 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setProvMetasConditions(prev => prev.map((item, i) => i === idx ? { ...item, general: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-[#4D4DFF]"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% Diferenciada</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% Diferenciada</label>
                             <input
                               type="number"
                               step="0.1"
@@ -1171,7 +1180,7 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setProvMetasConditions(prev => prev.map((item, i) => i === idx ? { ...item, diferenciada: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-purple-600"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                         </div>
@@ -1187,7 +1196,7 @@ export function Commissions({
                         step="0.1"
                         value={provMetasVacationRate}
                         onChange={(e) => setProvMetasVacationRate(Number(e.target.value))}
-                        className="w-20 border rounded px-2 py-1 font-mono font-bold text-emerald-600"
+                        className="w-20 border rounded px-2 py-1 font-mono font-bold text-success-fg"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -1197,22 +1206,22 @@ export function Commissions({
                         step="1000"
                         value={provMetasVacationCap}
                         onChange={(e) => setProvMetasVacationCap(Number(e.target.value))}
-                        className="w-32 border rounded px-2 py-1 font-mono font-bold text-amber-700"
+                        className="w-32 border rounded px-2 py-1 font-mono font-bold text-warning-fg"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* PROVINCIA DESDE 1ERA VENTA */}
-                <div className="space-y-3 bg-purple-50/40 p-4 rounded-2xl border border-purple-200">
-                  <h4 className="font-extrabold text-sm text-purple-700">3. PROVINCIA (DESDE 1ERA VENTA)</h4>
+                <div className="space-y-3 bg-brand-soft/40 p-4 rounded-2xl border border-brand/30">
+                  <h4 className="font-extrabold text-sm text-brand-fg">3. PROVINCIA (DESDE 1ERA VENTA)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {provFirstConditions.map((condRow, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
-                        <div className="font-bold text-xs text-slate-800">{condRow.condition}</div>
+                      <div key={idx} className="bg-surface p-3 rounded-xl border border-line space-y-2">
+                        <div className="font-bold text-xs text-ink">{condRow.condition}</div>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% General</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% General</label>
                             <input
                               type="number"
                               step="0.05"
@@ -1221,11 +1230,11 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setProvFirstConditions(prev => prev.map((item, i) => i === idx ? { ...item, general: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-[#4D4DFF]"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-500 block">% Diferenciada</label>
+                            <label className="text-xs font-semibold text-ink-muted block">% Diferenciada</label>
                             <input
                               type="number"
                               step="0.05"
@@ -1234,7 +1243,7 @@ export function Commissions({
                                 const val = Number(e.target.value);
                                 setProvFirstConditions(prev => prev.map((item, i) => i === idx ? { ...item, diferenciada: val } : item));
                               }}
-                              className="w-full border rounded px-2 py-1 font-mono font-bold text-purple-600"
+                              className="w-full border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                             />
                           </div>
                         </div>
@@ -1249,22 +1258,22 @@ export function Commissions({
                       step="0.05"
                       value={provFirstVacationRate}
                       onChange={(e) => setProvFirstVacationRate(Number(e.target.value))}
-                      className="w-24 border rounded px-2 py-1 font-mono font-bold text-purple-600"
+                      className="w-24 border rounded px-2 py-1 font-mono font-bold text-brand-fg"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
-                <button
+              <div className="flex gap-3 pt-4 border-t border-line">
+                <button type="button"
                   onClick={() => setIsEditMatrixModalOpen(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
+                  className="flex-1 bg-surface-2 hover:bg-field-hover text-ink font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
-                <button
+                <button type="button"
                   onClick={handleSaveMatrixChanges}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  className="flex-1 bg-success hover:bg-success text-white font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   <span>Guardar Nuevos Parámetros</span>

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermission, PurchaseOrder } from '../types';
+import { User, Product, Quote, QuoteItem, Telemetry, TravelExpense, RolePermission, PurchaseOrder, Categoria } from '../types';
 
 export const getUserPermissions = (user: User | null, rolesList: RolePermission[] = []) => {
   if (!user) {
-    return { dashboard: false, catalog: true, inventory: false, quotes: false, maintenance: false, telemetry: false, expenses: false, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: false, admin: false };
+    return { dashboard: false, catalog: true, inventory: false, quotes: false, maintenance: false, telemetry: false, expenses: false, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: false, admin: false, picking: false, shippingGuides: false, kardex: false };
   }
   const roleLower = (user.role || "").trim().toLowerCase();
   
@@ -23,26 +23,67 @@ export const getUserPermissions = (user: User | null, rolesList: RolePermission[
         receivables: p.receivables ?? false,
         discounts: p.discounts ?? (p.admin ?? false),
         commissions: p.commissions ?? (p.admin ?? false),
-        sync: true,
+        sync: p.sync ?? true,
         admin: p.admin ?? false,
-        dashboard: p.dashboard ?? (p.admin || roleLower.includes("admin") || roleLower.includes("finanza"))
+        dashboard: p.dashboard ?? (p.admin || roleLower.includes("admin") || roleLower.includes("finanza")),
+        billing: p.billing ?? false,
+        // Roles guardados antes de existir estos permisos heredan del acceso a inventario.
+        picking: p.picking ?? p.inventory ?? false,
+        shippingGuides: p.shippingGuides ?? p.picking ?? p.inventory ?? false,
+        kardex: p.kardex ?? p.inventory ?? false
       };
     }
   }
 
   if (roleLower === "admin general" || roleLower.includes("admin") || roleLower.includes("gerencia")) {
-    return { dashboard: true, catalog: true, inventory: true, quotes: true, maintenance: true, telemetry: true, expenses: true, travelBudgets: true, purchases: true, receivables: true, discounts: true, commissions: true, sync: true, admin: true };
+    return { dashboard: true, catalog: true, inventory: true, quotes: true, maintenance: true, telemetry: true, expenses: true, travelBudgets: true, purchases: true, receivables: true, discounts: true, commissions: true, sync: true, admin: true, billing: true, picking: true, shippingGuides: true, kardex: true };
   }
-  if (roleLower === "jefe de finanzas" || roleLower.includes("finanza") || roleLower.includes("contab")) {
-    return { dashboard: true, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: false, expenses: true, travelBudgets: true, purchases: false, receivables: true, discounts: true, commissions: true, sync: true, admin: false };
+  if (roleLower.includes("contab")) {
+    return { dashboard: false, catalog: false, inventory: false, quotes: true, maintenance: false, telemetry: false, expenses: true, travelBudgets: true, purchases: false, receivables: true, discounts: false, commissions: true, sync: true, admin: false, billing: true, picking: false, shippingGuides: false, kardex: false };
+  }
+  if (roleLower === "jefe de finanzas" || roleLower.includes("finanza")) {
+    return { dashboard: true, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: false, expenses: true, travelBudgets: true, purchases: false, receivables: true, discounts: true, commissions: true, sync: true, admin: false, billing: true, picking: false, shippingGuides: false };
   }
   if (roleLower === "jefe de almacén" || roleLower.includes("almacen") || roleLower.includes("logística")) {
-    return { dashboard: false, catalog: true, inventory: true, quotes: false, maintenance: true, telemetry: false, expenses: false, travelBudgets: false, purchases: true, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
+    return { dashboard: false, catalog: true, inventory: true, quotes: false, maintenance: true, telemetry: false, expenses: false, travelBudgets: false, purchases: true, receivables: false, discounts: false, commissions: false, sync: true, admin: false, billing: false, picking: true, shippingGuides: true, kardex: true };
   }
-  if (roleLower === "ventas" || roleLower.includes("ventas") || roleLower.includes("comercial")) {
-    return { dashboard: false, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
+  if (roleLower === "ventas" || roleLower.includes("ventas") || roleLower.includes("comercial") || roleLower.includes("asesor")) {
+    return { dashboard: true, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false, billing: false, picking: false, shippingGuides: false };
   }
-  return { dashboard: false, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false };
+  return { dashboard: false, catalog: true, inventory: false, quotes: true, maintenance: false, telemetry: true, expenses: true, travelBudgets: false, purchases: false, receivables: false, discounts: false, commissions: false, sync: true, admin: false, billing: false, picking: false, shippingGuides: false };
+};
+
+/**
+ * Retorna la ruta inicial y por defecto adecuada según los permisos otorgados al usuario.
+ */
+export const getDefaultRouteForUser = (user: User | null, rolesList: RolePermission[] = []): string => {
+  if (!user) return "/";
+  const perms = getUserPermissions(user, rolesList);
+  const roleLower = (user.role || "").toLowerCase();
+
+  // Destinos específicos por perfil de trabajo
+  if (roleLower.includes("contab") && perms.billing) return "/billing";
+  if (roleLower.includes("contab") && perms.travelBudgets) return "/travel-budgets";
+  if (roleLower.includes("almacen") && (perms.inventory || perms.purchases)) return "/inventory";
+  if ((roleLower.includes("asesor") || roleLower.includes("venta")) && perms.dashboard) return "/";
+  if ((roleLower.includes("asesor") || roleLower.includes("venta")) && perms.catalog) return "/catalog";
+  if (roleLower.includes("admin") && perms.dashboard) return "/";
+
+  // Prioridad según permisos habilitados
+  if (perms.dashboard) return "/";
+  if (perms.travelBudgets) return "/travel-budgets";
+  if (perms.expenses) return "/expenses";
+  if (perms.catalog) return "/catalog";
+  if (perms.inventory || perms.purchases) return "/inventory";
+  if (perms.quotes) return "/quotes";
+  if (perms.receivables) return "/receivables";
+  if (perms.billing) return "/billing";
+  if (perms.discounts) return "/discounts";
+  if (perms.commissions) return "/commissions";
+  if (perms.telemetry) return "/telemetry";
+  if (perms.sync) return "/sync";
+  if (perms.admin) return "/admin";
+  return "/travel-budgets";
 };
 
 interface AppState {
@@ -57,6 +98,8 @@ interface AppState {
   
   products: Product[];
   setProducts: (products: Product[]) => void;
+  categorias: Categoria[];
+  setCategorias: (categorias: Categoria[]) => void;
   quotes: Quote[];
   setQuotes: (quotes: Quote[]) => void;
   users: User[];
@@ -90,6 +133,9 @@ interface AppState {
   
   selectedProduct: Product | null;
   setSelectedProduct: (product: Product | null) => void;
+
+  companySettings: import('../types').CompanySettings | null;
+  setCompanySettings: (settings: import('../types').CompanySettings) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -117,6 +163,8 @@ export const useAppStore = create<AppState>((set) => ({
   
   products: [],
   setProducts: (products) => set({ products }),
+  categorias: [],
+  setCategorias: (categorias) => set({ categorias }),
   quotes: [],
   setQuotes: (quotes) => set({ quotes }),
   users: [],
@@ -125,8 +173,16 @@ export const useAppStore = create<AppState>((set) => ({
   setTelemetry: (telemetry) => set({ telemetry }),
   expenses: [],
   setExpenses: (expenses) => set({ expenses }),
-  rolesList: [],
-  setRolesList: (rolesList) => set({ rolesList }),
+  rolesList: (() => {
+    try {
+      const saved = localStorage.getItem("choho_roles");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  })(),
+  setRolesList: (rolesList) => {
+    try { localStorage.setItem("choho_roles", JSON.stringify(rolesList)); } catch {}
+    set({ rolesList });
+  },
   
   purchases: [],
   setPurchases: (purchases) => set({ purchases }),
@@ -151,4 +207,7 @@ export const useAppStore = create<AppState>((set) => ({
   
   selectedProduct: null,
   setSelectedProduct: (selectedProduct) => set({ selectedProduct }),
+
+  companySettings: null,
+  setCompanySettings: (companySettings) => set({ companySettings }),
 }));

@@ -8,3 +8,9 @@ coverage/
 !.env.example
 *.zip
 
+
+playwright-report/
+test-results/
+.openchamber/
+.archify/
+.vscode/
