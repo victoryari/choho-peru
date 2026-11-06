@@ -21,13 +21,17 @@ import {
   Tags,
   TrendingUp,
   User,
-  Truck
+  Truck,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppStore, getUserPermissions } from "../store/useAppStore";
 import { ChohoLogo } from "./ChohoLogo";
 import { NotificationCenter } from "./NotificationCenter";
 import { UserProfileModal } from "./UserProfileModal";
+import { DeviceBadge } from "./DeviceBadge";
+import { useDeviceType } from "../hooks/useDeviceType";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,6 +42,24 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const device = useDeviceType();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem("choho_sidebar_collapsed");
+      if (saved !== null) return saved === "true";
+    } catch {}
+    return typeof window !== "undefined" && window.innerWidth < 1200;
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("choho_sidebar_collapsed", String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const {
     theme,
@@ -96,120 +118,346 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex-1 flex flex-col md:flex-row h-screen overflow-hidden">
       {/* Sidebar Left Navigation (Desktop Only) */}
-      <aside className="hidden md:flex flex-col w-64 h-full bg-surface-2/70 dark:bg-surface border-r border-line p-4 shrink-0 shadow-xs">
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-line">
-            <ChohoLogo size="sm" showTagline={true} />
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                isOfflineMode ? "bg-warning animate-pulse" : "bg-success"
-              }`}
-              title={isOfflineMode ? "Memoria Local" : "Base de Datos Conectada"}
-            />
+      <aside
+        className={`hidden md:flex flex-col h-full bg-surface-2/70 dark:bg-surface border-r border-line p-3 shrink-0 shadow-xs transition-all duration-200 select-none ${
+          isSidebarCollapsed ? "w-18" : "w-64"
+        }`}
+      >
+        <div className="flex-1 min-h-0 overflow-y-auto pr-0.5 space-y-4">
+          <div
+            className={`flex items-center pb-3 border-b border-line gap-2 ${
+              isSidebarCollapsed ? "flex-col justify-center" : "justify-between"
+            }`}
+          >
+            {!isSidebarCollapsed ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <ChohoLogo size="sm" showTagline={true} />
+                <span
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    isOfflineMode ? "bg-warning animate-pulse" : "bg-success"
+                  }`}
+                  title={isOfflineMode ? "Memoria Local" : "Base de Datos Conectada"}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center relative my-1">
+                <ChohoLogo size="sm" showTagline={false} iconOnly={true} />
+                <span
+                  className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 ${
+                    isOfflineMode ? "bg-warning animate-pulse" : "bg-success"
+                  }`}
+                  title={isOfflineMode ? "Memoria Local" : "Base de Datos Conectada"}
+                />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={isSidebarCollapsed ? "Expandir menú lateral" : "Colapsar menú lateral"}
+              title={isSidebarCollapsed ? "Expandir menú completo" : "Colapsar menú (modo tablet amplio)"}
+              className="p-1.5 rounded-xl border border-line bg-surface hover:bg-surface-2 text-ink-muted hover:text-ink transition-colors cursor-pointer shrink-0"
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
           </div>
-
 
           {/* Menú Principal */}
           <div className="space-y-1.5 text-left">
-            <div className="text-xs font-bold uppercase tracking-wider text-ink-subtle px-3">Menú Principal</div>
+            {!isSidebarCollapsed ? (
+              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle px-3 pt-1">
+                Menú Principal
+              </div>
+            ) : (
+              <div className="border-t border-line/60 my-2 mx-1" />
+            )}
             <nav className="space-y-1">
               {userPermissions.dashboard && (
-                <Link to="/" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span>Cuadro de Mando</span>
+                <Link
+                  to="/"
+                  title={isSidebarCollapsed ? "Cuadro de Mando" : undefined}
+                  className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                    isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                  } ${
+                    isActive("/")
+                      ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                      : "text-ink-muted hover:bg-surface hover:text-ink"
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4 shrink-0" />
+                  {!isSidebarCollapsed && <span className="truncate">Cuadro de Mando</span>}
                 </Link>
               )}
               {userPermissions.catalog && (
-                <Link to="/catalog" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/catalog") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Catálogo de Repuestos</span>
+                <Link
+                  to="/catalog"
+                  title={isSidebarCollapsed ? "Catálogo de Repuestos" : undefined}
+                  className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                    isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                  } ${
+                    isActive("/catalog")
+                      ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                      : "text-ink-muted hover:bg-surface hover:text-ink"
+                  }`}
+                >
+                  <ShoppingBag className="w-4 h-4 shrink-0" />
+                  {!isSidebarCollapsed && <span className="truncate">Catálogo de Repuestos</span>}
                 </Link>
               )}
             </nav>
           </div>
 
           {/* Módulos Comerciales */}
-          {(userPermissions.inventory || userPermissions.picking || userPermissions.shippingGuides || userPermissions.quotes || (userPermissions as any).billing || userPermissions.telemetry || userPermissions.expenses || userPermissions.purchases || userPermissions.receivables) && (
+          {(userPermissions.inventory ||
+            userPermissions.picking ||
+            userPermissions.shippingGuides ||
+            userPermissions.quotes ||
+            (userPermissions as any).billing ||
+            userPermissions.telemetry ||
+            userPermissions.expenses ||
+            userPermissions.purchases ||
+            userPermissions.receivables) && (
             <div className="space-y-1.5 text-left pt-1">
-              <div className="text-xs font-bold uppercase tracking-wider text-ink-subtle px-3">Módulos Comerciales</div>
+              {!isSidebarCollapsed ? (
+                <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle px-3">
+                  Módulos Comerciales
+                </div>
+              ) : (
+                <div className="border-t border-line/60 my-2 mx-1" />
+              )}
               <nav className="space-y-1">
                 {userPermissions.kardex && (
-                    <Link to="/kardex" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 text-ink-muted hover:text-ink rounded-xl hover:bg-surface transition-colors">
-                      <Boxes className="w-5 h-5" /> <span className="text-sm font-semibold">Kárdex & Sedes</span>
-                    </Link>
-                  )}
-                  {userPermissions.inventory && (
-                  <Link to="/inventory" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/inventory") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Boxes className="w-4 h-4" />
-                    <span>Control de Inventario</span>
+                  <Link
+                    to="/kardex"
+                    title={isSidebarCollapsed ? "Kárdex Físico & Transferencias" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/kardex")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Boxes className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Kárdex & Sedes</span>}
+                  </Link>
+                )}
+                {userPermissions.inventory && (
+                  <Link
+                    to="/inventory"
+                    title={isSidebarCollapsed ? "Control de Inventario" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/inventory")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Package className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Control de Inventario</span>}
                   </Link>
                 )}
                 {userPermissions.picking && (
-                  <Link to="/picking" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/picking") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Boxes className="w-4 h-4" />
-                    <span>Picking & Empaque</span>
+                  <Link
+                    to="/picking"
+                    title={isSidebarCollapsed ? "Picking & Empaque" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/picking")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Boxes className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Picking & Empaque</span>}
                   </Link>
                 )}
                 {userPermissions.shippingGuides && (
-                  <Link to="/shipping-guides" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/shipping-guides") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Truck className="w-4 h-4" />
-                    <span>Guías de Remisión</span>
+                  <Link
+                    to="/shipping-guides"
+                    title={isSidebarCollapsed ? "Guías de Remisión Electrónicas (GRE)" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/shipping-guides")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Truck className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Guías de Remisión</span>}
                   </Link>
                 )}
                 {userPermissions.quotes && (
                   <>
-                    <Link to="/cart" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/cart") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                      <div className="flex items-center gap-3"><FileText className="w-4 h-4" /><span>Crear Presupuesto</span></div>
+                    <Link
+                      to="/cart"
+                      title={isSidebarCollapsed ? "Crear Presupuesto" : undefined}
+                      className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                        isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3 justify-between"
+                      } ${
+                        isActive("/cart")
+                          ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                          : "text-ink-muted hover:bg-surface hover:text-ink"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="w-4 h-4 shrink-0" />
+                        {!isSidebarCollapsed && <span className="truncate">Crear Presupuesto</span>}
+                      </div>
                       {budgetItems.length > 0 && (
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isActive("/cart") ? "bg-white/20 text-white" : "bg-warning text-ink"}`}>{budgetItems.length}</span>
+                        <span
+                          className={`font-bold rounded-full ${
+                            isSidebarCollapsed
+                              ? "absolute -top-1 -right-1 text-[9px] px-1.5 py-0.2"
+                              : "text-micro px-2 py-0.5"
+                          } ${isActive("/cart") ? "bg-white/20 text-white" : "bg-warning text-ink"}`}
+                        >
+                          {budgetItems.length}
+                        </span>
                       )}
                     </Link>
-                    <Link to="/quotes" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/quotes") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                      <FileText className="w-4 h-4" /><span>Mis Cotizaciones</span>
+                    <Link
+                      to="/quotes"
+                      title={isSidebarCollapsed ? "Mis Cotizaciones" : undefined}
+                      className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                        isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                      } ${
+                        isActive("/quotes")
+                          ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                          : "text-ink-muted hover:bg-surface hover:text-ink"
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 shrink-0" />
+                      {!isSidebarCollapsed && <span className="truncate">Mis Cotizaciones</span>}
                     </Link>
                   </>
                 )}
                 {userPermissions.billing && (
-                  <Link to="/billing" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/billing") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <div className="flex items-center gap-3">
-                      <Receipt className="w-4 h-4" />
-                      <span>Facturación SUNAT</span>
+                  <Link
+                    to="/billing"
+                    title={isSidebarCollapsed ? "Facturación SUNAT" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3 justify-between"
+                    } ${
+                      isActive("/billing")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Receipt className="w-4 h-4 shrink-0" />
+                      {!isSidebarCollapsed && <span className="truncate">Facturación SUNAT</span>}
                     </div>
                     {pendingBillingQuotesCount > 0 && (
-                      <span className={`text-micro font-bold px-1.5 py-0.5 rounded-full ${isActive("/billing") ? "bg-white/20 text-white" : "bg-emerald-500 text-white"}`} title={`${pendingBillingQuotesCount} cotizaciones aprobadas pendientes de facturar`}>
+                      <span
+                        className={`font-bold rounded-full ${
+                          isSidebarCollapsed
+                            ? "absolute -top-1 -right-1 text-[9px] px-1.5 py-0.2"
+                            : "text-micro px-1.5 py-0.5"
+                        } ${isActive("/billing") ? "bg-white/20 text-white" : "bg-emerald-500 text-white"}`}
+                        title={`${pendingBillingQuotesCount} cotizaciones pendientes`}
+                      >
                         {pendingBillingQuotesCount}
                       </span>
                     )}
                   </Link>
                 )}
                 {userPermissions.telemetry && (
-                  <Link to="/telemetry" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/telemetry") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Compass className="w-4 h-4" /><span>Check-ins de Campo</span>
+                  <Link
+                    to="/telemetry"
+                    title={isSidebarCollapsed ? "Check-ins de Campo" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/telemetry")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Compass className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Check-ins de Campo</span>}
                   </Link>
                 )}
                 {userPermissions.travelBudgets && (
-                  <Link to="/travel-budgets" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/travel-budgets") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Wallet className="w-4 h-4" /><span>Caja Chica & Viáticos</span>
+                  <Link
+                    to="/travel-budgets"
+                    title={isSidebarCollapsed ? "Caja Chica & Viáticos" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/travel-budgets")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Wallet className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Caja Chica & Viáticos</span>}
                   </Link>
                 )}
                 {userPermissions.expenses && (
-                  <Link to="/expenses" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/expenses") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Receipt className="w-4 h-4" /><span>Sustento de Viáticos</span>
+                  <Link
+                    to="/expenses"
+                    title={isSidebarCollapsed ? "Sustento de Viáticos" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/expenses")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Receipt className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Sustento de Viáticos</span>}
                   </Link>
                 )}
                 {userPermissions.receivables && (
-                  <Link to="/receivables" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/receivables") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <DollarSign className="w-4 h-4" /><span>Cuentas por Cobrar</span>
+                  <Link
+                    to="/receivables"
+                    title={isSidebarCollapsed ? "Cuentas por Cobrar" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/receivables")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <DollarSign className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Cuentas por Cobrar</span>}
                   </Link>
                 )}
                 {userPermissions.discounts && (
-                  <Link to="/discounts" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/discounts") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <Tags className="w-4 h-4" /><span>Reglas de Descuento</span>
+                  <Link
+                    to="/discounts"
+                    title={isSidebarCollapsed ? "Reglas de Descuento" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/discounts")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <Tags className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Reglas de Descuento</span>}
                   </Link>
                 )}
                 {userPermissions.commissions && (
-                  <Link to="/commissions" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/commissions") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                    <TrendingUp className="w-4 h-4" /><span>Cálculo Comisiones</span>
+                  <Link
+                    to="/commissions"
+                    title={isSidebarCollapsed ? "Cálculo de Comisiones" : undefined}
+                    className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                      isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                    } ${
+                      isActive("/commissions")
+                        ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                        : "text-ink-muted hover:bg-surface hover:text-ink"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Cálculo Comisiones</span>}
                   </Link>
                 )}
               </nav>
@@ -218,26 +466,74 @@ export function Layout({ children }: LayoutProps) {
 
           {/* Sistema & Ajustes */}
           <div className="space-y-1.5 text-left pt-1">
-            <div className="text-xs font-bold uppercase tracking-wider text-ink-subtle px-3">Sistema & Ajustes</div>
+            {!isSidebarCollapsed ? (
+              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle px-3">
+                Sistema & Ajustes
+              </div>
+            ) : (
+              <div className="border-t border-line/60 my-2 mx-1" />
+            )}
             <nav className="space-y-1">
               {userPermissions.sync && (
-                <Link to="/sync" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive("/sync") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                  <div className="flex items-center gap-3"><Cloud className="w-4 h-4" /><span>Sincronización</span></div>
-                  {offlinePendingQuotes.length > 0 && <span className="bg-warning text-ink text-xs font-bold px-2 py-0.5 rounded-full animate-bounce">{offlinePendingQuotes.length}</span>}
+                <Link
+                  to="/sync"
+                  title={isSidebarCollapsed ? "Centro de Sincronización" : undefined}
+                  className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                    isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3 justify-between"
+                  } ${
+                    isActive("/sync")
+                      ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                      : "text-ink-muted hover:bg-surface hover:text-ink"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Cloud className="w-4 h-4 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Sincronización</span>}
+                  </div>
+                  {offlinePendingQuotes.length > 0 && (
+                    <span
+                      className={`font-bold rounded-full ${
+                        isSidebarCollapsed
+                          ? "absolute -top-1 -right-1 text-[9px] px-1.5 py-0.2"
+                          : "text-micro px-2 py-0.5"
+                      } bg-warning text-ink animate-bounce`}
+                    >
+                      {offlinePendingQuotes.length}
+                    </span>
+                  )}
                 </Link>
               )}
               {userPermissions.admin && (
-                <Link to="/admin" className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 transition-all cursor-pointer ${isActive("/admin") ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
-                  <Users className="w-4 h-4" /><span>Administrar Sistema</span>
+                <Link
+                  to="/admin"
+                  title={isSidebarCollapsed ? "Administración de Usuarios y Sedes" : undefined}
+                  className={`relative w-full rounded-xl text-xs font-semibold flex items-center transition-all cursor-pointer ${
+                    isSidebarCollapsed ? "justify-center p-2.5 h-10" : "px-3 py-2 gap-3"
+                  } ${
+                    isActive("/admin")
+                      ? "bg-brand text-brand-contrast shadow-sm shadow-brand/20 font-bold"
+                      : "text-ink-muted hover:bg-surface hover:text-ink"
+                  }`}
+                >
+                  <Users className="w-4 h-4 shrink-0" />
+                  {!isSidebarCollapsed && <span className="truncate">Administrar Sistema</span>}
                 </Link>
               )}
             </nav>
           </div>
         </div>
 
-        <div className="shrink-0 pt-3 border-t border-line space-y-2.5 text-left">
-          <button type="button" onClick={handleLogout} className="w-full px-3 py-1.5 text-xs font-semibold text-ink-muted hover:text-danger-fg dark:hover:text-brand-fg flex items-center gap-2.5 transition-all cursor-pointer">
-            <LogOut className="w-4 h-4" /><span>Cerrar Sesión</span>
+        <div className="shrink-0 pt-3 border-t border-line text-left">
+          <button
+            type="button"
+            onClick={handleLogout}
+            title={isSidebarCollapsed ? "Cerrar Sesión" : undefined}
+            className={`w-full rounded-xl text-xs font-semibold text-ink-muted hover:text-danger-fg dark:hover:text-brand-fg flex items-center transition-all cursor-pointer ${
+              isSidebarCollapsed ? "justify-center p-2.5 h-10 hover:bg-surface" : "px-3 py-2 gap-2.5"
+            }`}
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {!isSidebarCollapsed && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </aside>
@@ -269,6 +565,7 @@ export function Layout({ children }: LayoutProps) {
             )}
           </div>
           <div className="flex items-center gap-2 md:gap-3">
+            <DeviceBadge />
             <button
               type="button"
               onClick={toggleTheme}
@@ -309,7 +606,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-28 md:pb-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 space-y-5 pb-28 md:pb-6">
           {children}
         </div>
       </main>

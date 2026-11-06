@@ -299,9 +299,9 @@ export function ExpensesManager({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Form Panel: Register new expense */}
-        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs h-fit space-y-4">
+        <div className="lg:col-span-5 xl:col-span-4 bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
           <h4 className="font-extrabold text-sm text-ink font-display pb-3 border-b border-line flex items-center gap-2">
             <Plus className="w-4 h-4 text-brand-fg" />
             Registrar Comprobante de Viático
@@ -328,11 +328,11 @@ export function ExpensesManager({
           >
             <label htmlFor="sales-xml-input" className="cursor-pointer flex items-center gap-2 w-full">
               <Sparkles className="w-4 h-4 text-brand-fg shrink-0" />
-              <div className="flex-1 text-left">
-                <div className="font-bold text-ink">
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-bold text-ink truncate">
                   {xmlFileName ? `XML: ${xmlFileName}` : "Rellenar con Factura XML (UBL 2.1)"}
                 </div>
-                <div className="text-micro text-ink-subtle">
+                <div className="text-micro text-ink-subtle truncate">
                   Arrastra tu factura electrónica para autocompletar
                 </div>
               </div>
@@ -352,13 +352,13 @@ export function ExpensesManager({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-ink-muted font-semibold uppercase block">Categoría</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1 min-w-0">
+                <label className="text-xs text-ink-muted font-semibold uppercase block truncate">Categoría</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none min-h-[40px] truncate"
                 >
                   <option value="Alimentación">🍔 Alimentación</option>
                   <option value="Hospedaje">🏨 Hospedaje</option>
@@ -369,12 +369,12 @@ export function ExpensesManager({
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-ink-muted font-semibold uppercase block">Tipo Comprobante</label>
+              <div className="space-y-1 min-w-0">
+                <label className="text-xs text-ink-muted font-semibold uppercase block truncate">Tipo Comprobante</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as any)}
-                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-semibold focus-visible:outline-none min-h-[40px] truncate"
                 >
                   <option value="Factura">Factura Electrónica</option>
                   <option value="Boleta">Boleta de Venta</option>
@@ -386,21 +386,21 @@ export function ExpensesManager({
             {/* RUC Issuer & SUNAT Lookup */}
             <div className="space-y-1">
               <label className="text-xs text-ink-muted font-semibold uppercase block">RUC Emisor Comprobante</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   maxLength={11}
                   placeholder="Ej. 20124567891"
                   value={rucIssuer}
                   onChange={(e) => setRucIssuer(e.target.value.replace(/\D/g, ""))}
-                  className="flex-1 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink font-mono focus-visible:outline-none"
+                  className="flex-1 min-w-0 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink font-mono focus-visible:outline-none min-h-[40px]"
                   required
                 />
                 <button
                   type="button"
                   onClick={handleValidateSunat}
                   disabled={isValidatingSunat || !rucIssuer}
-                  className="bg-ink-muted hover:bg-ink text-ink-inverse font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                  className="bg-ink-muted hover:bg-ink text-ink-inverse font-semibold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 min-h-[40px] shrink-0"
                   title="Comprobar en el portal SUNAT"
                 >
                   {isValidatingSunat ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
@@ -417,38 +417,38 @@ export function ExpensesManager({
                 placeholder="Ej. Hotel Real Trujillo S.A.C."
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink focus-visible:outline-none"
+                className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3.5 py-2 text-xs text-ink focus-visible:outline-none min-h-[40px]"
                 required
               />
             </div>
 
             {/* Serie & Número */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="space-y-1 min-w-0">
                 <label className="text-xs text-ink-muted font-semibold uppercase block">Serie</label>
                 <input
                   type="text"
                   placeholder="F001"
                   value={series}
                   onChange={(e) => setSeries(e.target.value.toUpperCase())}
-                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none uppercase"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none uppercase min-h-[40px]"
                   required
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <label className="text-xs text-ink-muted font-semibold uppercase block">Número</label>
                 <input
                   type="text"
                   placeholder="0004521"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
-                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono focus-visible:outline-none min-h-[40px]"
                   required
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <label className="text-xs text-ink-muted font-semibold uppercase block">Monto (S/)</label>
                 <input
                   type="number"
@@ -456,7 +456,7 @@ export function ExpensesManager({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono font-bold focus-visible:outline-none"
+                  className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink font-mono font-bold focus-visible:outline-none min-h-[40px]"
                   required
                 />
               </div>
@@ -537,7 +537,7 @@ export function ExpensesManager({
         </div>
 
         {/* Expenses List & Approval Table */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-7 xl:col-span-8 space-y-4">
           <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
             {/* List Header & Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">

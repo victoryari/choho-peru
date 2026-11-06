@@ -6,12 +6,14 @@ interface ChohoLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   showTagline?: boolean;
   themeMode?: "light" | "dark" | "auto";
+  iconOnly?: boolean;
 }
 
 export const ChohoLogo: React.FC<ChohoLogoProps> = ({
   className = "",
   size = "md",
-  showTagline = true
+  showTagline = true,
+  iconOnly = false
 }) => {
   const { companySettings } = useAppStore();
   const customLogo = companySettings?.logoUrl;
@@ -38,6 +40,29 @@ export const ChohoLogo: React.FC<ChohoLogoProps> = ({
     lg: "text-xs px-3 py-1",
     xl: "text-sm px-4 py-1"
   };
+
+  if (iconOnly) {
+    return (
+      <div className={`shrink-0 ${iconSizes[size]} flex items-center justify-center select-none ${className}`}>
+        {customLogo ? (
+          <img
+            src={customLogo}
+            alt={tradeName}
+            className="w-full h-full object-contain rounded-md drop-shadow-xs"
+          />
+        ) : (
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm" aria-hidden="true">
+            <circle cx="50" cy="18" r="13" fill="var(--brand)" />
+            <rect x="18" y="32" width="18" height="18" rx="2" transform="rotate(45 27 41)" fill="var(--brand)" />
+            <rect x="64" y="32" width="18" height="18" rx="2" transform="rotate(45 73 41)" fill="var(--brand)" />
+            <circle cx="27" cy="73" r="13" fill="var(--brand)" />
+            <circle cx="73" cy="73" r="13" fill="var(--brand)" />
+            <rect x="41" y="69" width="18" height="18" rx="2" transform="rotate(45 50 78)" fill="var(--brand)" />
+          </svg>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
