@@ -53,8 +53,8 @@ export function detectDevice(): DeviceInfo {
   // Detección de Windows Touch Tablet
   const isWindowsTablet = /Windows/i.test(ua) && /Touch/i.test(ua) && width <= 1366 && width >= 600;
 
-  // Detección por tamaño de pantalla típico de tablet
-  const isTabletResolution = width >= 768 && width <= 1220;
+  // Detección por tamaño de pantalla típico de tablet (incluye iPad Pro 11", 12.9" y 13" hasta 1380px)
+  const isTabletResolution = width >= 768 && width <= 1380;
 
   // Smartphones
   const isIphone = /iPhone/i.test(ua);
@@ -79,7 +79,7 @@ export function detectDevice(): DeviceInfo {
     sublabel = `Android • ${orientation === "landscape" ? "Horizontal" : "Vertical"}`;
     model = "Tablet Android";
     os = "Android";
-  } else if (isTabletResolution || isWindowsTablet || (isTouch && width < 1220 && width >= 640)) {
+  } else if (isTabletResolution || isWindowsTablet || (isTouch && width <= 1380 && width >= 640)) {
     type = "tablet";
     label = isIpad ? "Tablet (iPad)" : "Tablet";
     sublabel = `${width}×${height} • ${orientation === "landscape" ? "Horizontal" : "Vertical"}`;

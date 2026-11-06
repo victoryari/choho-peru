@@ -14,7 +14,8 @@ export default defineConfig(() => {
     server: {
       // Permitir tuneles publicos como Cloudflare Tunnel (*.trycloudflare.com), ngrok o dominios externos
       allowedHosts: true as const,
-      hmr: process.env.DISABLE_HMR !== 'true',
+      // Configuración de HMR compatible con túneles HTTPS (Cloudflare, ngrok)
+      hmr: process.env.DISABLE_HMR === 'true' ? false : { clientPort: 443 },
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

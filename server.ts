@@ -3301,7 +3301,9 @@ app.post("/api/payments/:id/reconcile", async (req, res) => {
 async function startServer() {
   await initDatabase();
 
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction = (process.env.NODE_ENV || "").trim() === "production" || !process.env.NODE_ENV;
+
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true, allowedHosts: true },
       appType: "spa"
@@ -3309,6 +3311,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+    console.log(`[CHOHO PRODUCCION] Sirviendo interfaz compilada desde ${distPath}`);
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
