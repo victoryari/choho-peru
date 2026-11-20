@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Lock, Mail, ShieldAlert, Sparkles, FolderSync } from "lucide-react";
+import { Lock, Mail, ShieldAlert, Sparkles, FolderSync, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { useAppStore, getUserPermissions, getDefaultRouteForUser } from "./store/useAppStore";
@@ -76,6 +76,7 @@ export default function App() {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -603,7 +604,7 @@ export default function App() {
                     required
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
-                    className="field appearance-none block pl-10 h-10 text-xs"
+                    className="field appearance-none block !pl-10 !pr-3.5 h-10 text-xs"
                     placeholder="usuario@choho.pe"
                   />
                 </div>
@@ -617,14 +618,23 @@ export default function App() {
                   </div>
                   <input
                     id="login-password"
-                    type="password"
+                    type={showLoginPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     value={loginPassword}
                     onChange={e => setLoginPassword(e.target.value)}
-                    className="field appearance-none block pl-10 h-10 text-xs"
+                    className="field appearance-none block !pl-10 !pr-10 h-10 text-xs"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(prev => !prev)}
+                    aria-label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink-subtle hover:text-brand-fg cursor-pointer transition-colors"
+                    title={showLoginPassword ? "Ocultar contraseña" : "Ver contraseña"}
+                  >
+                    {showLoginPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  </button>
                 </div>
               </div>
 
