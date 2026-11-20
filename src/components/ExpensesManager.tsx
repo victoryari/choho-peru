@@ -268,103 +268,7 @@ export function ExpensesManager({
   });
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Mi Presupuesto de Viáticos Asignado (Para Vendedores o usuarios con asignación) */}
-      {(myAssignedBudgets.length > 0 || !isFinanceOrAdmin) && (
-        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 space-y-4">
-          {myAssignedBudgets.length > 0 ? (
-            <>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-line">
-                <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-brand-fg" />
-                  <h4 className="font-extrabold text-sm text-ink font-display">
-                    Mi Presupuesto de Viáticos Asignado
-                  </h4>
-                  {activeBudgetWithDeadline?.notes && (
-                    <span className="text-xs text-ink-subtle font-medium">
-                      • {activeBudgetWithDeadline.notes}
-                    </span>
-                  )}
-                </div>
-
-                {activeBudgetWithDeadline?.dueDate && daysRemaining !== null && (
-                  <div
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                      daysRemaining < 0
-                        ? "bg-danger-soft text-danger-fg border-danger/30"
-                        : daysRemaining <= 2
-                        ? "bg-warning-soft text-warning-fg border-warning/30"
-                        : "bg-success-soft text-success-fg border-success/30"
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>
-                      Fecha límite: {activeBudgetWithDeadline.dueDate} •{" "}
-                      {daysRemaining < 0
-                        ? `Plazo vencido hace ${Math.abs(daysRemaining)} día(s)`
-                        : daysRemaining === 0
-                        ? "Vence hoy"
-                        : `Quedan ${daysRemaining} día(s) para sustentar`}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
-                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">MONTO ASIGNADO</span>
-                  <span className="text-lg font-extrabold font-mono text-ink mt-0.5 block">
-                    S/ {myTotalAssigned.toFixed(2)}
-                  </span>
-                </div>
-                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
-                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">SUSTENTADO / CONSUMIDO</span>
-                  <span className="text-lg font-extrabold font-mono text-warning-fg mt-0.5 block">
-                    S/ {myTotalSpent.toFixed(2)}
-                  </span>
-                </div>
-                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
-                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">SALDO DISPONIBLE POR RENDIR</span>
-                  <span
-                    className={`text-lg font-extrabold font-mono mt-0.5 block ${
-                      myBalance <= 0 ? "text-danger-fg" : "text-brand-fg"
-                    }`}
-                  >
-                    S/ {myBalance.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px] font-bold text-ink-subtle">
-                  <span>Avance de Rendición</span>
-                  <span className="font-mono">
-                    {myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 rounded-full ${
-                      myBalance <= 0 ? "bg-danger" : "bg-brand"
-                    }`}
-                    style={{
-                      width: `${myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%`
-                    }}
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-3 text-xs text-ink-muted">
-              <Wallet className="w-4 h-4 text-ink-subtle shrink-0" />
-              <span>
-                Aún no tienes un monto de viático asignado por Administración. Los comprobantes que registres aquí quedarán pendientes de aprobación para reembolso.
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
+    <div className="space-y-4 text-left">
       {/* KPI Cards (Only for Finance and Management roles) */}
       {isFinanceOrAdmin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -402,10 +306,10 @@ export function ExpensesManager({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Form Panel: Register new expense */}
-        <div className="lg:col-span-5 xl:col-span-4 bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
-          <h4 className="font-extrabold text-sm text-ink font-display pb-3 border-b border-line flex items-center gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Form Panel: Register new expense (Columna izquierda arriba, compacto sin scroll) */}
+        <div className="lg:col-span-5 xl:col-span-4 bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 shadow-xs space-y-3">
+          <h4 className="font-extrabold text-sm text-ink font-display pb-2.5 border-b border-line flex items-center gap-2">
             <Plus className="w-4 h-4 text-brand-fg" />
             Registrar Comprobante de Viático
           </h4>
@@ -454,7 +358,7 @@ export function ExpensesManager({
             </label>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1 min-w-0">
                 <label className="text-xs text-ink-muted font-semibold uppercase block truncate">Categoría</label>
@@ -580,11 +484,11 @@ export function ExpensesManager({
             )}
 
             {/* Receipt Photo Upload */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-xs text-ink-muted font-semibold uppercase block">Foto o Imagen del Comprobante</label>
-              <div className="flex items-center gap-3">
-                <label className="flex-1 bg-surface-2 dark:bg-surface-2/60 border border-dashed border-line-strong dark:border-line hover:border-brand rounded-xl p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1">
-                  <ImageIcon className="w-5 h-5 text-ink-subtle" />
+              <div className="flex items-center gap-2.5">
+                <label className="flex-1 bg-surface-2 dark:bg-surface-2/60 border border-dashed border-line-strong dark:border-line hover:border-brand rounded-xl px-3 py-2 text-center cursor-pointer transition-all flex items-center justify-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-ink-subtle shrink-0" />
                   <span className="text-xs text-ink-muted font-semibold">
                     {receiptImage ? "✓ Imagen Cargada (Cambiar)" : "Subir Foto / Escaneo"}
                   </span>
@@ -639,8 +543,103 @@ export function ExpensesManager({
           </form>
         </div>
 
-        {/* Expenses List & Approval Table */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+        {/* Right Column: Mi Presupuesto Asignado + Historial */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-5">
+          {/* Mi Presupuesto de Viáticos Asignado */}
+          {(myAssignedBudgets.length > 0 || !isFinanceOrAdmin) && (
+            <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 space-y-3">
+              {myAssignedBudgets.length > 0 ? (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-line">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Wallet className="w-4 h-4 text-brand-fg shrink-0" />
+                      <h4 className="font-extrabold text-sm text-ink font-display truncate">
+                        Mi Presupuesto de Viáticos Asignado
+                      </h4>
+                      {activeBudgetWithDeadline?.notes && (
+                        <span className="text-xs text-ink-subtle font-medium truncate">
+                          • {activeBudgetWithDeadline.notes}
+                        </span>
+                      )}
+                    </div>
+
+                    {activeBudgetWithDeadline?.dueDate && daysRemaining !== null && (
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border shrink-0 ${
+                          daysRemaining < 0
+                            ? "bg-danger-soft text-danger-fg border-danger/30"
+                            : daysRemaining <= 2
+                            ? "bg-warning-soft text-warning-fg border-warning/30"
+                            : "bg-success-soft text-success-fg border-success/30"
+                        }`}
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>
+                          Límite: {activeBudgetWithDeadline.dueDate} •{" "}
+                          {daysRemaining < 0
+                            ? `Vencido (${Math.abs(daysRemaining)}d)`
+                            : daysRemaining === 0
+                            ? "Vence hoy"
+                            : `Quedan ${daysRemaining} día(s)`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-surface-2/60 rounded-xl p-3 border border-line/50">
+                      <span className="text-[10px] font-bold text-ink-subtle uppercase block">MONTO ASIGNADO</span>
+                      <span className="text-base font-extrabold font-mono text-ink mt-0.5 block">
+                        S/ {myTotalAssigned.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="bg-surface-2/60 rounded-xl p-3 border border-line/50">
+                      <span className="text-[10px] font-bold text-ink-subtle uppercase block">SUSTENTADO / CONSUMIDO</span>
+                      <span className="text-base font-extrabold font-mono text-warning-fg mt-0.5 block">
+                        S/ {myTotalSpent.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="bg-surface-2/60 rounded-xl p-3 border border-line/50">
+                      <span className="text-[10px] font-bold text-ink-subtle uppercase block">SALDO POR RENDIR</span>
+                      <span
+                        className={`text-base font-extrabold font-mono mt-0.5 block ${
+                          myBalance <= 0 ? "text-danger-fg" : "text-brand-fg"
+                        }`}
+                      >
+                        S/ {myBalance.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold text-ink-subtle">
+                      <span>Avance de Rendición</span>
+                      <span className="font-mono">
+                        {myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-surface-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 rounded-full ${
+                          myBalance <= 0 ? "bg-danger" : "bg-brand"
+                        }`}
+                        style={{
+                          width: `${myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3 text-xs text-ink-muted">
+                  <Wallet className="w-4 h-4 text-ink-subtle shrink-0" />
+                  <span>
+                    Aún no tienes un monto de viático asignado por Administración. Los comprobantes que registres aquí quedarán pendientes de aprobación para reembolso.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
           <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs space-y-4">
             {/* List Header & Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
