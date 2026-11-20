@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, X, ChevronRight, Clock, MapPin, Printer, Download, MessageCircle } from "lucide-react";
 import { Quote } from "../types";
+import { useAppStore } from "../store/useAppStore";
 import { downloadCSV } from "../utils/exportCsv";
 import { generateQuotePDF, shareQuoteViaWhatsApp } from "../utils/quotePdfGenerator";
 
@@ -10,14 +11,32 @@ interface QuotesListProps {
 }
 
 export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
+  const { currentUser } = useAppStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("Todos");
   const [activeDetailQuote, setActiveDetailQuote] = useState<Quote | null>(null);
 
   const statuses = ["Todos", "Pendiente", "Aceptada", "Facturada", "Rechazada"];
 
+  const roleLower = (currentUser?.role || "").toLowerCase();
+  const canViewAllQuotes =
+    roleLower.includes("admin") ||
+    roleLower.includes("geren") ||
+    roleLower.includes("supervis") ||
+    roleLower.includes("jefe") ||
+    roleLower.includes("finanz") ||
+    roleLower.includes("factur") ||
+    roleLower.includes("contab") ||
+    roleLower.includes("almac");
+
   const quoteList = Array.isArray(quotes) ? quotes : [];
-  const filteredQuotes = quoteList.filter((q) => {
+  const scopedQuotes = canViewAllQuotes
+    ? quoteList
+    : quoteList.filter(
+        (q) => q && (q.assignedTo || "").trim().toLowerCase() === (currentUser?.name || "").trim().toLowerCase()
+      );
+
+  const filteredQuotes = scopedQuotes.filter((q) => {
     if (!q) return false;
     const clientName = (q.clientName || "").toLowerCase();
     const id = (q.id || "").toLowerCase();
@@ -39,7 +58,7 @@ export function QuotesList({ quotes, onUpdateQuoteStatus }: QuotesListProps) {
   };
 
   const handleExportCSV = () => {
-    const csvData = quotes.map(q => ({
+    const csvData = filteredQuotes.map(q => ({
       "ID": q.id,
       "Fecha": q.date,
       "Cliente": q.clientName,
