@@ -5,7 +5,7 @@ import {
   ShieldCheck, X, Building2, GitBranch, KeyRound, Copy, RefreshCw, Lock, Network, 
   ChevronRight, LayoutDashboard, ShoppingBag, Boxes, FileText, Receipt, Compass, 
   Wallet, DollarSign, Tags, TrendingUp, Cloud, ArrowUpRight, Layers,
-  Upload, Image, Landmark, Trash2, Percent, Sliders, RotateCcw
+  Upload, Image, Landmark, Trash2, Percent, Sliders, RotateCcw, Eye, EyeOff
 } from "lucide-react";
 import { User, Product, RolePermission, BranchItem, DepartmentItem, Categoria, BankAccount, CompanySettings } from "../types";
 import { useAppStore } from "../store/useAppStore";
@@ -445,6 +445,7 @@ export function AdminPanel({
   // Password Reset State (Modal)
   const [resettingUserPassword, setResettingUserPassword] = useState<User | null>(null);
   const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetMsg, setResetMsg] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [copiedMsg, setCopiedMsg] = useState(false);
@@ -613,6 +614,7 @@ export function AdminPanel({
   const handleStartPasswordReset = (u: User) => {
     setResettingUserPassword(u);
     setNewPasswordInput("");
+    setShowNewPassword(false);
     setResetMsg("");
     setCopiedMsg(false);
   };
@@ -2754,24 +2756,35 @@ export function AdminPanel({
 
                 <div className="relative flex items-center">
                   <input
-                    type="text"
+                    type={showNewPassword ? "text" : "password"}
                     placeholder="Escriba nueva contraseña"
                     value={newPasswordInput}
                     onChange={(e) => setNewPasswordInput(e.target.value)}
-                    className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl pl-4 pr-10 py-2.5 text-xs text-ink font-mono focus-visible:outline-none"
+                    className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl pl-4 pr-20 py-2.5 text-xs text-ink font-mono focus-visible:outline-none"
                     required
                   />
-                  {newPasswordInput && (
+                  <div className="absolute right-2.5 flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={handleCopyPassword}
-                      aria-label="Copiar la contraseña generada al portapapeles"
-                      className="absolute right-2.5 text-ink-subtle hover:text-brand-fg p-1 cursor-pointer"
-                      title="Copiar contraseña"
+                      onClick={() => setShowNewPassword((prev) => !prev)}
+                      aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      className="text-ink-subtle hover:text-brand-fg p-1 cursor-pointer rounded-lg transition-colors"
+                      title={showNewPassword ? "Ocultar contraseña" : "Ver contraseña"}
                     >
-                      <Copy className="w-4 h-4" aria-hidden="true" />
+                      {showNewPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                     </button>
-                  )}
+                    {newPasswordInput && (
+                      <button
+                        type="button"
+                        onClick={handleCopyPassword}
+                        aria-label="Copiar la contraseña generada al portapapeles"
+                        className="text-ink-subtle hover:text-brand-fg p-1 cursor-pointer rounded-lg transition-colors"
+                        title="Copiar contraseña"
+                      >
+                        <Copy className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {copiedMsg && (
                   <span className="text-xs text-success-fg font-mono block text-right font-semibold">
