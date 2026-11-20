@@ -848,18 +848,16 @@ export function Commissions({
                       className="w-full bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2.5 text-xs text-ink font-bold focus-visible:outline-none"
                     >
                       <option value="">Seleccionar Asesor...</option>
-                      {users.length > 0 ? (
-                        users.map(u => (
-                          <option key={u.id} value={u.name}>
-                            {u.name} {u.salesZone ? `(${u.salesZone})` : ''}
-                          </option>
-                        ))
+                      {users.filter(u => u.status !== 'INACTIVE').length > 0 ? (
+                        users
+                          .filter(u => u.status !== 'INACTIVE')
+                          .map(u => (
+                            <option key={u.id} value={u.name}>
+                              {u.name} {u.salesZone ? `(${u.salesZone})` : ''}
+                            </option>
+                          ))
                       ) : (
-                        <>
-                          <option value="Carlos Mendoza">Carlos Mendoza (Zona Lima)</option>
-                          <option value="R. Mendoza">R. Mendoza (Provincia Metas)</option>
-                          <option value="Ana Torres">Ana Torres (Provincia 1era Venta)</option>
-                        </>
+                        <option value="" disabled>No hay asesores registrados en la base de datos</option>
                       )}
                     </select>
                   </div>

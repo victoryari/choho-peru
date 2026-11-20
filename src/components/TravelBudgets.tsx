@@ -8,6 +8,7 @@ import {
 import * as XLSX from 'xlsx';
 import { TravelBudget, TravelExpense, PettyCashExpense, PettyCashFund } from '../types';
 import { parseSunatInvoiceXml, ParsedSunatInvoice } from '../utils/sunatXmlParser';
+import { useAppStore } from '../store/useAppStore';
 
 interface TravelBudgetsProps {
   budgets: TravelBudget[];
@@ -24,6 +25,7 @@ export function TravelBudgets({
   currentUserName = "Administración",
   currentUserRole = "Admin"
 }: TravelBudgetsProps) {
+  const { users } = useAppStore();
   // Navigation Tabs: 'petty-cash' (Rendición Caja Chica) vs 'travel-budgets' (Asignación a Vendedores)
   const [activeTab, setActiveTab] = useState<'petty-cash' | 'travel-budgets'>('petty-cash');
 
@@ -181,15 +183,9 @@ export function TravelBudgets({
     return Math.min(100, Math.max(0, (totalRendido / total) * 100));
   }, [pettyFund.assignedAmount, totalRendido]);
 
-  // Travel Budgets calculations (Vendedores)
+  // Travel Budgets calculations (Vendedores reales desde la Base de Datos)
   const computedBudgets = useMemo(() => {
-    const defaultBudgets = budgets.length > 0 ? budgets : [
-      { id: 'TB-1', seller: 'Ana Torres', assigned: 1500, spent: 0, balance: 1500, status: 'Activo' },
-      { id: 'TB-2', seller: 'Luis Gomez', assigned: 2000, spent: 0, balance: 2000, status: 'Activo' },
-      { id: 'TB-3', seller: 'Carlos Mendoza', assigned: 1800, spent: 0, balance: 1800, status: 'Activo' }
-    ] as TravelBudget[];
-
-    return defaultBudgets.map(b => {
+    return (budgets || []).map(b => {
       const sellerExpenses = expenses.filter(e => e.advisor === b.seller && e.approvalStatus === 'Aprobado');
       const spent = sellerExpenses.reduce((sum, e) => sum + e.amount, 0);
       const balance = b.assigned - spent;
@@ -919,7 +915,13 @@ export function TravelBudgets({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/60">
-                  {computedBudgets.map((b, i) => (
+                  {computedBudgets.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-10 px-4 text-center text-xs text-ink-subtle font-medium">
+                        No hay presupuestos de viaje asignados en la base de datos. Haz clic en &quot;Nueva Asignación a Vendedor&quot; para registrar uno.
+                      </td>
+                    </tr>
+                  ) : computedBudgets.map((b, i) => (
                     <tr key={i} className="hover:bg-surface-2 transition-colors">
                       <td className="py-3 px-4 text-sm font-bold text-ink">{b.seller}</td>
                       <td className="py-3 px-4 text-sm font-mono font-bold text-ink text-right">S/ {b.assigned.toFixed(2)}</td>
@@ -1587,9 +1589,17 @@ export function TravelBudgets({
                     className="w-full mt-1 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink focus-visible:outline-none"
                   >
                     <option value="">Seleccione Asesor...</option>
-                    <option value="Ana Torres">Ana Torres</option>
-                    <option value="Luis Gomez">Luis Gomez</option>
-                    <option value="Carlos Mendoza">Carlos Mendoza</option>
+                    {users.filter(u => u.status !== 'INACTIVE').length > 0 ? (
+                      users
+                        .filter(u => u.status !== 'INACTIVE')
+                        .map(u => (
+                          <option key={u.id} value={u.name}>
+                            {u.name} {u.role ? `(${u.role})` : ''}
+                          </option>
+                        ))
+                    ) : (
+                      <option value="" disabled>No hay asesores registrados en la base de datos</option>
+                    )}
                   </select>
                 </div>
                 <div>
