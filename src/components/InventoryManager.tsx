@@ -340,7 +340,13 @@ export function InventoryManager({
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error(`El servidor respondió con un formato inesperado (HTTP ${res.status}). Intenta nuevamente.`);
+      }
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Error al procesar la importación en el servidor.");
       }

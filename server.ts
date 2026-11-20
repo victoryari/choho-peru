@@ -1159,6 +1159,17 @@ app.post("/api/products/batch-import", async (req, res) => {
   try {
     await conn.beginTransaction();
 
+    // 1. Pre-cargar todos los SKUs existentes en UNA sola consulta
+    const [existingSkuRows]: any = await conn.query("SELECT sku FROM products");
+    const existingSkus = new Set<string>(
+      Array.isArray(existingSkuRows) ? existingSkuRows.map((r: any) => String(r.sku).trim()) : []
+    );
+
+    // 2. Normalizar, validar y deduplicar filas por SKU antes de insertar en bloque
+    const skuOrder: string[] = [];
+    const normalizedBySku = new Map<string, any>();
+    const missingCategories = new Map<string, string>(); // catId -> rawCat
+
     for (const item of items) {
       const sku = String(item.sku || "").trim();
       const name = String(item.name || "").trim();
@@ -1177,7 +1188,7 @@ app.post("/api/products/batch-import", async (req, res) => {
       const codPrecio = item.codPrecio ? String(item.codPrecio).trim() : null;
       const tipoPrecio = item.tipoPrecio ? String(item.tipoPrecio).trim() : "PRECIO 1";
 
-      // Resolver o auto-crear categoría/familia
+      // Resolver o preparar categoría/familia faltante
       let categoriaId: string | null = null;
       const rawCat = String(item.categoria || item.familia || item.categoriaId || "").trim();
       if (rawCat) {
@@ -1185,68 +1196,112 @@ app.post("/api/products/batch-import", async (req, res) => {
         categoriaId = categoriaMap.get(catKey) || null;
         if (!categoriaId) {
           const catId = `CAT-${rawCat.toUpperCase().replace(/[^A-Z0-9]+/g, "-").slice(0, 40)}`;
-          try {
-            await conn.query("INSERT IGNORE INTO categorias (id, nombre, nivel, activo) VALUES (?, ?, 1, 1)", [catId, rawCat]);
-            categoriaMap.set(catKey, catId);
-            categoriaId = catId;
-          } catch (err) {
-            console.warn("[BATCH IMPORT] Error auto-creando categoria:", err);
-          }
+          categoriaMap.set(catKey, catId);
+          missingCategories.set(catId, rawCat);
+          categoriaId = catId;
         }
       }
 
       // Procesar tags
       let tagsArray: string[] = [];
       if (Array.isArray(item.tags)) {
-        tagsArray = item.tags.map(t => String(t).trim()).filter(Boolean);
+        tagsArray = item.tags.map((t: any) => String(t).trim()).filter(Boolean);
       } else if (typeof item.tags === "string" && item.tags.trim()) {
-        tagsArray = item.tags.split(",").map(t => t.trim()).filter(Boolean);
+        tagsArray = item.tags.split(",").map((t: string) => t.trim()).filter(Boolean);
       }
 
-      // Verificar si ya existe para contabilizar insert vs update
-      const [existing]: any = await conn.query("SELECT sku, stock FROM products WHERE sku = ?", [sku]);
-      const exists = existing.length > 0;
+      const prev = normalizedBySku.get(sku);
+      if (prev) {
+        normalizedBySku.set(sku, {
+          sku,
+          name,
+          categoriaId: categoriaId ?? prev.categoriaId,
+          basePrice,
+          stock: stockMode === "add" ? prev.stock + stock : stock,
+          description: description || prev.description,
+          tagsJson: JSON.stringify(tagsArray),
+          um,
+          codFamilia: codFamilia ?? prev.codFamilia,
+          moneda,
+          codPrecio: codPrecio ?? prev.codPrecio,
+          tipoPrecio
+        });
+      } else {
+        skuOrder.push(sku);
+        normalizedBySku.set(sku, {
+          sku,
+          name,
+          categoriaId,
+          basePrice,
+          stock,
+          description,
+          tagsJson: JSON.stringify(tagsArray),
+          um,
+          codFamilia,
+          moneda,
+          codPrecio,
+          tipoPrecio
+        });
+      }
+    }
 
-      if (stockMode === "add" && exists) {
-        await conn.query(
-          `INSERT INTO products (sku, name, categoriaId, basePrice, stock, description, tags, img, images, um, codFamilia, moneda, codPrecio, tipoPrecio)
-           VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '[]', ?, ?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE
-             name = VALUES(name),
-             categoriaId = COALESCE(VALUES(categoriaId), products.categoriaId),
-             basePrice = VALUES(basePrice),
-             stock = products.stock + VALUES(stock),
-             description = CASE WHEN CHAR_LENGTH(COALESCE(VALUES(description), '')) > 0 THEN VALUES(description) ELSE products.description END,
-             um = COALESCE(VALUES(um), products.um),
-             codFamilia = COALESCE(VALUES(codFamilia), products.codFamilia),
-             moneda = COALESCE(VALUES(moneda), products.moneda),
-             codPrecio = COALESCE(VALUES(codPrecio), products.codPrecio),
-             tipoPrecio = COALESCE(VALUES(tipoPrecio), products.tipoPrecio)`,
-          [sku, name, categoriaId, basePrice, stock, description, JSON.stringify(tagsArray), um, codFamilia, moneda, codPrecio, tipoPrecio]
-        );
+    // 3. Crear categorías faltantes en un solo lote
+    if (missingCategories.size > 0) {
+      const catEntries = Array.from(missingCategories.entries());
+      const catPlaceholders = catEntries.map(() => "(?, ?, 1, 1)").join(", ");
+      const catValues = catEntries.flatMap(([id, nombre]) => [id, nombre]);
+      await conn.query(
+        `INSERT IGNORE INTO categorias (id, nombre, nivel, activo) VALUES ${catPlaceholders}`,
+        catValues
+      );
+    }
+
+    // 4. Insertar / Actualizar productos en bloques de 250 filas (de ~5000 queries a ~12 queries)
+    const rowsToUpsert = skuOrder.map((sku) => normalizedBySku.get(sku)!);
+    const CHUNK_SIZE = 250;
+    const stockUpdateExpr = stockMode === "add" ? "products.stock + VALUES(stock)" : "VALUES(stock)";
+
+    for (let i = 0; i < rowsToUpsert.length; i += CHUNK_SIZE) {
+      const chunk = rowsToUpsert.slice(i, i + CHUNK_SIZE);
+      const placeholders = chunk.map(() => "(?, ?, ?, ?, ?, ?, ?, NULL, '[]', ?, ?, ?, ?, ?)").join(", ");
+      const flatValues = chunk.flatMap((r) => [
+        r.sku,
+        r.name,
+        r.categoriaId,
+        r.basePrice,
+        r.stock,
+        r.description,
+        r.tagsJson,
+        r.um,
+        r.codFamilia,
+        r.moneda,
+        r.codPrecio,
+        r.tipoPrecio
+      ]);
+
+      await conn.query(
+        `INSERT INTO products (sku, name, categoriaId, basePrice, stock, description, tags, img, images, um, codFamilia, moneda, codPrecio, tipoPrecio)
+         VALUES ${placeholders}
+         ON DUPLICATE KEY UPDATE
+           name = VALUES(name),
+           categoriaId = COALESCE(VALUES(categoriaId), products.categoriaId),
+           basePrice = VALUES(basePrice),
+           stock = ${stockUpdateExpr},
+           description = CASE WHEN CHAR_LENGTH(COALESCE(VALUES(description), '')) > 0 THEN VALUES(description) ELSE products.description END,
+           um = COALESCE(VALUES(um), products.um),
+           codFamilia = COALESCE(VALUES(codFamilia), products.codFamilia),
+           moneda = COALESCE(VALUES(moneda), products.moneda),
+           codPrecio = COALESCE(VALUES(codPrecio), products.codPrecio),
+           tipoPrecio = COALESCE(VALUES(tipoPrecio), products.tipoPrecio)`,
+        flatValues
+      );
+    }
+
+    for (const r of rowsToUpsert) {
+      if (existingSkus.has(r.sku)) {
         updatedCount++;
       } else {
-        await conn.query(
-          `INSERT INTO products (sku, name, categoriaId, basePrice, stock, description, tags, img, images, um, codFamilia, moneda, codPrecio, tipoPrecio)
-           VALUES (?, ?, ?, ?, ?, ?, ?, NULL, '[]', ?, ?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE
-             name = VALUES(name),
-             categoriaId = COALESCE(VALUES(categoriaId), products.categoriaId),
-             basePrice = VALUES(basePrice),
-             stock = VALUES(stock),
-             description = CASE WHEN CHAR_LENGTH(COALESCE(VALUES(description), '')) > 0 THEN VALUES(description) ELSE products.description END,
-             um = COALESCE(VALUES(um), products.um),
-             codFamilia = COALESCE(VALUES(codFamilia), products.codFamilia),
-             moneda = COALESCE(VALUES(moneda), products.moneda),
-             codPrecio = COALESCE(VALUES(codPrecio), products.codPrecio),
-             tipoPrecio = COALESCE(VALUES(tipoPrecio), products.tipoPrecio)`,
-          [sku, name, categoriaId, basePrice, stock, description, JSON.stringify(tagsArray), um, codFamilia, moneda, codPrecio, tipoPrecio]
-        );
-        if (exists) {
-          updatedCount++;
-        } else {
-          insertedCount++;
-        }
+        insertedCount++;
       }
     }
 
