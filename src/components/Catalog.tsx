@@ -3,6 +3,7 @@ import { Search, Grid, List, Eye, ShoppingBag, SlidersHorizontal, AlertCircle, S
 import { Product, Categoria } from "../types";
 import { ProtectedImage } from "./ProtectedImage";
 import { construirArbol, etiquetaClasificacion } from "../utils/categorias";
+import { useAppStore, getUserPermissions } from "../store/useAppStore";
 
 interface CatalogProps {
   products: Product[];
@@ -12,6 +13,8 @@ interface CatalogProps {
 }
 
 export function Catalog({ products, categorias, onSelectProduct, onQuickAdd }: CatalogProps) {
+  const { currentUser, rolesList } = useAppStore();
+  const canCreateQuotes = Boolean(getUserPermissions(currentUser, rolesList).quotes);
   const [searchTerm, setSearchTerm] = useState("");
   // Cascada de filtro: cada seleccion acota el nivel siguiente.
   const [famSel, setFamSel] = useState("");
@@ -250,7 +253,7 @@ export function Catalog({ products, categorias, onSelectProduct, onQuickAdd }: C
                       <Eye className="w-3.5 h-3.5" />
                     </button>
 
-                    {!outOfStock && (
+                    {canCreateQuotes && !outOfStock && (
                       <button type="button"
                         onClick={() => onQuickAdd(product)}
                         className="flex items-center gap-1 bg-brand hover:bg-brand/90 text-brand-contrast text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all shadow-sm shadow-brand/30 cursor-pointer"
@@ -317,7 +320,7 @@ export function Catalog({ products, categorias, onSelectProduct, onQuickAdd }: C
                       <Eye className="w-3.5 h-3.5" />
                     </button>
 
-                    {!outOfStock && (
+                    {canCreateQuotes && !outOfStock && (
                       <button type="button"
                         onClick={() => onQuickAdd(product)}
                         className="bg-brand hover:bg-brand/90 text-brand-contrast text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer shadow-xs"

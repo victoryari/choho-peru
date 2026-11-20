@@ -3,6 +3,7 @@ import { X, Check, ShoppingCart, Percent, Shield, Star, AlertCircle, MapPin, Loa
 import { Product, QuoteItem, PrecioAutorizado } from "../types";
 import { ProtectedImage } from "./ProtectedImage";
 import { etiquetaClasificacion } from "../utils/categorias";
+import { useAppStore, getUserPermissions } from "../store/useAppStore";
 
 interface ProductDetailModalProps {
   product: Product;
@@ -13,6 +14,8 @@ interface ProductDetailModalProps {
 }
 
 export function ProductDetailModal({ product, advisorRole, region, onClose, onAddToBudget }: ProductDetailModalProps) {
+  const { currentUser, rolesList } = useAppStore();
+  const canCreateQuotes = Boolean(getUserPermissions(currentUser, rolesList).quotes);
   const [qty, setQty] = useState(1);
   const [successMsg, setSuccessMsg] = useState(false);
   // El precio lo autoriza el servidor segun las reglas vigentes. El asesor ya no
@@ -267,8 +270,8 @@ export function ProductDetailModal({ product, advisorRole, region, onClose, onAd
               </div>
             )}
 
-            {/* Controls */}
-            {!isOutOfStock ? (
+            {/* Controls (Solo para roles con permiso de cotizaciones/ventas) */}
+            {canCreateQuotes && (!isOutOfStock ? (
               <div className="space-y-3">
 
                 <div className="flex items-center gap-3 mt-2">
@@ -327,7 +330,7 @@ export function ProductDetailModal({ product, advisorRole, region, onClose, onAd
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>No podemos añadir productos agotados al presupuesto de forma inmediata. Solicite un pedido de importación especial en almacén central.</span>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
