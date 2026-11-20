@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Receipt, Plus, ShieldCheck, ShieldAlert, CheckCircle2, Clock, Image as ImageIcon, Search, Download, Eye, FileText, Check, X, RefreshCw, Filter, DollarSign, Sparkles, UploadCloud } from "lucide-react";
+import { Receipt, Plus, ShieldCheck, ShieldAlert, CheckCircle2, Clock, Image as ImageIcon, Search, Download, Eye, FileText, Check, X, RefreshCw, Filter, DollarSign, Sparkles, UploadCloud, Wallet, Calendar } from "lucide-react";
 import { TravelExpense } from "../types";
 import { parseSunatInvoiceXml } from "../utils/sunatXmlParser";
 
@@ -9,6 +9,7 @@ interface ExpensesManagerProps {
   onUpdateExpenseStatus: (id: string, approvalStatus: 'Pendiente' | 'Aprobado' | 'Observado') => Promise<void>;
   currentUserName: string;
   currentUserRole?: string;
+  currentUserEmail?: string;
   travelBudgets?: import('../types').TravelBudget[];
 }
 
@@ -18,6 +19,7 @@ export function ExpensesManager({
   onUpdateExpenseStatus,
   currentUserName,
   currentUserRole,
+  currentUserEmail,
   travelBudgets
 }: ExpensesManagerProps) {
   // Form states
@@ -218,15 +220,38 @@ export function ExpensesManager({
     setTimeout(() => setFormSuccess(""), 3500);
   };
 
-  // Metrics
-  const totalRendido = expensesList.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalAprobado = expensesList.filter(e => e.approvalStatus === "Aprobado").reduce((acc, curr) => acc + curr.amount, 0);
-  const totalPendiente = expensesList.filter(e => e.approvalStatus === "Pendiente").reduce((acc, curr) => acc + curr.amount, 0);
-  const validadosCount = expensesList.filter(e => e.sunatStatus === "ACEPTADO").length;
-
   const safeExpenses = Array.isArray(expensesList) ? expensesList : [];
+  // Si no es Admin/Finanzas, filtrar estrictamente solo los comprobantes del vendedor logueado
+  const visibleExpenses = isFinanceOrAdmin
+    ? safeExpenses
+    : safeExpenses.filter(
+        (e) => e && (e.advisor || "").trim().toLowerCase() === (currentUserName || "").trim().toLowerCase()
+      );
+
+  // Metrics
+  const totalRendido = visibleExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalAprobado = visibleExpenses.filter(e => e.approvalStatus === "Aprobado").reduce((acc, curr) => acc + curr.amount, 0);
+  const totalPendiente = visibleExpenses.filter(e => e.approvalStatus === "Pendiente").reduce((acc, curr) => acc + curr.amount, 0);
+  const validadosCount = visibleExpenses.filter(e => e.sunatStatus === "ACEPTADO").length;
+
+  // Presupuestos de viáticos asignados al vendedor actual
+  const myAssignedBudgets = (travelBudgets || []).filter((b) => {
+    const matchEmail = currentUserEmail && b.sellerEmail && b.sellerEmail.toLowerCase() === currentUserEmail.toLowerCase();
+    const matchName = (b.seller || "").trim().toLowerCase() === (currentUserName || "").trim().toLowerCase();
+    return matchEmail || matchName;
+  });
+  const myTotalAssigned = myAssignedBudgets.reduce((sum, b) => sum + Number(b.assigned || 0), 0);
+  const myTotalSpent = visibleExpenses
+    .filter((e) => e.approvalStatus !== "Observado")
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const myBalance = myTotalAssigned - myTotalSpent;
+  const activeBudgetWithDeadline = myAssignedBudgets.find((b) => b.dueDate) || myAssignedBudgets[0];
+  const daysRemaining = activeBudgetWithDeadline?.dueDate
+    ? Math.ceil((new Date(activeBudgetWithDeadline.dueDate + "T23:59:59").getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
   // Filtered List
-  const filteredExpenses = safeExpenses.filter(item => {
+  const filteredExpenses = visibleExpenses.filter(item => {
     if (!item) return false;
     const matchesStatus = statusFilter === "all" || item.approvalStatus === statusFilter;
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
@@ -261,6 +286,102 @@ export function ExpensesManager({
           <span>Validación SUNAT Integrada</span>
         </div>
       </div>
+
+      {/* Mi Presupuesto de Viáticos Asignado (Para Vendedores o usuarios con asignación) */}
+      {(myAssignedBudgets.length > 0 || !isFinanceOrAdmin) && (
+        <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 space-y-4">
+          {myAssignedBudgets.length > 0 ? (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-line">
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-brand-fg" />
+                  <h4 className="font-extrabold text-sm text-ink font-display">
+                    Mi Presupuesto de Viáticos Asignado
+                  </h4>
+                  {activeBudgetWithDeadline?.notes && (
+                    <span className="text-xs text-ink-subtle font-medium">
+                      • {activeBudgetWithDeadline.notes}
+                    </span>
+                  )}
+                </div>
+
+                {activeBudgetWithDeadline?.dueDate && daysRemaining !== null && (
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                      daysRemaining < 0
+                        ? "bg-danger-soft text-danger-fg border-danger/30"
+                        : daysRemaining <= 2
+                        ? "bg-warning-soft text-warning-fg border-warning/30"
+                        : "bg-success-soft text-success-fg border-success/30"
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>
+                      Fecha límite: {activeBudgetWithDeadline.dueDate} •{" "}
+                      {daysRemaining < 0
+                        ? `Plazo vencido hace ${Math.abs(daysRemaining)} día(s)`
+                        : daysRemaining === 0
+                        ? "Vence hoy"
+                        : `Quedan ${daysRemaining} día(s) para sustentar`}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
+                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">MONTO ASIGNADO</span>
+                  <span className="text-lg font-extrabold font-mono text-ink mt-0.5 block">
+                    S/ {myTotalAssigned.toFixed(2)}
+                  </span>
+                </div>
+                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
+                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">SUSTENTADO / CONSUMIDO</span>
+                  <span className="text-lg font-extrabold font-mono text-warning-fg mt-0.5 block">
+                    S/ {myTotalSpent.toFixed(2)}
+                  </span>
+                </div>
+                <div className="bg-surface-2/60 rounded-xl p-3.5 border border-line/50">
+                  <span className="text-[11px] font-bold text-ink-subtle uppercase block">SALDO DISPONIBLE POR RENDIR</span>
+                  <span
+                    className={`text-lg font-extrabold font-mono mt-0.5 block ${
+                      myBalance <= 0 ? "text-danger-fg" : "text-brand-fg"
+                    }`}
+                  >
+                    S/ {myBalance.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px] font-bold text-ink-subtle">
+                  <span>Avance de Rendición</span>
+                  <span className="font-mono">
+                    {myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      myBalance <= 0 ? "bg-danger" : "bg-brand"
+                    }`}
+                    style={{
+                      width: `${myTotalAssigned > 0 ? Math.min(100, Math.round((myTotalSpent / myTotalAssigned) * 100)) : 0}%`
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-3 text-xs text-ink-muted">
+              <Wallet className="w-4 h-4 text-ink-subtle shrink-0" />
+              <span>
+                Aún no tienes un monto de viático asignado por Administración. Los comprobantes que registres aquí quedarán pendientes de aprobación para reembolso.
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* KPI Cards (Only for Finance and Management roles) */}
       {isFinanceOrAdmin && (

@@ -130,9 +130,17 @@ export function TravelBudgets({
     }
   };
 
-  // --- Travel Budget Assignment State (Legacy Tab) ---
+  // --- Travel Budget Assignment State ---
+  const computeDueDateFromDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + Math.max(0, days));
+    return d.toISOString().slice(0, 10);
+  };
   const [seller, setSeller] = useState("");
   const [assigned, setAssigned] = useState<number | "">("");
+  const [daysLimit, setDaysLimit] = useState<number | "">(7);
+  const [dueDate, setDueDate] = useState<string>(() => computeDueDateFromDays(7));
+  const [budgetNotes, setBudgetNotes] = useState("");
 
   // Load Petty Cash Fund & Expenses from backend
   const fetchPettyCashData = async () => {
@@ -479,25 +487,37 @@ export function TravelBudgets({
     XLSX.writeFile(wb, `rendicion_caja_chica_${today}.xlsx`);
   };
 
-  // Submit Legacy Seller Budget
+  // Submit Seller Budget
   const handleSubmitSellerBudget = (e: React.FormEvent) => {
     e.preventDefault();
     if (!seller || !assigned || Number(assigned) <= 0) return;
 
+    const selectedUser = users.find((u) => u.name === seller);
+    const assignedDate = new Date().toISOString().slice(0, 10);
+
     onAddBudget({
-      id: `TB-${Math.floor(Math.random() * 10000)}`,
+      id: `TB-${Date.now().toString().slice(-6)}`,
       seller,
+      sellerEmail: selectedUser?.email || "",
       assigned: Number(assigned),
       spent: 0,
       balance: Number(assigned),
-      status: 'Activo'
+      status: 'Activo',
+      assignedDate,
+      dueDate: dueDate || computeDueDateFromDays(Number(daysLimit) || 7),
+      daysLimit: Number(daysLimit) || 7,
+      notes: budgetNotes.trim(),
+      createdBy: currentUserName
     });
 
     setIsTravelBudgetModalOpen(false);
     setSeller("");
     setAssigned("");
-    setStatusMsg(`Presupuesto de S/ ${Number(assigned).toFixed(2)} asignado a ${seller}.`);
-    setTimeout(() => setStatusMsg(null), 3000);
+    setDaysLimit(7);
+    setDueDate(computeDueDateFromDays(7));
+    setBudgetNotes("");
+    setStatusMsg(`Presupuesto de S/ ${Number(assigned).toFixed(2)} asignado a ${seller} (Plazo límite: ${dueDate || computeDueDateFromDays(Number(daysLimit) || 7)}).`);
+    setTimeout(() => setStatusMsg(null), 4000);
   };
 
   return (
@@ -911,22 +931,36 @@ export function TravelBudgets({
                     <th className="py-3 px-4 text-right">Asignado</th>
                     <th className="py-3 px-4 text-right">Consumido en Campo</th>
                     <th className="py-3 px-4 text-right">Saldo Disponible</th>
+                    <th className="py-3 px-4 text-center">Plazo / Fecha Límite</th>
                     <th className="py-3 px-4 text-center">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/60">
                   {computedBudgets.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-10 px-4 text-center text-xs text-ink-subtle font-medium">
+                      <td colSpan={6} className="py-10 px-4 text-center text-xs text-ink-subtle font-medium">
                         No hay presupuestos de viaje asignados en la base de datos. Haz clic en &quot;Nueva Asignación a Vendedor&quot; para registrar uno.
                       </td>
                     </tr>
                   ) : computedBudgets.map((b, i) => (
-                    <tr key={i} className="hover:bg-surface-2 transition-colors">
-                      <td className="py-3 px-4 text-sm font-bold text-ink">{b.seller}</td>
+                    <tr key={b.id || i} className="hover:bg-surface-2 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="text-sm font-bold text-ink">{b.seller}</div>
+                        {b.notes && <div className="text-micro text-ink-subtle italic">{b.notes}</div>}
+                      </td>
                       <td className="py-3 px-4 text-sm font-mono font-bold text-ink text-right">S/ {b.assigned.toFixed(2)}</td>
                       <td className="py-3 px-4 text-sm font-mono text-rose-600 dark:text-rose-400 text-right">S/ {b.spent.toFixed(2)}</td>
                       <td className="py-3 px-4 text-sm font-mono font-black text-brand-fg text-right">S/ {b.balance.toFixed(2)}</td>
+                      <td className="py-3 px-4 text-center">
+                        {b.dueDate ? (
+                          <div className="inline-flex flex-col items-center">
+                            <span className="font-mono font-bold text-ink">{b.dueDate}</span>
+                            {b.daysLimit && <span className="text-micro text-ink-subtle">{b.daysLimit} días de plazo</span>}
+                          </div>
+                        ) : (
+                          <span className="text-micro text-ink-subtle">Sin límite</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-center">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-micro font-bold uppercase tracking-wide ${
                           b.status === 'Activo' ? 'bg-success-soft text-success-fg' : 
@@ -1613,6 +1647,79 @@ export function TravelBudgets({
                     onChange={(e) => setAssigned(e.target.value === "" ? "" : Number(e.target.value))}
                     placeholder="Ej. 1500.00"
                     className="w-full mt-1 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs font-mono text-ink focus-visible:outline-none"
+                  />
+                </div>
+
+                {/* Plazo para sustentar */}
+                <div className="space-y-2 p-3 bg-surface-2/60 rounded-2xl border border-line/60">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-ink-muted uppercase">Plazo para Sustentar</label>
+                    <div className="flex items-center gap-1">
+                      {[3, 7, 15, 30].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => {
+                            setDaysLimit(d);
+                            setDueDate(computeDueDateFromDays(d));
+                          }}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors cursor-pointer ${
+                            Number(daysLimit) === d
+                              ? "bg-brand text-brand-contrast"
+                              : "bg-surface text-ink-muted hover:text-ink border border-line"
+                          }`}
+                        >
+                          {d}d
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <span className="text-[10px] text-ink-subtle font-semibold uppercase block">Días de Plazo</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        required
+                        value={daysLimit}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? "" : Number(e.target.value);
+                          setDaysLimit(val);
+                          if (val !== "" && Number(val) > 0) {
+                            setDueDate(computeDueDateFromDays(Number(val)));
+                          }
+                        }}
+                        className="w-full mt-1 bg-surface border border-line/60 focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs font-mono text-ink focus-visible:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-ink-subtle font-semibold uppercase block">Fecha Límite</span>
+                      <input
+                        type="date"
+                        required
+                        value={dueDate}
+                        onChange={(e) => {
+                          setDueDate(e.target.value);
+                          if (e.target.value) {
+                            const diff = Math.ceil((new Date(e.target.value).getTime() - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
+                            setDaysLimit(Math.max(1, diff));
+                          }
+                        }}
+                        className="w-full mt-1 bg-surface border border-line/60 focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs font-mono text-ink focus-visible:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-ink-muted uppercase">Motivo / Ruta (Opcional)</label>
+                  <input
+                    type="text"
+                    value={budgetNotes}
+                    onChange={(e) => setBudgetNotes(e.target.value)}
+                    placeholder="Ej. Ruta Oxapampa - Villa Rica"
+                    className="w-full mt-1 bg-surface-2 border-none focus-visible:ring-2 focus-visible:ring-brand/20 rounded-xl px-3 py-2 text-xs text-ink focus-visible:outline-none"
                   />
                 </div>
 

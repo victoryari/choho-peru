@@ -68,6 +68,7 @@ let inMemoryPettyCashFunds = [
   { id: "FUND-001", name: "Caja Chica Administración - Sede Lima", assignedAmount: 2500.00, responsible: "Administración General", status: "Activo" }
 ];
 let inMemoryPettyCashExpenses: any[] = [];
+let inMemoryTravelBudgets: any[] = [];
 
 // --- MYSQL SCHEMA INITIALIZATION & PERSISTENCE ENGINE ---
 
@@ -153,15 +154,27 @@ async function initDatabase() {
       }
     }
 
-    const [expCount]: any = await conn.query("SELECT COUNT(*) as count FROM expenses");
-    if (expCount[0].count === 0) {
-      for (const e of SEED_EXPENSES) {
-        await conn.query(
-          "INSERT INTO expenses (id, advisor, date, category, docType, rucIssuer, companyName, series, number, amount, receiptImage, sunatStatus, approvalStatus, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [e.id, e.advisor, e.date, e.category, e.docType, e.rucIssuer, e.companyName, e.series, e.number, e.amount, e.receiptImage, e.sunatStatus, e.approvalStatus, e.notes]
-        );
-      }
-    }
+    // Crear tabla travel_budgets para asignaciones de viáticos a vendedores con fecha límite
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS travel_budgets (
+        id VARCHAR(64) PRIMARY KEY,
+        seller VARCHAR(255) NOT NULL,
+        sellerEmail VARCHAR(255),
+        assigned DECIMAL(12,2) NOT NULL DEFAULT 0,
+        spent DECIMAL(12,2) NOT NULL DEFAULT 0,
+        balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+        status VARCHAR(32) NOT NULL DEFAULT 'Activo',
+        assignedDate VARCHAR(20),
+        dueDate VARCHAR(20),
+        daysLimit INT,
+        notes TEXT,
+        createdBy VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Limpiar registros de demostración antiguos en expenses si aún existen
+    await conn.query("DELETE FROM expenses WHERE id IN ('EXP-2026-001', 'EXP-2026-002', 'EXP-2026-003')");
 
     const [branchCount]: any = await conn.query("SELECT COUNT(*) as count FROM branches");
     if (branchCount[0].count === 0) {
@@ -1793,6 +1806,81 @@ app.put("/api/expenses/:id", async (req, res) => {
   }
 
   res.json({ id, ...updatedData });
+});
+
+// 6.1 TRAVEL BUDGETS API (Asignación de Viáticos a Vendedores con Plazo de Sustento)
+app.get("/api/travel-budgets", async (req, res) => {
+  try {
+    const [rows]: any = await pool.query("SELECT * FROM travel_budgets ORDER BY created_at DESC");
+    const parsed = rows.map((b: any) => ({
+      ...b,
+      assigned: Number(b.assigned) || 0,
+      spent: Number(b.spent) || 0,
+      balance: Number(b.balance) || 0,
+      daysLimit: b.daysLimit ? Number(b.daysLimit) : undefined
+    }));
+    inMemoryTravelBudgets = parsed;
+    return res.json(parsed);
+  } catch (error: any) {
+    console.warn("[TRAVEL BUDGETS] Error consultando MySQL:", error?.message);
+  }
+  res.json(inMemoryTravelBudgets);
+});
+
+app.post("/api/travel-budgets", async (req, res) => {
+  const b = req.body;
+  const newBudget = {
+    id: b.id || `TB-${Date.now().toString().slice(-6)}`,
+    seller: b.seller || "",
+    sellerEmail: b.sellerEmail || "",
+    assigned: Number(b.assigned) || 0,
+    spent: Number(b.spent) || 0,
+    balance: Number(b.balance ?? b.assigned) || 0,
+    status: b.status || "Activo",
+    assignedDate: b.assignedDate || new Date().toISOString().slice(0, 10),
+    dueDate: b.dueDate || "",
+    daysLimit: b.daysLimit ? Number(b.daysLimit) : null,
+    notes: b.notes || "",
+    createdBy: b.createdBy || "Administración"
+  };
+
+  try {
+    await pool.query(
+      `INSERT INTO travel_budgets
+       (id, seller, sellerEmail, assigned, spent, balance, status, assignedDate, dueDate, daysLimit, notes, createdBy)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        newBudget.id,
+        newBudget.seller,
+        newBudget.sellerEmail,
+        newBudget.assigned,
+        newBudget.spent,
+        newBudget.balance,
+        newBudget.status,
+        newBudget.assignedDate,
+        newBudget.dueDate,
+        newBudget.daysLimit,
+        newBudget.notes,
+        newBudget.createdBy
+      ]
+    );
+  } catch (error: any) {
+    console.warn("[TRAVEL BUDGETS] Error guardando en MySQL:", error?.message);
+  }
+
+  inMemoryTravelBudgets.unshift(newBudget);
+  res.status(201).json(newBudget);
+});
+
+app.delete("/api/travel-budgets/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM travel_budgets WHERE id = ?", [id]);
+  } catch (error: any) {
+    console.warn("[TRAVEL BUDGETS] Error eliminando en MySQL:", error?.message);
+  }
+  inMemoryTravelBudgets = inMemoryTravelBudgets.filter((b) => b.id !== id);
+  res.json({ success: true });
 });
 
 // SUNAT Document Validation Service & Duplicate Prevention

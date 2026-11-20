@@ -185,10 +185,16 @@ export interface MaintenanceOrder {
 export interface TravelBudget {
   id: string;
   seller: string;
+  sellerEmail?: string;
   assigned: number;
   spent: number;
   balance: number;
   status: 'Activo' | 'Crítico' | 'Agotado';
+  assignedDate?: string;
+  dueDate?: string;
+  daysLimit?: number;
+  notes?: string;
+  createdBy?: string;
 }
 
 export interface PettyCashFund {

@@ -99,7 +99,7 @@ export default function App() {
   // Fetch initial baseline data
   const fetchBaselineData = async () => {
     try {
-      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resReceivables, resCommissions, resDiscounts, resCategorias, resSettings] = await Promise.all([
+      const [resProducts, resQuotes, resUsers, resTelemetry, resExpenses, resRoles, resReceivables, resCommissions, resDiscounts, resCategorias, resSettings, resTravelBudgets] = await Promise.all([
         fetch("/api/products"),
         fetch("/api/quotes"),
         fetch("/api/users"),
@@ -110,7 +110,8 @@ export default function App() {
         fetch("/api/commissions"),
         fetch("/api/discounts"),
         fetch("/api/categorias"),
-        fetch("/api/company-settings")
+        fetch("/api/company-settings"),
+        fetch("/api/travel-budgets")
       ]);
 
       if (resProducts.ok) {
@@ -156,6 +157,10 @@ export default function App() {
       if (resSettings.ok) {
         const settingsData = await resSettings.json();
         if (settingsData) setCompanySettings(settingsData);
+      }
+      if (resTravelBudgets.ok) {
+        const budgetsData = await resTravelBudgets.json();
+        if (Array.isArray(budgetsData)) setTravelBudgets(budgetsData);
       }
     } catch (err) {
       console.error("Error loading baseline fullstack data, entering offline grace mode:", err);
@@ -357,8 +362,21 @@ export default function App() {
     return count;
   };
 
-  const handleAddTravelBudget = (budget: import('./types').TravelBudget) => {
+  const handleAddTravelBudget = async (budget: import('./types').TravelBudget) => {
     setTravelBudgets([budget, ...travelBudgets]);
+    try {
+      const res = await fetch("/api/travel-budgets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(budget)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setTravelBudgets([created, ...travelBudgets.filter(b => b.id !== budget.id)]);
+      }
+    } catch (e) {
+      console.warn("Error guardando presupuesto de viaje en /api/travel-budgets:", e);
+    }
   };
 
   const handleAddDiscountRule = async (rule: import('./types').DiscountRule) => {
@@ -809,7 +827,7 @@ export default function App() {
             path="/expenses" 
             element={
               userPermissions.expenses ? (
-                <ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} travelBudgets={travelBudgets} />
+                <ExpensesManager expensesList={expenses} onAddExpense={handleAddExpense} onUpdateExpenseStatus={handleUpdateExpenseStatus} currentUserName={currentUser?.name || "Asesor"} currentUserRole={currentUser?.role} currentUserEmail={currentUser?.email} travelBudgets={travelBudgets} />
               ) : (
                 <Navigate to={defaultRoute} replace />
               )
