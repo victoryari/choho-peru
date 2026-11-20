@@ -311,6 +311,11 @@ const PATCHES: Array<{ nombre: string; sql: string; silencioso: boolean }> = [
     sql: "ALTER TABLE products ADD COLUMN tipoPrecio VARCHAR(50) DEFAULT 'PRECIO 1'",
     silencioso: true
   },
+  {
+    nombre: "products.name.widen",
+    sql: "ALTER TABLE products MODIFY COLUMN name VARCHAR(500) NOT NULL",
+    silencioso: true
+  },
 
   // --- Campos para cotizaciones comerciales y contacto WhatsApp ---
   {

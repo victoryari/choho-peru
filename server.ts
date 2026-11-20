@@ -1171,8 +1171,8 @@ app.post("/api/products/batch-import", async (req, res) => {
     const missingCategories = new Map<string, string>(); // catId -> rawCat
 
     for (const item of items) {
-      const sku = String(item.sku || "").trim();
-      const name = String(item.name || "").trim();
+      const sku = String(item.sku || "").trim().slice(0, 100);
+      const name = String(item.name || "").trim().slice(0, 500);
       if (!sku || !name) {
         errors.push({ sku: sku || "(Sin SKU)", error: "SKU y Nombre son obligatorios." });
         continue;
@@ -1181,12 +1181,12 @@ app.post("/api/products/batch-import", async (req, res) => {
       const basePrice = Math.max(0, Number(item.basePrice) || 0);
       const stock = Math.max(0, parseInt(String(item.stock ?? 0), 10) || 0);
       const description = item.description ? String(item.description).trim() : "";
-      const um = String(item.um || item.unidad || "UND").trim().toUpperCase();
-      const codFamilia = item.codFamilia ? String(item.codFamilia).trim() : null;
+      const um = String(item.um || item.unidad || "UND").trim().toUpperCase().slice(0, 20);
+      const codFamilia = item.codFamilia ? String(item.codFamilia).trim().slice(0, 50) : null;
       const rawMoneda = String(item.moneda || "PEN").trim().toUpperCase();
-      const moneda = (rawMoneda === "MN" || rawMoneda === "SOLES") ? "PEN" : rawMoneda;
-      const codPrecio = item.codPrecio ? String(item.codPrecio).trim() : null;
-      const tipoPrecio = item.tipoPrecio ? String(item.tipoPrecio).trim() : "PRECIO 1";
+      const moneda = ((rawMoneda === "MN" || rawMoneda === "SOLES") ? "PEN" : rawMoneda).slice(0, 10);
+      const codPrecio = item.codPrecio ? String(item.codPrecio).trim().slice(0, 20) : null;
+      const tipoPrecio = (item.tipoPrecio ? String(item.tipoPrecio).trim() : "PRECIO 1").slice(0, 50);
 
       // Resolver o preparar categoría/familia faltante
       let categoriaId: string | null = null;
