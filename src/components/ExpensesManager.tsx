@@ -269,24 +269,6 @@ export function ExpensesManager({
 
   return (
     <div className="space-y-6 text-left">
-      {/* Title Header */}
-      <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-extrabold text-base font-display flex items-center gap-2 text-ink">
-            <Receipt className="w-5 h-5 text-brand-fg" />
-            Módulo de Sustento y Rendición de Viáticos SUNAT
-          </h3>
-          <p className="text-xs text-ink-subtle mt-1">
-            Registro de comprobantes de pago de campo con comprobación de validez en tiempo real frente al portal SUNAT.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-success-fg bg-success-soft border border-success/30 dark:border-success/border p-2.5 rounded-xl font-bold">
-          <ShieldCheck className="w-4 h-4" />
-          <span>Validación SUNAT Integrada</span>
-        </div>
-      </div>
-
       {/* Mi Presupuesto de Viáticos Asignado (Para Vendedores o usuarios con asignación) */}
       {(myAssignedBudgets.length > 0 || !isFinanceOrAdmin) && (
         <div className="bg-surface border border-line shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 space-y-4">
