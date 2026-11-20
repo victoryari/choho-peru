@@ -1,5 +1,5 @@
 @echo off
-title CHOHO PERU - Servidor Publico Cloudflare Tunnel
+title CHOHO_TUNEL - Servidor Publico Cloudflare
 color 0A
 cls
 echo ======================================================================
@@ -19,7 +19,7 @@ if not exist dist\server.cjs (
 )
 
 echo [2/3] Levantando Servidor Node.js en puerto 3010...
-start "CHOHO PERU - Backend Node.js" cmd /k "title CHOHO Backend && set "NODE_ENV=production" && set "PORT=3010" && npm start"
+start "CHOHO_BACKEND" cmd /c "title CHOHO_BACKEND && set "NODE_ENV=production" && set "PORT=3010" && npm start"
 
 timeout /t 3 /nobreak >nul
 
@@ -32,4 +32,3 @@ echo ======================================================================
 echo.
 
 cloudflared.exe tunnel --url http://localhost:3010
-pause

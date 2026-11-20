@@ -26,13 +26,12 @@ if "%FOUND_PORT%"=="0" (
     echo       - El puerto 3010 ya estaba libre.
 )
 
-echo [3/3] Cerrando ventanas de consola del Backend CHOHO...
-taskkill /F /FI "WINDOWTITLE eq CHOHO Backend*" /T >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq CHOHO PERU - Backend Node.js*" /T >nul 2>&1
+echo [3/3] Cerrando todas las ventanas CMD de los servicios CHOHO...
+powershell -NoProfile -Command "Get-Process cmd -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*CHOHO*' -and $_.MainWindowTitle -notlike '*Detener*' } | Stop-Process -Force" >nul 2>&1
 
 echo.
 echo ======================================================================
-echo   TODOS LOS SERVICIOS DE CHOHO PERU SE HAN DETENIDO CORRECTAMENTE.
+echo   TODOS LOS SERVICIOS Y VENTANAS DE CHOHO PERU SE HAN CERRADO.
 echo ======================================================================
 echo.
-timeout /t 3 >nul
+timeout /t 2 >nul
